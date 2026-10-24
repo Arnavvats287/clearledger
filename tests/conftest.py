@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--isolated-restart-container",
+        help="Only the labelled disposable container created by verify_isolated_restart.py",
+    )
+    parser.addoption(
         "--require-postgres", action="store_true", help="Fail instead of skipping PostgreSQL tests"
     )
 
@@ -29,7 +33,10 @@ def disposable_database(request):
         pytest.fail("TEST_DATABASE_URL must use real PostgreSQL (postgresql+psycopg)")
     database_name = f"clearledger_test_{uuid4().hex}"
     admin_engine = create_engine(
-        admin_url, isolation_level="AUTOCOMMIT", connect_args={"connect_timeout": 3}
+        admin_url,
+        isolation_level="AUTOCOMMIT",
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 3},
     )
     created = False
     try:

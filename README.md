@@ -121,6 +121,18 @@ The runner loads TEST_DATABASE_URL from the environment or ignored .env and requ
 
 `.github/workflows/verify.yml` runs the same command on GitHub Actions with Python 3.12 and ephemeral PostgreSQL 16.15, retaining check logs. Running it on GitHub requires a user-authorized push/workflow action; no automatic push is performed and local success does not claim remote CI execution. Static typing is focused on pure financial code; ORM/API correctness remains covered by existing/new lint and regression/integration checks without broad ignores.
 
+## Milestone 01–02 verification hardening
+
+The complete verification command includes a real application-process restart test (all financial records, source bytes/digests, audit history and import replay) and barrier-synchronized different-key PostgreSQL matching requests. The latter observes two live backend sessions waiting concurrently and verifies one shared immutable proposal, two key mappings, one creation event and unchanged cash/AR.
+
+For an additional **real PostgreSQL container restart**, with Docker Engine and the cached `postgres:16.15-bookworm` image available:
+
+```powershell
+uv run --frozen python scripts/verify_isolated_restart.py
+```
+
+This creates its own UUID-labelled container/volume, throwaway credentials and fixed free loopback port; runs the restart assertions; and removes only those owned resources. It never invokes Compose or restarts/removes the shared development database. Missing infrastructure or failed assertions fail explicitly; there is no fallback to shared resources. The private pytest restart flag is for this guarded runner only. Standard full verification requires PostgreSQL but not Docker Engine; it always runs application restart/concurrency checks, without skipping them. G2/G3 evidence and the still-deferred authentication, remote CI and Argon benchmark limitations are recorded in REQUIREMENTS_AUDIT/STATUS.
+
 ## Planning pack workflow
 
 The original planning-pack instructions below remain historical guidance for future milestone tasks. Completed milestones and current commands are documented above and in STATUS.

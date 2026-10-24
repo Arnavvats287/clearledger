@@ -1,8 +1,8 @@
 # Build status
 
-- Repo state: **Milestone 00–02 local implementation audited; open assurance/authority limits G1–G4 are recorded in REQUIREMENTS_AUDIT.md. Dataset construction remains exclusively Argon's.**
-- Current task: **Specification-alignment audit only; milestone 03 implementation has not started. Stop after audit.**
-- Verified checks: **Fresh audit run: 126 tests passed against Docker PostgreSQL, strict domain mypy, Ruff lint/format, lock/dependency and disposable migration checks passed. Passing tests do not close the audit's identified gaps.**
+- Repo state: **Milestone 01–02 verification hardening closes audit gaps G2/G3. Authentication, remote CI and Argon benchmarks remain deferred/unverified (G1/G4).**
+- Current task: **Verification hardening complete; stop before milestone 03, which remains unimplemented.**
+- Verified checks: **129 tests passed against Docker PostgreSQL plus all required static/dependency/migration checks; 2 additional tests passed in a separate owned-container real PostgreSQL restart run. Shared development database was not restarted or destroyed.**
 - External integrations: **None**.
 - Open decisions: Exact email extraction model and tax rule references to be selected/verified in later phases. Use stub extractors for local tests.
 
@@ -10,8 +10,8 @@
 | Milestone | Status | Verified commands/results | Notes |
 |---|---|---|---|
 | 00 | Implemented; local foundation verified | Historical foundation/Docker logs and current regressions below | No production-readiness claim |
-| 01 | Application/import tests verified; acceptance evidence qualified by audit | 83 historical tests; current suite retained | G2: full financial-import restart coverage remains open; no dataset generated |
-| 02 | Local implementation/tests verified; audit qualifications remain open | 126 tests, strict domain types, lint/format, dependencies and migrations | G1/G3 authority/coverage limits; G4 remote CI unverified |
+| 01 | Local import/restart verification complete | Historical tests retained; new real process/fresh-connection/isolated-container persistence and replay checks | G2 closed; authentication/Argon benchmark claims remain deferred |
+| 02 | Local matching verification hardening complete | Different-key overlapping PostgreSQL sessions, non-mutation, immutable history and uniqueness checks; full suite 129 passed | G3 closed; G1/G4 remain deferred/unverified |
 | 03 | Not started | — | — |
 | 04 | Not started | — | — |
 | 05 | Not started | — | — |
@@ -408,3 +408,49 @@ Actual fresh verification command:
 Observed **lock/dependencies/lint/format/types/tests-migrations PASS**; **126 passed, 1 existing upstream Starlette/HTTPX warning in 24.96s**, no skipped tests. Full redacted local log: `local-data/verification/20261024T205239565998Z.log` (UTC filename). Historical old-checkpoint counts were checked from their recorded STATUS evidence, not falsely described as fresh executions of old checkouts. No application tests were weakened/deleted or new product tests added. No development migration/reset/restart or portable PostgreSQL change was performed by this audit.
 
 Audit files only: AGENTS, PLANS, REQUIREMENTS_AUDIT, STATUS, evaluation spec and milestone prompt alignment. Financial/source data and existing fixture contents remain untouched. Audit checkpoint: **`6e1ad2deec2b86524561e383ab78c50e87952113`**, message `docs: audit milestone requirements and preserve acceptance gates`, branch `chore/requirements-audit`. Reviewed exactly 8 intended documentation files, checked staged whitespace/secrets and verified no application/test/schema/dependency diff from `8ff6687`. This documentation-only follow-up records the checkpoint hash; no product changes or push occurred. Stop here; gaps are reported and milestone 03 is not automatically resumed.
+
+## Milestone 01–02 verification hardening — 2026-10-25
+
+The user separately authorized closing audit G2/G3 only. This section supersedes their historical open status above. Branch **`test/milestone-01-02-hardening`** starts from audit/status checkpoint `58a9f8f`; existing feature branches/history are preserved. No milestone 03 code or datasets were implemented. G1 authentication/authority and G4 remote CI/Argon benchmark evidence remain **deferred/unresolved**, not closed by these tests.
+
+### G2: financial import restart persistence — verified
+
+Added `tests/test_restart_persistence.py`. It migrates only a generated disposable DB, creates one isolated company configuration, then imports minimal existing customer/invoice/bank test rows through a **real Uvicorn process**. Saves every persisted column for customers, invoices, bank transactions, receipts, source imports and audit events, including IDs, timestamps, versions, raw bytes/digests and results. Stops that process and disposes the verifier pool; a new DB engine/backend connection and a second Uvicorn PID must reproduce both the SQL rows and API payloads exactly. The configured development database is never reset/restarted.
+
+Retries all three original keys with a renamed file after restart: original outcomes/IDs are reused, financial/provenance rows remain identical, old audit records are unchanged and exactly three replay events append. A fresh-key renamed bank import additionally tests natural identity: zero new bank/receipt, one duplicate, one new ingestion run with expected duplicate/acceptance audit events. Open invoice AR and receipt unapplied cash both remain 100 paise.
+
+Added `scripts/verify_isolated_restart.py` for the optional real PostgreSQL restart proof. It uses the cached PostgreSQL 16.15 image and creates a unique UUID-labelled container plus named volume, random throwaway credentials and a chosen free IPv4 loopback port. The same persistence test then actually restarts only that owned container between application processes. Name/ownership labels must match before restart and cleanup; a negative test proves the shared `clearledger-db-1` name is refused before any Docker call. No Compose stop/restart/down operation is invoked. Generated credentials use a temporary file and are redacted from logs.
+
+The initial real-container run exposed **test infrastructure** issues: the admin fixture reused a dead connection on cleanup, and Docker's empty host-port mapping was reassigned during restart (observed **52249→52262**). Corrected the fixture with `pool_pre_ping=True` (consistent with the existing application engine), and bound the isolated test's chosen host port explicitly. Retained the new assertion that the host binding remains unchanged. Failed runs were reported and cleaned up, not skipped; no application persistence defect was found and no application/schema/dependency changes were needed.
+
+### G3: simultaneous different-key matching — verified
+
+Added `tests/test_matching_concurrency.py`. Two separate SQLAlchemy Sessions obtain distinct PostgreSQL backend PIDs and synchronize through a barrier. A third connection holds the real company advisory lock; an observer checks **both** workers simultaneously waiting on that lock in `pg_stat_activity`, with READ COMMITTED isolation. Only then is the blocker released. This is actual concurrent database contention, not sequential calls or mocked sessions.
+
+Both different-key/same-input requests succeed with the same deterministic proposal ID, snapshot and result. There is exactly one immutable proposal for the snapshot, two distinct idempotency-key mappings, and one proposal-creation audit event. Every financial/provenance row is compared unchanged, existing evidence/audit history is retained byte-for-value, both key replays add no records, direct duplicate snapshot insertion fails the DB unique constraint, and ordinary proposal/request/audit updates fail immutable-record triggers. This documents serialized equivalent success semantics; arbitrary/conflicting proposals are not accepted and no cash application occurs.
+
+### Actual verification and isolation results
+
+```powershell
+$env:TEST_DATABASE_URL = & ./.venv/Scripts/python.exe -c "from dotenv import dotenv_values; print(dotenv_values('.env')['TEST_DATABASE_URL'])"
+./.venv/Scripts/python.exe -m pytest tests/test_restart_persistence.py tests/test_matching_concurrency.py -q --require-postgres
+# Initial focused run: 2 passed, 1 existing warning in 6.05s (before guard-test addition).
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# Final isolated PostgreSQL restart run: 2 passed, 1 existing warning in 7.51s.
+# Only this invocation's labelled disposable container/volume removed afterward.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# lock PASS; dependencies PASS; lint PASS; format PASS; types PASS; tests/migrations PASS.
+# 129 passed, 1 existing upstream Starlette/HTTPX warning in 29.27s; no skips.
+```
+
+Full verification retains all 126 existing tests plus the application restart, shared-container safety guard and different-key concurrency tests. Existing assertions were not weakened/deleted. It includes strict mypy for money/matching, Ruff lint/format, lock/dependency checks, real PostgreSQL migrations up/down/up/drift/integrity, imports/isolation/financial non-mutation and live HTTP regression checks. Optional Docker verification fails explicitly on absent infrastructure/assertion failure; standard full verification always runs the new app-restart/concurrency checks without requiring Docker Engine or silently skipping them.
+
+Detailed ignored local logs (UTC filenames):
+- `local-data/hardening-focused.log`
+- `local-data/verification/20261024T211312489837Z.log` (complete final suite)
+- `local-data/verification/isolated-restart-20261024T211220500927Z.log` (successful real DB restart)
+- Earlier failed isolated diagnostics retained locally as `isolated-restart-20261024T210720757263Z.log` and `isolated-restart-20261024T211105083750Z.log`.
+
+Compared the shared development container's ID, StartedAt and RestartCount with the snapshot taken before any isolated run: **unchanged throughout hardening**. After final cleanup, Docker container/volume listings filtered by this verification-purpose label were empty. No shared data, existing portable PostgreSQL installation or Argon/demo fixture was modified. Tests use only minimal existing isolated row inputs; no demonstration/evaluation datasets were generated or downloaded.
+
+Changed files: new two test modules and isolated Docker runner, administrative fixture reconnection/private runner option in conftest, README instructions, REQUIREMENTS_AUDIT disposition and this STATUS. No product matching/import changes, new dependencies or migrations were required. G2/G3 are closed with the specific evidence above; authentication, remote Actions execution and Argon benchmark limitations remain deferred. The verified hardening Git hash will be recorded after staged diff/secret review in a documentation-only follow-up. STOP after hardening; do not automatically start milestone 03.
