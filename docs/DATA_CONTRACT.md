@@ -1,6 +1,6 @@
 # ClearLedger data contract — version 1.0
 
-Status: milestone 01 implementation contract. Send `X-Data-Contract-Version: 1.0` on every import. A change to column names, types, identity rules or meaning requires a new contract version and, where needed, a migration. Unsupported versions return 422. This contract describes application inputs and persistence; it does not supply or authorize a demonstration dataset.
+Status: milestone 01 import contract, retained unchanged by milestone 02. Send `X-Data-Contract-Version: 1.0` on every import. A change to column names, types, identity rules or meaning requires a new contract version and, where needed, a migration. Unsupported versions return 422. This contract describes application inputs and persistence; it does not supply or authorize a demonstration dataset. Milestone 02 matching metadata is an additive API extension described below; Argon's CSV formats remain 1.0.
 
 **Argon owns dataset research and construction. Codex does not generate, download, curate or seed demonstration/evaluation data.** Argon should provide compatible CSV files; do not insert directly into application tables, assign internal IDs, modify the schema, or depend on the old `fixtures/demo-case.json` as an import format. That existing reference is unchanged. Minimal isolated code-test fixtures are separate from dataset artifacts.
 
@@ -123,7 +123,7 @@ Foreign references in CSV use the defined external customer key, not internal ID
 
 ## Persisted schema
 
-These are the **only required application tables** at version 1.0. PostgreSQL also has `alembic_version(version_num varchar(32))`. Argon supplies CSV, not internal-table dumps.
+These are the **required ingestion tables** at import version 1.0. PostgreSQL also has `alembic_version(version_num varchar(32))`. The additive matching tables below are application-managed metadata, not Argon inputs. Argon supplies CSV, not internal-table dumps.
 
 All application tables have: `id UUID PRIMARY KEY` (server-generated UUID4), `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`, `version INTEGER NOT NULL DEFAULT 1`. All except `organizations` also have `organization_id UUID NOT NULL REFERENCES organizations(id)`. Customer references and new financial/source/audit tables have a unique `(organization_id,id)` key to support composite FKs. New table versions must be > 0. The organization/customer legacy version columns are unchanged. Monetary columns are signed BIGINT, with entity-level CHECK constraints rejecting unsupported signs. Every additional field below is NOT NULL unless marked nullable. No cascading deletion is configured.
 
@@ -160,7 +160,9 @@ Source imports become immutable after ACCEPTED/REJECTED; originals, finalized ru
 
 ## Read APIs
 
-GET collection and GET `/{record_id}` for `/customers`, `/payer-aliases`, `/invoices`, `/bank-transactions`, `/receipts`, `/payments`, `/imports`, `/audit/events`. Collection responses are arrays, ordered by `(created_at,id)` with `limit` 1–100 (default 100) and `offset` ≥0 (default 0). Unknown or cross-company IDs return 404. Public read payloads are typed in `src/clearledger/views.py`, exclude source raw bytes, and include generated IDs/company/version/UTC created_at. No general SQL or file-execution endpoint exists. Mutation routes are only the four POST CSV imports; edits/deletes and standalone receipt creation are unavailable.
+Milestone 02 adds application-managed matching_evidence, matching_proposals and matching_requests with scoped FKs and immutable/idempotent snapshots. Their exact fields, verification payloads, bounds and stale-state rules are specified in [MATCHING.md](MATCHING.md). They are populated by matching APIs, never by Argon CSVs. The four import schemas and version 1.0 remain unchanged.
+
+GET collection and GET `/{record_id}` for `/customers`, `/payer-aliases`, `/invoices`, `/bank-transactions`, `/receipts`, `/payments`, `/imports`, `/audit/events`. Collection responses are arrays, ordered by `(created_at,id)` with `limit` 1–100 (default 100) and `offset` ≥0 (default 0). Unknown or cross-company IDs return 404. Public read payloads are typed in `src/clearledger/views.py`, exclude source raw bytes, and include generated IDs/company/version/UTC created_at. No general SQL or file-execution endpoint exists. Financial registration remains limited to the four POST CSV imports; the matching extension adds only evidence/proposal metadata writes. Edits/deletes and standalone receipt creation are unavailable.
 
 ## Import commands (operator-supplied files only)
 

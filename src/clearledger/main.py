@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from clearledger.api import router
 from clearledger.config import Settings
 from clearledger.db import build_engine, get_session
+from clearledger.matching_api import router as matching_router
 
 
 class HealthResponse(BaseModel):
@@ -31,6 +32,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="ClearLedger", version="0.1.0", lifespan=lifespan)
     app.state.settings = config
     app.include_router(router)
+    app.include_router(matching_router)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

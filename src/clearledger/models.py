@@ -129,6 +129,7 @@ class Invoice(ImportedRecord, Base):
             name="fk_invoice_customer",
         ),
         UniqueConstraint("organization_id", "invoice_number", name="uq_invoice_org_number"),
+        UniqueConstraint("organization_id", "id", "customer_id", name="uq_invoice_org_id_customer"),
         CheckConstraint("currency = 'INR'", name="ck_invoice_currency"),
         CheckConstraint("original_amount_paise > 0", name="ck_invoice_positive"),
         CheckConstraint(
@@ -225,3 +226,135 @@ class AuditEvent(ScopedRecord, Base):
     entity_id: Mapped[UUID | None]
     source_row: Mapped[int | None] = mapped_column(Integer)
     details: Mapped[dict] = mapped_column(JSONB)
+
+
+class MatchingEvidence(ScopedRecord, Base):
+    __tablename__ = "matching_evidence"
+    __table_args__ = (
+        *scope_constraints("matching_evidence"),
+        source_constraint("matching_evidence"),
+        ForeignKeyConstraint(
+            ["organization_id", "receipt_id"],
+            ["receipts.organization_id", "receipts.id"],
+            name="fk_evidence_receipt",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "customer_id"],
+            ["customers.organization_id", "customers.id"],
+            name="fk_evidence_customer",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "invoice_id", "customer_id"],
+            ["invoices.organization_id", "invoices.id", "invoices.customer_id"],
+            name="fk_evidence_invoice_owner",
+        ),
+        UniqueConstraint(
+            "organization_id", "receipt_id", "payload_sha256", name="uq_matching_evidence_payload"
+        ),
+        CheckConstraint(
+            "kind IN ('CUSTOMER_MAPPING','INVOICE_REFERENCE')", name="ck_matching_evidence_kind"
+        ),
+        CheckConstraint(
+            "start_offset >= 0 AND end_offset > start_offset", name="ck_matching_evidence_span"
+        ),
+        CheckConstraint(
+            "receipt_version > 0 AND customer_version > 0", name="ck_matching_evidence_versions"
+        ),
+        CheckConstraint(
+            "(kind = 'CUSTOMER_MAPPING' AND invoice_id IS NULL AND invoice_version IS NULL) OR "
+            "(kind = 'INVOICE_REFERENCE' AND invoice_id IS NOT NULL "
+            "AND invoice_version IS NOT NULL AND invoice_version > 0)",
+            name="ck_matching_evidence_invoice",
+        ),
+    )
+    receipt_id: Mapped[UUID]
+    customer_id: Mapped[UUID]
+    invoice_id: Mapped[UUID | None]
+    receipt_version: Mapped[int] = mapped_column(Integer)
+    customer_version: Mapped[int] = mapped_column(Integer)
+    invoice_version: Mapped[int | None] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(32))
+    source_import_id: Mapped[UUID]
+    source_row: Mapped[int] = mapped_column(Integer)
+    source_field: Mapped[str] = mapped_column(String(20))
+    start_offset: Mapped[int] = mapped_column(Integer)
+    end_offset: Mapped[int] = mapped_column(Integer)
+    exact_quote: Mapped[str] = mapped_column(String(2000))
+    verified_by: Mapped[str] = mapped_column(String(100))
+    payload_sha256: Mapped[str] = mapped_column(String(64))
+
+
+class MatchingProposal(ScopedRecord, Base):
+    __tablename__ = "matching_proposals"
+    __table_args__ = (
+        *scope_constraints("matching_proposals"),
+        source_constraint("matching_proposals"),
+        ForeignKeyConstraint(
+            ["organization_id", "receipt_id"],
+            ["receipts.organization_id", "receipts.id"],
+            name="fk_matching_proposal_receipt",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "customer_id"],
+            ["customers.organization_id", "customers.id"],
+            name="fk_matching_proposal_customer",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "invoice_id", "customer_id"],
+            ["invoices.organization_id", "invoices.id", "invoices.customer_id"],
+            name="fk_matching_proposal_invoice",
+        ),
+        UniqueConstraint(
+            "organization_id", "receipt_id", "snapshot_sha256", name="uq_matching_proposal_snapshot"
+        ),
+        CheckConstraint(
+            "outcome IN ('EXACT_MATCH','AMBIGUOUS','NO_SUPPORTED_MATCH')",
+            name="ck_matching_proposal_outcome",
+        ),
+        CheckConstraint(
+            "(outcome = 'EXACT_MATCH' AND amount_paise > 0 AND invoice_id IS NOT NULL "
+            "AND customer_id IS NOT NULL) OR "
+            "(outcome <> 'EXACT_MATCH' AND amount_paise = 0 AND invoice_id IS NULL)",
+            name="ck_matching_proposal_amount",
+        ),
+    )
+    receipt_id: Mapped[UUID]
+    source_import_id: Mapped[UUID]
+    customer_id: Mapped[UUID | None]
+    invoice_id: Mapped[UUID | None]
+    amount_paise: Mapped[int] = mapped_column(BigInteger)
+    outcome: Mapped[str] = mapped_column(String(32))
+    snapshot_sha256: Mapped[str] = mapped_column(String(64))
+    snapshot: Mapped[dict] = mapped_column(JSONB)
+    result: Mapped[dict] = mapped_column(JSONB)
+
+
+class MatchingRequest(ScopedRecord, Base):
+    __tablename__ = "matching_requests"
+    __table_args__ = (
+        *scope_constraints("matching_requests"),
+        ForeignKeyConstraint(
+            ["organization_id", "receipt_id"],
+            ["receipts.organization_id", "receipts.id"],
+            name="fk_matching_request_receipt",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "evidence_id"],
+            ["matching_evidence.organization_id", "matching_evidence.id"],
+            name="fk_matching_request_evidence",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "proposal_id"],
+            ["matching_proposals.organization_id", "matching_proposals.id"],
+            name="fk_matching_request_proposal",
+        ),
+        UniqueConstraint("organization_id", "idempotency_key", name="uq_matching_request_key"),
+        CheckConstraint(
+            "(evidence_id IS NULL) <> (proposal_id IS NULL)", name="ck_matching_request_target"
+        ),
+    )
+    receipt_id: Mapped[UUID]
+    idempotency_key: Mapped[UUID]
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    evidence_id: Mapped[UUID | None]
+    proposal_id: Mapped[UUID | None]

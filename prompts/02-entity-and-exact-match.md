@@ -1,5 +1,7 @@
 # CODEX TASK 02 — Verified payer resolution + exact cash allocation
 
+The canonical expanded milestone 02 acceptance criteria are now in `prompts/02-exact-matching.md`. This original prompt remains as context; milestone 02 produces proposals only, never actual allocations.
+
 Read standing instructions and prior implementations. Implement only milestone 02.
 
 ## Goal

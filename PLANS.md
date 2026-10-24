@@ -6,7 +6,7 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 |---|---|---|
 | 00 | Backend + database foundation | API responds; PostgreSQL migrates up/down in disposable DB; smoke tests pass; local run documented. |
 | 01 | Financial data engine + versioned data contract/imports | Tenant-scoped models/APIs, strict atomic CSV imports, audit/provenance, duplicate protection; Argon owns dataset construction. |
-| 02 | Customer resolution + exact allocation | Verified IDs, aliases and exact matches; ambiguity abstains; no over-allocation. |
+| 02 | Customer resolution + exact matching proposals | Verified identity/reference, explicit ambiguity/unresolved/stale outcomes, persistent idempotent proposals; no financial mutation. |
 | 03 | Multi-invoice and partial allocation search | Bounded subset search returns multiple candidates; collision detection and tests; no guessing from amount alone. |
 | 04 | Immutable document import + isolated structured extraction | Original bytes hash, provenance + spans; late remittance correlates; injections stay untrusted data. |
 | 05 | Persistent claims/cases + event engine | Claim lifecycle, monotonic source history, late-evidence replay and re-evaluation without duplicate allocations. |

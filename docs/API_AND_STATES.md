@@ -1,5 +1,7 @@
 # API contracts and state machines (target, evolve via migrations)
 
+Milestone 02's implemented verification, matching and stale-snapshot endpoints are specified in [MATCHING.md](MATCHING.md). They create proposals only; exact matching does not enable the later allocation/posting transitions below.
+
 ## Stable identifiers and fields
 Internal IDs are UUIDs (or consistent server-generated IDs); external references (UTR, invoice number, BOL reference) are scoped to the organization and source system. Amounts: `amount_paise: int`, currency fixed to `INR`. Created/occurred times are stored as UTC timestamps with the original timezone/source text kept as provenance; financial dates use the relevant India local calendar. Every mutable aggregate has `version: int`.
 

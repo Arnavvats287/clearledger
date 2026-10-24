@@ -1,6 +1,6 @@
 # ClearLedger
 
-A **local, single-company, INR-only AR cash application and deduction investigation system**. Milestone 01 adds a tenant-scoped financial data engine and strict CSV imports to the verified backend/database foundation. Matching and subsequent financial workflows remain for later milestones.
+A **local, single-company, INR-only AR cash application and deduction investigation system**. Milestone 02 adds deterministic verified customer resolution and exact single-invoice proposals to the financial data/import engine. Proposals never apply cash or change AR; subsequent financial workflows remain for later milestones.
 
 ## Milestone 00: local setup
 
@@ -49,7 +49,7 @@ uv pip check
 
 The Compose database role has the required local test privileges. Tests create a uniquely named `clearledger_test_<uuid>` database and drop only that generated database in teardown. They verify migration upgrade → downgrade → upgrade, metadata drift, foreign keys, uniqueness, tenant isolation, actual PostgreSQL readiness and failure, and the Alembic/Uvicorn CLI commands with live HTTP. Never use production credentials. An interrupted test may leave a disposable test database behind.
 
-Without `TEST_DATABASE_URL`, `uv run --frozen pytest -q` runs unit/property tests and explicitly skips PostgreSQL checks. `--require-postgres` makes missing configuration a failure. No static type checker is configured. Money utilities use signed integer paise, finite Decimal rates, plain decimal input strings, and ROUND_HALF_UP; floats/bools are rejected. Rate `0.025` and percentage `2.5` both mean 2.5%, with one final paise rounding.
+Without `TEST_DATABASE_URL`, `uv run --frozen pytest -q` runs unit/property tests and explicitly skips PostgreSQL checks. `--require-postgres` makes missing configuration a failure. Full verification below includes strict mypy for money and pure matching code. Money utilities use signed integer paise, finite Decimal rates, plain decimal input strings, and ROUND_HALF_UP; floats/bools are rejected. Rate `0.025` and percentage `2.5` both mean 2.5%, with one final paise rounding.
 
 To rehearse rollback manually, point `DATABASE_URL` at a **disposable** database first, then run `uv run --frozen alembic downgrade base` and `uv run --frozen alembic upgrade head`. Downgrade removes the two foundation tables; do not run it on data you intend to retain. Use `docker compose stop` to stop local PostgreSQL while retaining its volume.
 
@@ -63,9 +63,9 @@ This verifies that the Windows URL reaches the Compose container by comparing Po
 
 ## Known local limitations
 
-Docker Desktop and Compose are now verified on the implementation machine, including normal restart persistence. The earlier portable [EDB binaries](https://www.enterprisedb.com/download-postgresql-binaries) verification remains documented in `STATUS.md`. Some restricted Windows sandboxes block Docker's named pipe and the socket pair used by Python's event loop: Docker/test/server checks need local engine/network access. The current Starlette test client emits an upstream deprecation warning for HTTPX; tests still execute. No static type checker or API container is configured.
+Docker Desktop and Compose are verified on the implementation machine, including normal restart persistence. The earlier portable [EDB binaries](https://www.enterprisedb.com/download-postgresql-binaries) verification remains documented in `STATUS.md`. Some restricted Windows sandboxes block Docker's named pipe and Python's socket pair: Docker/test/server checks need local engine/network access. The Starlette test client emits an upstream HTTPX deprecation warning; tests still execute. Strict typing covers pure money/matching functions; no API container is configured.
 
-The environment is local only. No frontend, matching, agents, workers, tax decisions, authentication, financial posting, or external integrations are implemented. Dependency resolution is committed in `uv.lock`; `.env`, runtime caches, datasets and local financial data are ignored.
+The environment is local only. No frontend, agents, workers, tax decisions, authentication, financial posting, or external integrations are implemented. Dependency resolution is committed in `uv.lock`; `.env`, runtime caches, datasets and local financial data are ignored.
 
 ## Milestone 01: company configuration and imports
 
@@ -101,7 +101,29 @@ Invoke-RestMethod http://127.0.0.1:8000/imports/<import-id>
 
 Run the full suite with `TEST_DATABASE_URL` loaded from `.env` using the test command above; do not substitute the development DB for a generated test DB in rollback commands. Tests create/drop only disposable databases and cover import validation, concurrency, tenant isolation, receipt uniqueness, DB guards and API behavior. `scripts/verify_docker.py` exercises the current schema's migration roundtrip and normal restart persistence using a disposable probe database; it restarts this project's database container. No Argon dataset was available or used in verification.
 
-## Start here
+## Milestone 02: verified resolution and exact proposals
+
+The full request, evidence, persistence, abstention and staleness contract is [docs/MATCHING.md](docs/MATCHING.md). Apply `uv run --frozen alembic upgrade head`; CSV formats remain version 1.0. Company setup/imports are unchanged.
+
+1. GET `/receipts/<id>/matching-context` to inspect current candidates, verification basis, versions and snapshot hash. Exact payer aliases can resolve identity; amounts or raw memo text cannot establish invoice intent.
+2. POST `/receipts/<id>/matching-evidence` with an explicit CUSTOMER_MAPPING or INVOICE_REFERENCE verification. Cite the original bank import UUID/CSV row/field and exact character span, with customer/receipt/invoice expected versions. Invoice reference quotes must match the complete invoice number and its owner. Send UUID `Idempotency-Key` and local `X-Actor-ID` headers. This records operator provenance, not authenticated identity or approval.
+3. POST `/receipts/<id>/match`, with those headers and JSON containing expected_receipt_version, expected_invoice_versions (`{"<invoice-id>":1}` for a selected invoice), and optional expected_snapshot_sha256. Outcomes are EXACT_MATCH, AMBIGUOUS or NO_SUPPORTED_MATCH, with reasons and separate RESOLVED/AMBIGUOUS/UNRESOLVED identity.
+4. GET `/matching-proposals/<id>` or `/receipts/<id>/matches` to review history/current staleness. Stale retries conflict; reads never alter history. Same request/state returns the same proposal. Matching never mutates financial balances/statuses or applies a proposal. Existing partial balances can be compared but no partial/subset solver exists.
+
+Run **all required checks** with one cross-platform command:
+
+```powershell
+uv sync --frozen
+uv run --frozen python scripts/verify.py
+```
+
+The runner loads TEST_DATABASE_URL from the environment or ignored .env and requires PostgreSQL CREATEDB privileges. It runs lock/dependency checks, Ruff lint/format, strict mypy for money/the pure matcher, and the full test suite including PostgreSQL migration up/down/up, schema drift, integrity, concurrency, tenant isolation and financial non-mutation. It never downgrades the development DB. Concise progress is printed; full redacted output is saved under ignored `local-data/verification/`. Missing PostgreSQL configuration or any failed check fails the command; there is no unit-only fallback in full verification.
+
+`.github/workflows/verify.yml` runs the same command on GitHub Actions with Python 3.12 and ephemeral PostgreSQL 16.15, retaining check logs. Running it on GitHub requires a user-authorized push/workflow action; no automatic push is performed and local success does not claim remote CI execution. Static typing is focused on pure financial code; ORM/API correctness remains covered by existing/new lint and regression/integration checks without broad ignores.
+
+## Planning pack workflow
+
+The original planning-pack instructions below remain historical guidance for future milestone tasks. Completed milestones and current commands are documented above and in STATUS.
 
 1. Create/open a new repository named `clearledger` in Codex. Put every file in this starter pack at the repository root, preserving directories.
 2. Read `PROJECT_SPEC.md`, `AGENTS.md`, `PLANS.md`, and `docs/DOMAIN_AND_ACCOUNTING.md`.

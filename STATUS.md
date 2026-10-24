@@ -1,8 +1,8 @@
 # Build status
 
-- Repo state: **Milestone 01 financial data engine implemented; dataset construction belongs exclusively to Argon.**
-- Current milestone: **01 — implementation verified; stop before milestone 02**.
-- Verified checks: **83 tests passed against Docker PostgreSQL 16.15; strict imports, duplicates/concurrency, tenant isolation, API integration, DB guards, migrations, schema drift, live health/ready, restart persistence, lint/format and dependencies passed.**
+- Repo state: **Milestone 02 deterministic verified customer resolution and exact matching proposals implemented; dataset construction belongs exclusively to Argon.**
+- Current milestone: **02 — verified; stop before milestone 03**.
+- Verified checks: **126 tests passed against Docker PostgreSQL 16.15; full regression/matching/ambiguity/isolation/concurrency/non-mutation/migration/integrity checks, strict domain mypy, Ruff lint/format and dependency checks passed through the reusable verification command.**
 - External integrations: **None**.
 - Open decisions: Exact email extraction model and tax rule references to be selected/verified in later phases. Use stub extractors for local tests.
 
@@ -11,7 +11,7 @@
 |---|---|---|---|
 | 00 | Implemented; Docker verification passed | See verification logs below | No milestone 01 work started |
 | 01 | Implemented; verified | 83 tests, migrations/restart, Ruff and dependency checks passed; details below | No dataset generated, fetched, curated or seeded |
-| 02 | Not started | — | — |
+| 02 | Implemented; full local verification passed | 126 tests, strict domain types, lint/format, dependencies and migration checks | GitHub Actions configured; remote execution unverified |
 | 03 | Not started | — | — |
 | 04 | Not started | — | — |
 | 05 | Not started | — | — |
@@ -304,3 +304,82 @@ Import commands: see the exact raw-CSV curl example in `docs/DATA_CONTRACT.md` a
 - The database owner can administer/disable triggers; immutability guards protect ordinary application operations, not a hostile DB administrator. Per-company import serialization is a deliberate conservative local-development choice.
 - Completion checkpoint: **`92b21c729e18859f173e88f473caaeaba72a017d`**, message `feat: implement milestone 01 financial data engine`, on `feat/milestone-01-data-engine`. Before committing, reviewed/staged exactly 24 intended files, ran `git diff --cached --check`, and checked staged content against the actual local password and excluded paths. No secrets, dataset files, old fixture changes or unrelated files were staged. All required checks had passed (83 tests, migrations/restart, lint/format/dependencies). This documentation-only follow-up records the completion hash; no product code changed afterward.
 - STOP after milestone 01. Do not start milestone 02 automatically.
+
+## Milestone 02 — deterministic exact matching (2026-10-25)
+
+This task explicitly authorized milestone 02 and supersedes the historical milestone 01 stop/current-state notes above. Work began from clean checkpoint `9dccb7a` on new branch **`feat/milestone-02-exact-matching`**; earlier history/branches were preserved. No remote push was attempted.
+
+### Implemented behavior and design decisions
+
+- The requested `prompts/02-exact-matching.md` did not exist; the repository had `02-entity-and-exact-match.md`. Read and retained the original, added the requested canonical filename incorporating the user's expanded requirements, linked both and clarified PLANS that this milestone creates proposals only.
+- Added pure `matching_domain.py`, with strict integer validation and deterministic EXACT_MATCH / AMBIGUOUS / NO_SUPPORTED_MATCH plus RESOLVED / AMBIGUOUS / UNRESOLVED identity. Identity derives only from source-checked verified alias records or explicit local customer/reference attestations. Unknown payer, amount-only uniqueness, conflicting owners/intent, closed/zero/future/unequal invoices and unavailable cash abstain. Explicit verified invoice intent can disambiguate equal-amount invoices. No subset/partial search or later milestone was added.
+- `matching.py`, `matching_schemas.py` and `matching_api.py` implement bounded, company-scoped evidence verification, match trigger/context/history and proposal reads. Citations must refer to this receipt's original accepted CSV source/row/field and a valid bounded character span. Rehash raw bytes, reparse typed rows and check semantic payloads/timestamps/customer association. A complete invoice number must be delimited, not a prefix/suffix of another identifier. The operator explicitly verifies customer/intent; bank text is never executable instructions or automatic authority.
+- Added immutable matching_evidence, matching_proposals and matching_requests, source-linked audit events and company/ownership FKs. Unique request keys and receipt/snapshot identities plus company advisory locks protect replay/concurrent requests. Shared row locks stabilize current inputs; receipt and selected-invoice expected versions are required for exact proposals. Optional expected snapshot hash supports a prior-read precondition.
+- Proposal snapshots retain actual receipt/invoice balances/status/currency/versions, customer and source identity, algorithm and evidence basis/validity. Reads compute staleness without changing stored proposals; balance changes **without** a version bump and new evidence are detected. Stale retries conflict. Same key/body/state returns the same proposal without another audit/request write; new keys on unchanged state share the same proposal. Reverification of identical source/target at newer aggregate versions adds history and supersedes only that locator's older verification; different targets still conflict.
+- No matching operation changes customer, invoice, bank, receipt balances/statuses/versions, creates an allocation, recognizes bank cash or posts a journal. Already-partial balances can be compared for exact current equality; nothing is applied. Limits of 100 evidence / 1000 candidate invoices fail closed when exceeded.
+- Existing CSV import schemas/contract **1.0** remain compatible; no dataset schema change is required from Argon. New matching metadata fields/API are specified in `docs/MATCHING.md`, linked from DATA_CONTRACT/API docs and README. Only tiny isolated application fixtures were added. No datasets or existing fixture contents were generated, downloaded, researched, curated, seeded or modified. Original demo SHA-256 is still `4A3C91AF85AEFEAD5EFF0D1CDB28FBEDE190E995445E2F98AF54568EFB31C6DA`.
+
+### Quality infrastructure
+
+- Cross-platform full command: **`uv run --frozen python scripts/verify.py`** (this workspace also has `./.venv/Scripts/uv.exe`). It loads TEST_DATABASE_URL from environment/ignored .env, requires PostgreSQL/CREATEDB, runs lock/dependency consistency, Ruff lint/format, strict mypy and the entire pytest suite with `--require-postgres`. Full logs are redacted and saved under ignored `local-data/verification/`; concise PASS/FAIL lines are printed. Missing DB configuration or any failed check fails verification; no integration-test fallback.
+- Added mypy **1.20.2** to the locked development dependencies; strict checking currently covers `money.py` and `matching_domain.py` (2 source files), with no broad ignores or weakened checks. Existing ORM/API behavior stays covered by regression/integration checks. No runtime agent/framework dependency was added.
+- `.github/workflows/verify.yml` runs that same command on Python 3.12 with ephemeral PostgreSQL 16.15, installs the frozen lock and uploads check logs. Permissions are read-only. Its password is a nonsecret, job-local ephemeral CI service value, not development/production credentials. No actual local credentials are in the workflow. Remote GitHub Actions execution is **unverified** because this task does not push or dispatch a workflow.
+
+### Actual commands and observed results
+
+Focused development check (detailed output in ignored `local-data/milestone02-focused.log`):
+```powershell
+$env:TEST_DATABASE_URL = & ./.venv/Scripts/python.exe -c "from dotenv import dotenv_values; print(dotenv_values('.env')['TEST_DATABASE_URL'])"
+./.venv/Scripts/python.exe -m pytest tests/test_matching_domain.py tests/test_matching.py -q --require-postgres
+# 33 passed, 1 existing upstream warning in 8.64s (before additional boundary tests).
+```
+
+Dependency install: `$env:UV_CACHE_DIR="$PWD/.uv-cache-clean"; ./.venv/Scripts/uv.exe sync` resolved 41 packages and installed mypy/mypy-extensions/librt/pathspec; lockfile updated. Network-enabled execution was approved for the downloads. Migration generation compared metadata against a generated disposable DB at 0002, never the development DB.
+
+Final complete command:
+```powershell
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+```
+
+Observed concise output: **lock PASS; dependencies PASS; lint PASS; format PASS; types PASS; tests/migrations PASS**. Detailed final log:
+`local-data/verification/20261024T203050245983Z.log` (filename uses UTC).
+
+Final results in that log:
+```text
+Resolved 41 packages in 1ms
+Checked 42 packages in 3ms; All installed packages are compatible
+All checks passed!
+56 files already formatted
+Success: no issues found in 2 source files
+126 passed, 1 warning in 21.69s
+```
+
+The complete suite includes all 83 pre-existing tests plus 43 matching/domain tests. No existing test was deleted/weakened and no test was skipped. Covers exact single invoices/known aliases/direct references/manual mappings, ambiguity/conflicting references and customers, wrong ownership, amount-only abstention, paid/closed/future/partial balances, strict float/bool rejection and integer extremes, stale versions and unbumped balance changes, new/superseding evidence, exact and different-key idempotence, concurrent evidence/proposals, cross-company reads/FKs, bounded search, transport/quote/span/hash validation, immutable records (including TRUNCATE), and unchanged financial records on match/replay/GET. The corruption test bypasses a trigger only inside its disposable DB to verify digest detection; development/source data is not altered. PostgreSQL NULL invoice-version rejection is tested explicitly.
+
+The full suite also executes committed upgrade → downgrade base → upgrade head, table/metadata drift and existing integrity checks on disposable databases, plus the live Uvicorn /health and /ready smoke. No unexecuted check is claimed passed. An earlier full run passed 121 tests before the final identifier-boundary/NULL guard assertions were added; the final run above includes them.
+
+Development migration was then applied additively and logged to ignored `local-data/milestone02-migrations.log`:
+```powershell
+./.venv/Scripts/python.exe -m alembic upgrade head
+./.venv/Scripts/python.exe -m alembic current
+./.venv/Scripts/python.exe -m alembic check
+# 0003_exact_matching (head); No new upgrade operations detected.
+docker compose ps
+# clearledger-db-1 healthy; 127.0.0.1:5432->5432/tcp
+docker compose exec -T db psql -U clearledger -d clearledger -Atc "SELECT version_num FROM alembic_version; SELECT count(*) FROM pg_database WHERE datname LIKE 'clearledger_test_%';"
+# 0003_exact_matching; 0 disposable databases remain.
+git diff --check
+# Passed.
+git check-ignore .env .mypy_cache local-data/verification/example.log .local-runtime datasets/example.csv
+# All listed paths ignored.
+```
+
+No development database reset/downgrade or existing portable PostgreSQL modification occurred. Detailed logs remain local rather than being committed/pasted into the chat.
+
+### Files and limitations
+
+Changed: `models.py`/`main.py`, new matching domain/service/schema/API modules, additive 0003 migration, new focused tests, pyproject/uv.lock, scripts/verify.py, GitHub Actions workflow, canonical milestone prompt, PLANS, README, DATA_CONTRACT/API docs and new MATCHING.md. Existing import/money behavior and fixtures remain intact.
+
+Remaining limits: local operator IDs/verification assertions are not authenticated identities or approvals; no proposal execution exists. Staleness is a read-time snapshot observation, and future financial application must independently revalidate/authorize. Candidate budgets abstain conservatively; general evidence revocation/correction is deferred. The DB owner can disable triggers; ordinary app operations cannot. Static typing intentionally covers pure financial modules, not every legacy ORM/API function. Remote Linux/GitHub Actions execution and Argon dataset imports are unverified. The one pre-existing upstream Starlette/HTTPX deprecation warning remains; no required local check is failing.
+
+Git: verified feature commit will be recorded in an immediate documentation-only follow-up after staged diff/secret review, as permitted by AGENTS. STOP after milestone 02; milestone 03 has not started.
