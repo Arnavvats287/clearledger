@@ -8,6 +8,8 @@
 
 ## Milestone 03 — advanced deterministic matching · 2026-10-25
 
+Verified implementation checkpoint: **`e28c359c708a4b9d5e4d58dc4f4eef40e992294a`**, message `feat: implement milestone 03 advanced matching`, branch `feat/milestone-03-advanced-matching`. Staged/reviewed exactly 22 intended files after all required checks passed; staged whitespace, actual local-secret exclusions and dataset/runtime exclusions passed. No unrelated changes or push. This documentation-only follow-up records the hash; no application changes followed final verification.
+
 Started from verified `52be8c9`. The pre-existing `feat/milestone-03-advanced-matching` branch was fast-forwarded from its ancestor `8ff6687`; no branch/history was overwritten or reset. The sections below this milestone entry are historical observations from their named tasks and do not override this current status.
 
 Implemented additive GET `/receipts/{id}/advanced-matching-context` and POST `/receipts/{id}/match-advanced`, retaining exact-v1 endpoints/results/body fingerprints. Reuses existing source/alias/reference verification, company transaction locks, scoped FKs, request mappings, audit events and immutable proposal history. New pure, strictly typed `advanced_domain.subsets` uses integer-paise meet-in-the-middle enumeration with a complementary-sum index, avoiding target-paise-sized DP memory and new dependencies. JSON candidates are proposals only: top-level amount remains zero and invoice selection null; no financial status/version/balance, receipt allocation or journal is mutated.
