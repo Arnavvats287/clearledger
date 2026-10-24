@@ -54,6 +54,8 @@ G2/G3 are closed by explicit acceptance evidence, not simply a larger test count
 
 ## G2/G3 hardening evidence (2026-10-25)
 
+Verified hardening checkpoint: **`71059c5098d30eb4d7ad4baca47d259a61dbf383`** on `test/milestone-01-02-hardening`. This documentation-only follow-up records its hash; no application changes followed verification.
+
 - `tests/test_restart_persistence.py`: imports through a real Uvicorn process, terminates that process and disposes its verifier pool, reads through a new engine/backend connection and a second Uvicorn PID. Compares every persisted financial/source/audit column and original bytes/digests, then retries the same import keys and a renamed bank file with a new key. No duplicate customer/invoice/bank/receipt is created; original audit records remain identical, with only expected replay/duplicate events appended.
 - `tests/test_matching_concurrency.py`: holds the real company lock until two distinct sessions are both observed waiting on it, then releases them. Both different-key requests successfully return the same immutable proposal (documented serialized equivalent semantics), with one audit creation event, two key mappings and no financial mutation. Subsequent retries preserve all records; direct duplicate-snapshot insertion and history updates are rejected by DB constraints/triggers.
 - `tests/conftest.py`: `pool_pre_ping=True` reconnects the administrative fixture pool for cleanup after a real PostgreSQL restart. Existing assertions and failure behavior remain intact.
