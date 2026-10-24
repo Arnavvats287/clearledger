@@ -42,6 +42,8 @@ If docs conflict, stop and explicitly document the conflict. Do not invent polic
 - No shell commands that delete user data, no deployments, no git push, no purchases, no production credentials or external writes without explicit approval.
 
 ## Work protocol for EVERY milestone
+Treat the existing milestone prompt files as implementation checklists, including their tests and exit gates. Preserve original requirements unless an explicit user-approved scope change supersedes them; record the change in the relevant specification and `REQUIREMENTS_AUDIT.md`. Transferring dataset ownership to Argon does not waive benchmark coverage, financial/security invariants, or verification. Unverified acceptance criteria stay open; passing tests are not blanket evidence of completeness.
+
 1. Read the relevant documents and inspect current code.
 2. State the intended files to change and relevant tests; proceed within the assigned milestone.
 3. Implement smallest complete functionality with focused tests, including negative cases.

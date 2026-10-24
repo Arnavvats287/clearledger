@@ -1,5 +1,7 @@
 # CODEX TASK 03 — Bounded multi-invoice candidate search
 
+This original checklist, all tests and the worst-case benchmark exit gate remain required. `03-advanced-matching.md` records the explicitly requested extensions and outcome-name crosswalk; it does not remove this checklist or permit uniqueness without exhaustive search/evidence.
+
 Read the specs and state; task 02 must be verified.
 
 ## Goal

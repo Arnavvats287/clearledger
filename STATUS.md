@@ -1,17 +1,17 @@
 # Build status
 
-- Repo state: **Milestone 02 deterministic verified customer resolution and exact matching proposals implemented; dataset construction belongs exclusively to Argon.**
-- Current milestone: **02 — verified; stop before milestone 03**.
-- Verified checks: **126 tests passed against Docker PostgreSQL 16.15; full regression/matching/ambiguity/isolation/concurrency/non-mutation/migration/integrity checks, strict domain mypy, Ruff lint/format and dependency checks passed through the reusable verification command.**
+- Repo state: **Milestone 00–02 local implementation audited; open assurance/authority limits G1–G4 are recorded in REQUIREMENTS_AUDIT.md. Dataset construction remains exclusively Argon's.**
+- Current task: **Specification-alignment audit only; milestone 03 implementation has not started. Stop after audit.**
+- Verified checks: **Fresh audit run: 126 tests passed against Docker PostgreSQL, strict domain mypy, Ruff lint/format, lock/dependency and disposable migration checks passed. Passing tests do not close the audit's identified gaps.**
 - External integrations: **None**.
 - Open decisions: Exact email extraction model and tax rule references to be selected/verified in later phases. Use stub extractors for local tests.
 
 ## Completion log
 | Milestone | Status | Verified commands/results | Notes |
 |---|---|---|---|
-| 00 | Implemented; Docker verification passed | See verification logs below | No milestone 01 work started |
-| 01 | Implemented; verified | 83 tests, migrations/restart, Ruff and dependency checks passed; details below | No dataset generated, fetched, curated or seeded |
-| 02 | Implemented; full local verification passed | 126 tests, strict domain types, lint/format, dependencies and migration checks | GitHub Actions configured; remote execution unverified |
+| 00 | Implemented; local foundation verified | Historical foundation/Docker logs and current regressions below | No production-readiness claim |
+| 01 | Application/import tests verified; acceptance evidence qualified by audit | 83 historical tests; current suite retained | G2: full financial-import restart coverage remains open; no dataset generated |
+| 02 | Local implementation/tests verified; audit qualifications remain open | 126 tests, strict domain types, lint/format, dependencies and migrations | G1/G3 authority/coverage limits; G4 remote CI unverified |
 | 03 | Not started | — | — |
 | 04 | Not started | — | — |
 | 05 | Not started | — | — |
@@ -382,4 +382,29 @@ Changed: `models.py`/`main.py`, new matching domain/service/schema/API modules, 
 
 Remaining limits: local operator IDs/verification assertions are not authenticated identities or approvals; no proposal execution exists. Staleness is a read-time snapshot observation, and future financial application must independently revalidate/authorize. Candidate budgets abstain conservatively; general evidence revocation/correction is deferred. The DB owner can disable triggers; ordinary app operations cannot. Static typing intentionally covers pure financial modules, not every legacy ORM/API function. Remote Linux/GitHub Actions execution and Argon dataset imports are unverified. The one pre-existing upstream Starlette/HTTPX deprecation warning remains; no required local check is failing.
 
-Git: verified feature commit will be recorded in an immediate documentation-only follow-up after staged diff/secret review, as permitted by AGENTS. STOP after milestone 02; milestone 03 has not started.
+Milestone 02 feature checkpoint is `8ff66873e866db025317d40a12588c4918bb2a4c`; its later status-only checkpoint `0772dfd` remains on the milestone 02 branch. The audit branch was created from the requested feature checkpoint, so that documentation-only descendant was not initially in its ancestry. No product code differs. Audit qualifications below supersede blanket completion readings of the historical notes. Milestone 03 has not started.
+
+## Specification-alignment audit — 2026-10-25
+
+User paused milestone 03 and requested an audit only. Created `chore/requirements-audit` from `8ff6687`; the untouched `feat/milestone-03-advanced-matching` branch remains at that verified milestone 02 checkpoint. No advanced matching code, schema, test or dataset changes were made; no branch/history was reset or overwritten.
+
+Read AGENTS, PROJECT_SPEC, PLANS, STATUS, every existing milestone prompt and relevant architecture/domain/accounting/security/tax/API/matching/data-contract/evaluation docs. Compared original prompts at `a545b42` with actual code, named tests and feature/status commits. `REQUIREMENTS_AUDIT.md` contains the requirement-to-code/test/checkpoint matrix, approved changes, unintended specification regression, deferred requirements and blockers.
+
+Open findings (not silently closed):
+- **G1:** local actor/alias verification labels are unauthenticated assertions, not normative authenticated authority. This blocks trusted real-data/shared use and any approval/posting, regardless of the later role-workflow milestone. Source consistency does not authenticate an external verifier.
+- **G2:** restart persistence was demonstrated with an organization/volume probe; imported invoice/receipt/source/audit values and digests have no dedicated container-restart acceptance test. SQL/session persistence is tested; no data-loss failure is alleged. That financial recovery acceptance evidence remains partial.
+- **G3:** simultaneous same-key matching is tested and different keys reuse proposals sequentially; no dedicated simultaneous different-key/same-state proposal test exists. Locks/DB uniqueness exist; this is an assurance gap, not an observed duplicate-proposal bug. Report/resolve before extending matching claims.
+- **G4:** remote GitHub/Linux CI and Argon dataset/benchmark execution remain unverified. No automatic external action is authorized or performed.
+
+Specification alignment only:
+- Restored original evaluation sizes/holdouts omitted during the Argon ownership rewrite, as **Argon-owned** requirements in EVALUATION: 50 customers, ~2000 invoices, ~500 receipts, ≥250 situations (original developer-size allowance retained), ≥100 documents and ≥30 attack/abuse scenarios. No dataset was constructed and no target is claimed achieved.
+- Added `prompts/03-advanced-matching.md` as the approved extension/crosswalk to the intact original 03 checklist, preserving top-K/exhaustiveness, explicit remittance-driven partials, all original tests and worst-case-cap benchmark. This is specification work, not milestone 03 implementation. Approved outcome names cannot turn mathematical uniqueness into evidence-backed intent or treat budget exhaustion as proof.
+- AGENTS/PLANS now explicitly preserve original prompt requirements/tests/exit gates unless an approved change supersedes them. The expanded 02 prompt explicitly retains the original checklist. Clarified the 08/09 dependency: authorization must exist before posting is enabled; the review-workflow schedule is not a waiver. No architecture rewrite or security exception was introduced.
+
+Actual fresh verification command:
+```powershell
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+```
+Observed **lock/dependencies/lint/format/types/tests-migrations PASS**; **126 passed, 1 existing upstream Starlette/HTTPX warning in 24.96s**, no skipped tests. Full redacted local log: `local-data/verification/20261024T205239565998Z.log` (UTC filename). Historical old-checkpoint counts were checked from their recorded STATUS evidence, not falsely described as fresh executions of old checkouts. No application tests were weakened/deleted or new product tests added. No development migration/reset/restart or portable PostgreSQL change was performed by this audit.
+
+Audit files only: AGENTS, PLANS, REQUIREMENTS_AUDIT, STATUS, evaluation spec and milestone prompt alignment. Financial/source data and existing fixture contents remain untouched. Git audit checkpoint will be recorded in a documentation-only follow-up after staged-file/secret inspection. Stop here; gaps are reported and milestone 03 is not automatically resumed.

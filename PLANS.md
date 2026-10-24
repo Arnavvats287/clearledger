@@ -18,6 +18,7 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 | 11 | Evaluation + hardening | Consume Argon's frozen dataset/ground truth; deterministic vs single-agent vs directed ablation; property, security and e2e tests; report limitations. |
 
 ## Dependency and sequencing notes
+- Existing milestone prompts, including original tests and exit gates, remain the implementation checklists; approved scope changes and open gaps are traced in `REQUIREMENTS_AUDIT.md`. Do not silently waive requirements or infer completion from a passing test count.
 - Argon owns all demonstration/evaluation dataset research and construction. Codex must not generate, download, curate or seed datasets; only minimal isolated code-test fixtures are permitted. Data imports follow `docs/DATA_CONTRACT.md`.
 - Milestone 00 should not add LangGraph or LLM keys; milestone 03 should not add tax rules.
 - Import bank transactions and maintain an unapplied balance BEFORE allowing allocation.
@@ -25,6 +26,7 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 - From milestone 06, Investigator only gets typed allowlisted read-only functions, never raw SQL.
 - From milestone 08, simulate a bank receipt ledger or reconciliation trace separate from clearing, avoiding duplicate bank entries.
 - Never turn a synthetic approved withholding fixture into a general TDS compliance assertion.
+- Authenticated actor/role and maker-checker requirements remain normative. Current local actor labels are not authentication. Milestone 08 must not expose unrestricted simulated posting merely because the full review workflow is scheduled for milestone 09; the authorization gate is required before any posting is enabled.
 
 ## Evaluation tripwires
 Incorrect autonomous customer resolution, duplicate cash application, over-allocation, unbalanced posting, unsupported writeoff, fabricated citation accepted, or unauthorized approval is a BLOCKER. Address before moving on.

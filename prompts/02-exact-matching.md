@@ -2,6 +2,8 @@
 
 Canonical milestone 02 prompt (the older `02-entity-and-exact-match.md` remains a reference). Read AGENTS, STATUS, PLANS, architecture/domain/accounting, API and DATA_CONTRACT before modifying code. Build on the verified milestone 01 substrate; do not redesign imports or generate datasets.
 
+The original prompt's numbered requirements, tests and exit gates remain required. This expanded prompt adds the explicitly requested persistence/concurrency/quality infrastructure; it does not waive the original checklist. See `REQUIREMENTS_AUDIT.md` for traceability and verification limits.
+
 ## Implement
 1. Resolve customers only from verified alias/mapping evidence or source-backed, explicitly verified invoice references. Keep identity and invoice intent separate. Source names/memos/amounts alone are untrusted hints; equal amounts do not prove intent. Return customer candidates and verification basis.
 2. Pure deterministic single-invoice matching in integer paise; explicit EXACT_MATCH, AMBIGUOUS and NO_SUPPORTED_MATCH outcomes/reasons. Require verified reference intent and exact current invoice-open/receipt-unapplied equality. Handle conflicting identity/intent, unknown payer, wrong customer, multiple same-amount invoices, closed/zero/future invoices and unsupported amounts. Bounded incomplete search must abstain.
