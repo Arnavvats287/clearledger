@@ -116,7 +116,8 @@ def evidence_valid(evidence, receipt, bank, customers, invoices):
     )
 
 
-def build_snapshot(session, organization_id, receipt_id):
+def build_snapshot(session, organization_id, receipt_id, *, advanced=False, invoice_budget=None):
+    invoice_budget = INVOICE_BUDGET if invoice_budget is None else invoice_budget
     receipt = owned(session, Receipt, organization_id, receipt_id)
     bank = owned(session, BankTransaction, organization_id, receipt.bank_transaction_id)
     source_ok = bank_valid(session, organization_id, bank)
@@ -165,8 +166,15 @@ def build_snapshot(session, organization_id, receipt_id):
         if referenced_ids
         else query.where(Invoice.customer_id.in_(customer_ids))
     )
+    if advanced and not referenced_ids:
+        query = query.where(
+            Invoice.status == "OPEN",
+            Invoice.open_amount_paise > 0,
+            Invoice.currency == "INR",
+            Invoice.issued_date <= bank.occurred_at.astimezone(ZoneInfo("Asia/Kolkata")).date(),
+        )
     invoice_rows = session.scalars(
-        query.order_by(Invoice.id).limit(INVOICE_BUDGET + 1).with_for_update(read=True)
+        query.order_by(Invoice.id).limit(invoice_budget + 1).with_for_update(read=True)
     ).all()
     invoices = {row.id: row for row in invoice_rows}
     owners, references, basis = set(), set(), []
@@ -324,6 +332,33 @@ def build_snapshot(session, organization_id, receipt_id):
         "basis": basis,
         "decision": json.loads(json.dumps(asdict(decision), default=str)),
     }
+    if advanced:
+        evidence_by_id = {str(row.id): row for row in evidence}
+        for value in basis:
+            row = evidence_by_id.get(value["id"])
+            if row is not None:
+                value.update(
+                    invoice_id=str(row.invoice_id) if row.invoice_id else None,
+                    receipt_version=row.receipt_version,
+                    customer_version=row.customer_version,
+                    invoice_version=row.invoice_version,
+                    source_import_id=str(row.source_import_id),
+                    source_row=row.source_row,
+                    source_field=row.source_field,
+                    start_offset=row.start_offset,
+                    end_offset=row.end_offset,
+                    exact_quote=row.exact_quote,
+                )
+        for value, row in zip(snapshot["invoices"], invoice_rows, strict=True):
+            value["invoice_number"] = row.invoice_number
+        snapshot.pop("decision")
+        snapshot["validation"] = {
+            "invalid_evidence": invalid,
+            "customers": sorted(str(value) for value in owners),
+            "references": sorted(str(value) for value in references),
+            "input_limit_exceeded": len(evidence) > EVIDENCE_BUDGET
+            or len(invoice_rows) > invoice_budget,
+        }
     return receipt, bank, snapshot
 
 

@@ -1,5 +1,9 @@
 # ClearLedger
 
+Milestone 03 adds proposal-only advanced matching. After migrations, use `GET /receipts/<id>/advanced-matching-context`, then `POST /receipts/<id>/match-advanced` with `X-Actor-ID`, UUID `Idempotency-Key`, `expected_receipt_version` and `expected_invoice_versions` for all returned candidate invoices. Include the optional context hash for an optimistic snapshot precondition. Existing `/match` behavior is unchanged. [Matching contract](docs/MATCHING.md#advanced-matching--milestone-03--advanced-mitm-v1) documents complete JSON examples, source-backed multi-reference/partial instructions, search limits and review-only outcomes. CSV contract v1.0 remains compatible; no Argon dataset is bundled or modified.
+
+Run `uv run --frozen python scripts/verify.py` for the full gate, `uv run --frozen python scripts/verify_isolated_restart.py` for the separate owned-container restart check, and `uv run --frozen python scripts/benchmark_matching.py` for numeric algorithm timings (local logs under `local-data/verification`). Optional `MATCHING_LIMITS` JSON in `.env.example` configures bounded search; hard ceilings prevent unbounded enumeration. Neither matching API applies cash or settles AR.
+
 A **local, single-company, INR-only AR cash application and deduction investigation system**. Milestone 02 adds deterministic verified customer resolution and exact single-invoice proposals to the financial data/import engine. Proposals never apply cash or change AR; subsequent financial workflows remain for later milestones.
 
 ## Milestone 00: local setup

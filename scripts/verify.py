@@ -37,6 +37,7 @@ def main():
         ("lint", [sys.executable, "-m", "ruff", "check", "."]),
         ("format", [sys.executable, "-m", "ruff", "format", "--check", "."]),
         ("types", [sys.executable, "-m", "mypy"]),
+        ("matching-bounds", [sys.executable, "scripts/benchmark_matching.py"]),
         ("tests/migrations", [sys.executable, "-m", "pytest", "-ra", "--require-postgres"]),
     ]
     # Redact local connection strings/passwords if a failing tool echoes one.

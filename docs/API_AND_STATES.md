@@ -2,6 +2,8 @@
 
 Milestone 02's implemented verification, matching and stale-snapshot endpoints are specified in [MATCHING.md](MATCHING.md). They create proposals only; exact matching does not enable the later allocation/posting transitions below.
 
+Milestone 03 adds GET `/receipts/{id}/advanced-matching-context` and POST `/receipts/{id}/match-advanced` using the same evidence, actor/idempotency and proposal-history conventions. Advanced outcomes are UNIQUE/AMBIGUOUS/UNRESOLVED/SEARCH_INCOMPLETE with explicit search completeness, intent and candidate allocations; details/bounds/partial evidence are in MATCHING. These are immutable analysis outcomes, not receipt/case/posting state transitions. Exact-v1 remains unchanged and no financial application endpoint is enabled.
+
 ## Stable identifiers and fields
 Internal IDs are UUIDs (or consistent server-generated IDs); external references (UTR, invoice number, BOL reference) are scoped to the organization and source system. Amounts: `amount_paise: int`, currency fixed to `INR`. Created/occurred times are stored as UTC timestamps with the original timezone/source text kept as provenance; financial dates use the relevant India local calendar. Every mutable aggregate has `version: int`.
 

@@ -34,5 +34,5 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["src/clearledger/money.py", "src/clearledger/matching_domain.py"]
+files = ["src/clearledger/money.py", "src/clearledger/matching_domain.py", "src/clearledger/advanced_domain.py"]
 

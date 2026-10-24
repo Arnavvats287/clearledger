@@ -308,7 +308,8 @@ class MatchingProposal(ScopedRecord, Base):
             "organization_id", "receipt_id", "snapshot_sha256", name="uq_matching_proposal_snapshot"
         ),
         CheckConstraint(
-            "outcome IN ('EXACT_MATCH','AMBIGUOUS','NO_SUPPORTED_MATCH')",
+            "outcome IN ('EXACT_MATCH','AMBIGUOUS','NO_SUPPORTED_MATCH',"
+            "'UNIQUE','UNRESOLVED','SEARCH_INCOMPLETE')",
             name="ck_matching_proposal_outcome",
         ),
         CheckConstraint(

@@ -44,3 +44,7 @@ class MatchInput(BaseModel):
         default_factory=dict
     )
     expected_snapshot_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
+
+
+class AdvancedMatchInput(MatchInput):
+    use_structured_allocations: Annotated[bool, Field(strict=True)] = False

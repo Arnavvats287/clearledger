@@ -20,9 +20,12 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def disposable_database(request):
-    """Only DROP a generated database, never the database from the supplied URL."""
+    """One DB per test: migration roundtrips must not consume another test's history.
+
+    Only DROP a generated database, never the database from the supplied URL.
+    """
     configured_url = os.environ.get("TEST_DATABASE_URL")
     if not configured_url:
         if request.config.getoption("--require-postgres"):

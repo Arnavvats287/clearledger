@@ -1,12 +1,14 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, Query, Request
 from sqlalchemy import select
 
+from clearledger.advanced_domain import DEFAULT_LIMITS
+from clearledger.advanced_matching import ALGORITHM, context, create_advanced
 from clearledger.api import DB, Scope
 from clearledger.matching import build_snapshot, create_proposal, digest, owned, register_evidence
-from clearledger.matching_schemas import EvidenceInput, MatchInput
+from clearledger.matching_schemas import AdvancedMatchInput, EvidenceInput, MatchInput
 from clearledger.models import MatchingEvidence, MatchingProposal, Receipt
 from clearledger.views import RecordView
 
@@ -49,7 +51,16 @@ class ProposalView(RecordView):
     current_snapshot_sha256: str = ""
 
 
-def proposal_payload(session, organization_id, proposal, current_hash=None):
+def proposal_payload(session, organization_id, proposal, current_hash=None, limits=DEFAULT_LIMITS):
+    if current_hash is None and proposal.snapshot.get("algorithm") == ALGORITHM:
+        _, _, current = context(
+            session,
+            organization_id,
+            proposal.receipt_id,
+            limits,
+            proposal.snapshot["use_structured_allocations"],
+        )
+        current_hash = digest(current)
     if current_hash is None:
         _, _, current = build_snapshot(session, organization_id, proposal.receipt_id)
         current_hash = digest(current)
@@ -106,11 +117,45 @@ def match_receipt(
     return proposal_payload(session, organization_id, proposal)
 
 
+@router.get("/receipts/{receipt_id}/advanced-matching-context")
+def advanced_context(
+    receipt_id: UUID,
+    session: DB,
+    organization_id: Scope,
+    request: Request,
+    use_structured_allocations: bool = False,
+):
+    _, _, snapshot = context(
+        session,
+        organization_id,
+        receipt_id,
+        request.app.state.settings.matching_limits,
+        use_structured_allocations,
+    )
+    return {"snapshot": snapshot, "snapshot_sha256": digest(snapshot)}
+
+
+@router.post("/receipts/{receipt_id}/match-advanced", response_model=ProposalView)
+def advanced_match(
+    receipt_id: UUID,
+    body: AdvancedMatchInput,
+    session: DB,
+    organization_id: Scope,
+    actor: Actor,
+    key: Key,
+    request: Request,
+):
+    limits = request.app.state.settings.matching_limits
+    proposal = create_advanced(session, organization_id, receipt_id, body, key, actor, limits)
+    return proposal_payload(session, organization_id, proposal, limits=limits)
+
+
 @router.get("/receipts/{receipt_id}/matches", response_model=list[ProposalView])
 def proposal_list(
     receipt_id: UUID,
     session: DB,
     organization_id: Scope,
+    request: Request,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
@@ -126,12 +171,24 @@ def proposal_list(
         .offset(offset)
         .limit(limit)
     ).all()
-    return [
-        proposal_payload(session, organization_id, proposal, current_hash) for proposal in proposals
-    ]
+    limits = request.app.state.settings.matching_limits
+    hashes = {("exact-v1", False): current_hash}
+    result = []
+    for proposal in proposals:
+        mode = proposal.snapshot.get("use_structured_allocations", False)
+        identity = (proposal.snapshot["algorithm"], mode)
+        if identity not in hashes:
+            _, _, current = context(session, organization_id, receipt_id, limits, mode)
+            hashes[identity] = digest(current)
+        result.append(
+            proposal_payload(session, organization_id, proposal, hashes[identity], limits)
+        )
+    return result
 
 
 @router.get("/matching-proposals/{proposal_id}", response_model=ProposalView)
-def get_proposal(proposal_id: UUID, session: DB, organization_id: Scope):
+def get_proposal(proposal_id: UUID, session: DB, organization_id: Scope, request: Request):
     proposal = owned(session, MatchingProposal, organization_id, proposal_id)
-    return proposal_payload(session, organization_id, proposal)
+    return proposal_payload(
+        session, organization_id, proposal, limits=request.app.state.settings.matching_limits
+    )

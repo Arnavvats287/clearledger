@@ -1,10 +1,55 @@
 # Build status
 
-- Repo state: **Milestone 01–02 verification hardening closes audit gaps G2/G3. Authentication, remote CI and Argon benchmarks remain deferred/unverified (G1/G4).**
-- Current task: **Verification hardening complete; stop before milestone 03, which remains unimplemented.**
-- Verified checks: **129 tests passed against Docker PostgreSQL plus all required static/dependency/migration checks; 2 additional tests passed in a separate owned-container real PostgreSQL restart run. Shared development database was not restarted or destroyed.**
+- Repo state: **Milestone 03 implemented and locally verified. Audit G2/G3 remain closed; authentication, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
+- Current task: **Milestone 03 complete; STOP before milestone 04.**
+- Verified checks: **188 tests passed against Docker PostgreSQL; lock/dependencies, Ruff lint/format, strict domain mypy, bounded numeric benchmarks, migrations/integrity and all regressions passed. Separate owned-container restart verification: 2 passed. Shared development database was not restarted, reset or destroyed.**
 - External integrations: **None**.
 - Open decisions: Exact email extraction model and tax rule references to be selected/verified in later phases. Use stub extractors for local tests.
+
+## Milestone 03 — advanced deterministic matching · 2026-10-25
+
+Started from verified `52be8c9`. The pre-existing `feat/milestone-03-advanced-matching` branch was fast-forwarded from its ancestor `8ff6687`; no branch/history was overwritten or reset. The sections below this milestone entry are historical observations from their named tasks and do not override this current status.
+
+Implemented additive GET `/receipts/{id}/advanced-matching-context` and POST `/receipts/{id}/match-advanced`, retaining exact-v1 endpoints/results/body fingerprints. Reuses existing source/alias/reference verification, company transaction locks, scoped FKs, request mappings, audit events and immutable proposal history. New pure, strictly typed `advanced_domain.subsets` uses integer-paise meet-in-the-middle enumeration with a complementary-sum index, avoiding target-paise-sized DP memory and new dependencies. JSON candidates are proposals only: top-level amount remains zero and invoice selection null; no financial status/version/balance, receipt allocation or journal is mutated.
+
+Behavior includes full referenced groups, full-balance subsets without references, explicit single-invoice partials and source-backed structured multi-invoice partials. Remaining AR and unapplied cash are explicit. Missing/ambiguous partial instructions abstain; no discounts, taxes, write-offs or settlement authorization are inferred. Mathematical uniqueness always requires review and does not acquire verified intent. Structured amounts must come from original memo JSON, with every invoice separately attested, exact key equality, positive strict integer paise, scoped/current versions and aggregate/per-invoice capacity checks. JSON-looking referenced sources require structured mode; amount instructions cannot be silently ignored. Persisted evidence includes original source ID/row/hash, reference spans and per-amount JSON Pointers. `docs/DATA_CONTRACT.md` **v1.0 CSVs remain unchanged**; optional structured memo convention and Argon adaptation are explicit in MATCHING/DATA_CONTRACT. No Argon file or existing demo fixture was changed, generated or downloaded.
+
+Outcomes UNIQUE/AMBIGUOUS/UNRESOLVED/SEARCH_INCOMPLETE implement the approved original-name crosswalk. Complete relevant enumeration is required for mathematical uniqueness. Any candidate/evidence/size/work/time/top-K exhaustion is incomplete, including after finding one solution. A separately reported `ambiguity_proven` can coexist with truncated enumeration. Size pruning is conservative and may abstain even if a small solution exists. All feasible solutions are returned up to top-K; the next solution stops collision enumeration. No arbitrary candidate is selected.
+
+Server-configurable `MATCHING_LIMITS` JSON defaults: **32 candidates, 8 invoices per combination, 100000 work units, 100 ms search time, top-K 20**. Hard ceilings: 40/40/1000000/2000 ms/100. The clock/work budget covers combinatorial search; DB reads, provenance parsing and HTTP overhead are separate. Positive-amount pruning is safe; duplicate amounts retain distinct invoice identities. Runtime timing lives outside input hashes, so concurrent/repeated keys reuse even an incomplete stored result. Changing effective limits or financial/evidence inputs creates a new snapshot; prior proposals remain immutable and are reported stale. Inputs beyond overflow caps are explicitly unproven, never safe to apply.
+
+Migration `0004_advanced_matching` extends only the outcome constraint. Fresh disposable migration up/down/up/drift/integrity tests passed, as did upgrading existing exact-v1 financial/evidence/proposal/request/audit data, downgrading to 0003 and upgrading again with all rows unchanged. A downgrade containing newer outcomes fails atomically, preserving history. **The shared development database has not been migrated by these tests**; use `uv run --frozen alembic upgrade head` before using the advanced endpoint on an existing database. Never downgrade/reset development data for verification.
+
+Actual commands/results:
+
+```powershell
+./.venv/Scripts/python.exe -m pytest tests/test_advanced_domain.py -q
+# Final focused pure run: 22 passed (independent Hypothesis exhaustive oracle: 150 examples).
+$env:TEST_DATABASE_URL = & ./.venv/Scripts/python.exe -c "from dotenv import dotenv_values; print(dotenv_values('.env')['TEST_DATABASE_URL'])"
+./.venv/Scripts/python.exe -m pytest tests/test_advanced_matching.py::test_upgrade_legacy_history_roundtrip_and_mixed_algorithm_reads -q --require-postgres
+# 1 passed in 2.15s; legacy rows/history unchanged, mixed algorithm reads correct.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# 2 passed in 7.55s; own labelled disposable PostgreSQL restarted and removed only.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# lock/dependencies/lint/format/types/matching-bounds/tests-migrations: PASS.
+# FINAL: 188 passed, 1 existing upstream Starlette/HTTPX deprecation warning, 60.80s; no skips.
+```
+
+Full gate preserves all 129 prior tests and adds 59, covering independent subset oracles, collisions/duplicate amounts, paise/BIGINT/zero/empty edges, eligibility/identity/company isolation, explicit partials, invalid structured evidence, all bounds, timeout/work interruption after one solution, stale balances/versions/evidence/pools/configuration, key conflicts, immutable timeout replay and observed concurrent different-key sessions. Both advanced sessions were observed waiting simultaneously on the actual PostgreSQL advisory lock, then returned one proposal, two key mappings and one creation audit event with unchanged financial rows/history. Strict mypy now includes the new pure search domain. Existing CI invokes the same expanded verification gate; remote execution is still unverified.
+
+Numeric algorithm microbenchmarks (7 runs per vector; Python 3.12.14, this Windows host, default limits):
+
+| Probe | Result | Median / max ms | Max work |
+|---|---|---:|---:|
+| 24 powers-of-two inputs, target 255 (oversized values safely pruned) | UNIQUE, exhaustive | 0.0262 / 0.6731 | 63 |
+| 24 inputs, size pruning with one discovered subset | SEARCH_INCOMPLETE, size cap | 0.5372 / 0.6317 | 1792 |
+| 24 equal values, many collisions | SEARCH_INCOMPLETE, top-K cap, 20 returned | 3.1892 / 4.1873 | 9134 |
+| 32 equal values, worst configured work cap | SEARCH_INCOMPLETE, work cap | 65.6568 / 75.9238 | 100000 |
+| 33 candidates | SEARCH_INCOMPLETE, count cap | 0.0010 / 0.0043 | 0 |
+
+These are bounded numeric code probes, not realistic datasets or accuracy benchmarks, and do not promise wall time on other hardware. Clock-injection tests independently prove timeout safety. `scripts/verify.py` now runs this benchmark automatically. Local detailed logs: `local-data/verification/20261024T220457664326Z.log`, `matching-benchmark-20261024T220458872503Z.json`, `isolated-restart-20261024T215851706990Z.log`; focused legacy log `local-data/m03-migration-legacy.log`. Earlier diagnostics are retained locally, including full-gate failures `20261024T215534205964Z.log` (format-induced SQL line length, corrected) and `20261024T215610171949Z.log` (183 pass / migration roundtrip sharing another test's newer history). The latter was fixed by giving **each test its own disposable database**, without weakening the history guard or any assertion. Initial focused test queries also needed explicit tenant filters; all negative assertions were retained. All failures were corrected before completion.
+
+Separate Docker restart verification passed; shared container ID/StartedAt/RestartCount matched the pre-check snapshot. Existing portable PostgreSQL and shared financial data remain untouched. Remaining limitations: G1 locally asserted actors are unauthenticated; no trusted real-data/shared use or posting. G4 remote Actions/Linux application runtime and Argon dataset integration/accuracy benchmarks remain deferred. Bounded search may intentionally be incomplete; current source evidence is limited to existing imported structured bank fields, with document ingestion/extraction reserved for 04. No later milestone features or datasets were introduced. Git completion identifier is recorded after checkpoint review. STOP after milestone 03.
 
 ## Completion log
 | Milestone | Status | Verified commands/results | Notes |
@@ -12,7 +57,7 @@
 | 00 | Implemented; local foundation verified | Historical foundation/Docker logs and current regressions below | No production-readiness claim |
 | 01 | Local import/restart verification complete | Historical tests retained; new real process/fresh-connection/isolated-container persistence and replay checks | G2 closed; authentication/Argon benchmark claims remain deferred |
 | 02 | Local matching verification hardening complete | Different-key overlapping PostgreSQL sessions, non-mutation, immutable history and uniqueness checks; full suite 129 passed | G3 closed; G1/G4 remain deferred/unverified |
-| 03 | Not started | — | — |
+| 03 | Implemented; locally verified | 188 full tests; strict types/lint/format/dependencies; migrations/legacy history; bounded benchmark; 2 isolated restart tests | Proposal-only; G1/G4 deferred; see current entry above |
 | 04 | Not started | — | — |
 | 05 | Not started | — | — |
 | 06 | Not started | — | — |

@@ -1,5 +1,24 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 03 follow-up — 2026-10-25
+
+The original 00–02 audit/hardening below remains historical evidence. The user subsequently authorized milestone 03 from `52be8c9`; its implementation now fulfills the preserved original 03 checklist plus approved advanced extensions. No acceptance requirement was removed or dataset ownership changed. **188 tests pass**, including all 129 regressions; the expanded complete gate also passes lock/dependencies, Ruff format/lint, strict domain mypy, bounded numeric benchmarks and PostgreSQL migrations/integrity. Separate isolated-container restart verification: **2 passed**. See current STATUS for exact commands, local logs, measurements and checkpoint.
+
+| Requirement | Code / acceptance trace | Finding |
+|---|---|---|
+| 03.1 integer bounded subset matching / filtering | `advanced_domain.subsets`, `matching.build_snapshot(advanced=True)`; `test_independent_exhaustive_oracle`, `test_integer_bigint_and_existing_partial_balances`, `test_closed_future_and_other_customer_not_in_subset_pool` | Verified; meet-in-the-middle, no new dependency |
+| 03.2 all combinations up to top-K, collisions and exhaustive proof | `SearchResult`, complementary-sum enumeration; `test_exact_combinations`, `test_competing_subsets_not_arbitrarily_selected`, all limit/clock/first-solution interruption tests | Verified; truncated search never UNIQUE, even after finding one; mathematical uniqueness retains review/no intent |
+| 03.3 separately instructed partials | `advanced_matching.analyze/structured_amounts`; explicit partial, strict structured-source, unsupported short-pay and instruction-mode tests | Verified; exact referenced source amounts, residual AR/cash, no inferred discount or settlement |
+| 03.4 outcomes/count/time/work/size caps | `Limits`, `Settings.matching_limits`, `0004_advanced_matching`; configuration/hard-ceiling, large pool, timeout and worst-cap tests | Verified; primary outcome crosswalk documented, conservative size pruning/incompleteness explicit |
+| 03.5 candidate API / persistent explanation | advanced context/trigger, existing proposal/history API; idempotent/history/non-mutation tests; embedded spans, IDs, versions, source hashes and amount JSON Pointers | Verified; allocations are JSON analysis only, top-level financial amount zero; no application/posting |
+| Approved concurrency/staleness/immutability/isolation additions | `create_advanced` reuses company lock, scoped version guards/request mappings and unique snapshots; overlapping different-key sessions, stale input variants, DB immutability/duplicate constraints | Verified with actual PostgreSQL sessions; existing G3 regression unchanged |
+| Migration/backward compatibility | `test_upgrade_legacy_history_roundtrip_and_mixed_algorithm_reads`, fresh up/down/up/drift regression and `test_migration_refuses_lossy_history_downgrade` | Verified; existing exact history preserved; lossy newer-outcome downgrade refused, not rewritten |
+| Original worst-case-cap benchmark exit | `scripts/benchmark_matching.py` included in `scripts/verify.py`; STATUS measurement table/local JSON | Verified numeric bounded workloads only; Argon realistic benchmarks remain unverified |
+
+Only the disposable PostgreSQL fixture lifetime changes: each test now gets its own database, preventing migration tests from consuming another test's advanced immutable history. No prior test assertions were relaxed or skipped. Data contract **v1.0 CSV schemas are unchanged**; an optional original-memo JSON convention for supplied partials is documented explicitly for Argon, not generated/integrated by Codex. No Argon/demonstration data was changed.
+
+**Deferred findings remain open:** G1 authenticated authority/shared real-data/approval/posting and G4 remote CI/Linux application execution plus Argon dataset/accuracy benchmarks. G2/G3 remain closed and their regressions pass. Milestones 04–11 remain future work; historical references to 03 as unimplemented below describe the original audit date/task, not the current verified implementation. STOP after 03.
+
 **2026-10-25 · milestones 00–02 audit and verification hardening.** Compared all existing prompts, AGENTS, PROJECT_SPEC, PLANS, STATUS, domain/accounting/security/tax, matching/API/data-contract and evaluation/architecture specifications with code, named tests and Git history. Original prompt text was checked at baseline `a545b42`, not inferred from rewritten prompts. The authorized hardening follow-up closes G2/G3 below; G1/G4 remain deferred/unresolved.
 
 Application baseline: `8ff6687` (same code as documentation checkpoint `0772dfd`). The original documentation audit is `6e1ad2d`, status checkpoint `58a9f8f`. Its follow-up branch is `test/milestone-01-02-hardening`. Application behavior/schema/dependencies are unchanged; the follow-up adds verification infrastructure and tests, not milestone 03 functionality or datasets.
