@@ -33,3 +33,15 @@ build/
 coverage.xml
 .coverage*
 htmlcov/
+.mypy_cache/
+.tox/
+.nox/
+node_modules/
+artifacts/
+*.csv
+*.xlsx
+*.xls
+*.pdf
+credentials.json
+*.credentials.json
+service-account*.json

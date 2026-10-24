@@ -39,8 +39,8 @@ packages/core/               # pure money/matching/policy/accounting domain
 packages/intelligence/       # extraction/director/investigator
 packages/services/           # ingestion/case/application/posting
 infra/                       # docker, migrations, storage
-fixtures/                    # deterministic synthetic cases
-scripts/                     # dev setup, seed, bench
+fixtures/                    # existing references; Argon owns demo/evaluation data
+scripts/                     # dev setup, verification, bench (no dataset generation)
  tests/                      # unit/integration/property/e2e
 ```
 

@@ -7,7 +7,7 @@ Prove the product improves accurate financial case handling, not merely that an 
 - C — deterministic matching + rule-based Director coordinating bounded Investigator, validators and case re-evaluation.
 
 ## Dataset construction
-Generate seeded, deterministic INR finance environments with named synthetic companies, 50 customers, ~2000 invoices, ~500 receipts, >=250 evaluation situations (adjust size for developer machine), >=100 realistic text/PDF-like documents, and >=30 attack/abuse scenarios. Keep train/dev/test templates separated; avoid leakage from repeated narrative templates. Hold out combinations of scenario categories and document layouts.
+Argon exclusively researches and constructs demonstration/evaluation data and frozen ground truth. Codex must not generate, download, curate or seed that dataset. Consume versioned Argon artifacts through `docs/DATA_CONTRACT.md`; report unavailable data as unverified rather than fabricate it. Argon controls train/dev/test separation and held-out customer/template/layout patterns. Codex may write only minimal isolated application test fixtures.
 
 ## Scenario classes
 Exact single/multi invoice, candidate subset collisions, partial payment, unmatched payer, aliases, late remittance, remittance before receipt, valid and uncorroborated damage, short shipment, expired promotion, wrong early-pay window, duplicate UTR, split receipts across days, withholding reviewed/supported vs unsupported, government deductor conditions, conflicting delivery records, missing document, stale approval, race on posting, prompt injection, cross-company data attempt.

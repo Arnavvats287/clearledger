@@ -11,7 +11,7 @@ from clearledger.config import Settings
 from clearledger.customers import get_customer
 from clearledger.db import build_engine
 from clearledger.main import create_app
-from clearledger.models import Customer, Organization
+from clearledger.models import Base, Customer, Organization
 
 pytestmark = pytest.mark.postgres
 
@@ -24,12 +24,13 @@ def test_migration_roundtrip_and_persistence(disposable_database, migration_conf
             command.upgrade(migration_config, "head")
             assert set(inspect(connection).get_table_names()) == {
                 "alembic_version",
-                "organizations",
-                "customers",
+                *Base.metadata.tables,
             }
             command.check(migration_config)
+            connection.commit()
             command.downgrade(migration_config, "base")
             assert inspect(connection).get_table_names() == ["alembic_version"]
+            connection.commit()
             command.upgrade(migration_config, "head")
             command.check(migration_config)
             connection.commit()

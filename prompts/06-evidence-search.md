@@ -6,7 +6,7 @@ Read `docs/SECURITY.md`, `docs/DOMAIN_AND_ACCOUNTING.md`, `docs/TAX_SCOPE.md`, s
 Build reliable read-only evidence search and checks BEFORE giving an LLM access to retrieved materials.
 
 ## Implement
-1. Synthetic contract clauses, promotions with validity dates, WMS deliveries, signed proof of delivery, and separately tagged tax evidence.
+1. Support contract clauses, promotions, WMS deliveries, proof of delivery and tagged tax evidence supplied by Argon; do not construct a dataset. Use only minimal isolated fixtures for application tests.
 2. Typed read-only allowlisted functions with case/customer/organization scope; no general SQL tool exposed to AI.
 3. PostgreSQL structured filtering and FTS as appropriate; return stable document/record IDs, document version, offsets and excerpts.
 4. Evidence verifier: source ID/version/hash/span text, customer ownership, date validity, signed/approved status and numeric relevance; return `SUPPORTED`, `CONTRADICTED`, `INSUFFICIENT`, `NOT_APPLICABLE` plus reasons. Do not promote excerpt-matching alone to financial authority.

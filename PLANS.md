@@ -5,7 +5,7 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 | ID | Deliverable | Acceptance gate |
 |---|---|---|
 | 00 | Backend + database foundation | API responds; PostgreSQL migrates up/down in disposable DB; smoke tests pass; local run documented. |
-| 01 | Synthetic finance dataset + import | Seed customers, invoices, bank CSV; replay import produces no duplicates; invalid rows rejected atomically or quarantined. |
+| 01 | Financial data engine + versioned data contract/imports | Tenant-scoped models/APIs, strict atomic CSV imports, audit/provenance, duplicate protection; Argon owns dataset construction. |
 | 02 | Customer resolution + exact allocation | Verified IDs, aliases and exact matches; ambiguity abstains; no over-allocation. |
 | 03 | Multi-invoice and partial allocation search | Bounded subset search returns multiple candidates; collision detection and tests; no guessing from amount alone. |
 | 04 | Immutable document import + isolated structured extraction | Original bytes hash, provenance + spans; late remittance correlates; injections stay untrusted data. |
@@ -15,9 +15,10 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 | 08 | Policy, tax scope + accounting simulator | Versioned configurable rules, supported demo cases only; balanced journal; atomic idempotent application; unsupported tax routes to review. |
 | 09 | Reviewer approvals + dispute/recovery | Role-checked maker-checker, draft-only evidence requests, reviewer comments, resolution/reopen flows. |
 | 10 | Production-quality local UI | Four screens wired to real API, meaningful empty/error/loading states; E2E demo works. |
-| 11 | Evaluation + hardening | Frozen scenario generator and ground truth; deterministic vs single-agent vs directed ablation; property, security and e2e tests; report limitations. |
+| 11 | Evaluation + hardening | Consume Argon's frozen dataset/ground truth; deterministic vs single-agent vs directed ablation; property, security and e2e tests; report limitations. |
 
 ## Dependency and sequencing notes
+- Argon owns all demonstration/evaluation dataset research and construction. Codex must not generate, download, curate or seed datasets; only minimal isolated code-test fixtures are permitted. Data imports follow `docs/DATA_CONTRACT.md`.
 - Milestone 00 should not add LangGraph or LLM keys; milestone 03 should not add tax rules.
 - Import bank transactions and maintain an unapplied balance BEFORE allowing allocation.
 - From milestone 04, source documents are append-only; claims/evidence are versioned.

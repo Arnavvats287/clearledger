@@ -1,6 +1,6 @@
 # ClearLedger
 
-A **local, single-company, INR-only AR cash application and deduction investigation system**. Milestone 00 provides the backend/database foundation. Financial workflows remain specified for later milestones.
+A **local, single-company, INR-only AR cash application and deduction investigation system**. Milestone 01 adds a tenant-scoped financial data engine and strict CSV imports to the verified backend/database foundation. Matching and subsequent financial workflows remain for later milestones.
 
 ## Milestone 00: local setup
 
@@ -26,7 +26,7 @@ uv run --frozen uvicorn clearledger.main:create_app --factory --host 127.0.0.1 -
 
 In another terminal, `Invoke-RestMethod http://127.0.0.1:8000/health` returns `status: ok`; `/ready` returns `status: ready` after a successful `SELECT 1`, or HTTP 503 with a generic error when the database is unavailable. `/health` never connects to the database. `/docs` exposes the API schema. Readiness confirms connectivity, not migration currency; run the migration checks separately. Startup does not create tables or seed data.
 
-`DATABASE_URL` uses `postgresql+psycopg://...`; SQLite is deliberately unsupported. Settings read `.env`, with environment variables taking precedence. Database sessions use UTC; the only tables are `organizations`, `customers`, and Alembic's revision table. Customers carry an organization foreign key and organization-scoped external reference. The internal customer lookup requires an organization ID. No customer mutation endpoints or authentication exist yet.
+`DATABASE_URL` uses `postgresql+psycopg://...`; SQLite is deliberately unsupported. Settings read `.env`, with environment variables taking precedence. Database sessions use UTC. The milestone 01 tables and constraints are specified in `docs/DATA_CONTRACT.md`. Customers carry an organization foreign key and organization-scoped external reference. Authentication is not implemented; use loopback and local test data only.
 
 The configured development endpoint is **127.0.0.1:5432** (IPv4 localhost); 5432 was free during Docker setup. The generated development password lives only in `.env`, covered by `.gitignore`. `.env.example` contains placeholders. Both `DATABASE_URL` and `TEST_DATABASE_URL` must use the selected **host** port. Prefer `127.0.0.1` explicitly: on this Windows host, `localhost` took about three seconds to connect due to IPv6 fallback, exceeding the live readiness smoke test's timeout.
 
@@ -65,7 +65,41 @@ This verifies that the Windows URL reaches the Compose container by comparing Po
 
 Docker Desktop and Compose are now verified on the implementation machine, including normal restart persistence. The earlier portable [EDB binaries](https://www.enterprisedb.com/download-postgresql-binaries) verification remains documented in `STATUS.md`. Some restricted Windows sandboxes block Docker's named pipe and the socket pair used by Python's event loop: Docker/test/server checks need local engine/network access. The current Starlette test client emits an upstream deprecation warning for HTTPX; tests still execute. No static type checker or API container is configured.
 
-The environment is local and synthetic only. No frontend, import/matching, agents, workers, tax decisions, authentication, financial posting, or external integrations are implemented. Dependency resolution is committed in `uv.lock`; `.env`, runtime caches, and local financial data are ignored.
+The environment is local only. No frontend, matching, agents, workers, tax decisions, authentication, financial posting, or external integrations are implemented. Dependency resolution is committed in `uv.lock`; `.env`, runtime caches, datasets and local financial data are ignored.
+
+## Milestone 01: company configuration and imports
+
+The complete versioned interface is [docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md). **Argon owns all demonstration/evaluation dataset research and construction.** No dataset is bundled, generated, downloaded or seeded by this implementation. The old demo reference remains unchanged. Only small isolated application-test fixtures are used by tests.
+
+Apply `uv run --frozen alembic upgrade head` to the development database. Destructive rollback tests belong only in disposable databases. Set `ORGANIZATION_ID=<your company UUID>` in your ignored `.env` (a new UUID may be obtained with `[guid]::NewGuid()`), then explicitly provision the company:
+
+```powershell
+uv run --frozen python -m clearledger.cli init-organization --name "<your company name>"
+uv run --frozen uvicorn clearledger.main:create_app --factory --host 127.0.0.1 --port 8000
+```
+
+The provision command creates only company configuration and is idempotent for the same UUID/name. It does not create a financial dataset. Company scope comes from server settings; business endpoints return 503 until provisioned. Uploads cannot choose another tenant. `X-Actor-ID` records the locally asserted operator, not an authenticated account or approval.
+
+Import **operator/Argon-supplied** UTF-8 CSVs in order: customers, optional payer aliases, invoices, then bank transactions (bank rows can also be imported independently of customers). Each file must match the exact column set in contract version **1.0**. Send raw CSV bytes, not multipart:
+
+```powershell
+$key = [guid]::NewGuid().ToString()
+curl.exe --fail-with-body -X POST http://127.0.0.1:8000/imports/customers `
+  -H "Content-Type: text/csv" -H "X-Data-Contract-Version: 1.0" `
+  -H "X-Actor-ID: local-operator" -H "Idempotency-Key: $key" `
+  -H "X-Source-Filename: customers.csv" --data-binary "@<path-to-Argon-customers.csv>"
+```
+
+Use `/imports/payer-aliases`, `/imports/invoices` and `/imports/bank-transactions` for their respective files, each with a new key. Reuse the original key for a network retry. A different payload under the same key is HTTP 409. Validated records are inserted atomically; any bad/conflicting row rejects the entire file with row/field errors. Exact records from renamed or replayed files are reported as duplicates. Each new positive incoming bank transaction creates one fully unapplied receipt; no allocation or GL journal is created.
+
+Read collection/detail APIs: `/customers`, `/payer-aliases`, `/invoices`, `/bank-transactions`, `/receipts`, `/payments` (receipt alias), `/imports` and `/audit/events`; append `/<UUID>` for a detail. Collections accept `limit` 1–100 and `offset` ≥0. Import results include counts and record IDs. Originals/digests are retained internally; GET import metadata excludes raw bytes. Audit and bank-source records and finalized import runs are protected against ordinary DB edits/deletes. Examples:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/receipts
+Invoke-RestMethod http://127.0.0.1:8000/imports/<import-id>
+```
+
+Run the full suite with `TEST_DATABASE_URL` loaded from `.env` using the test command above; do not substitute the development DB for a generated test DB in rollback commands. Tests create/drop only disposable databases and cover import validation, concurrency, tenant isolation, receipt uniqueness, DB guards and API behavior. `scripts/verify_docker.py` exercises the current schema's migration roundtrip and normal restart persistence using a disposable probe database; it restarts this project's database container. No Argon dataset was available or used in verification.
 
 ## Start here
 

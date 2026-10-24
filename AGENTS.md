@@ -36,7 +36,7 @@ If docs conflict, stop and explicitly document the conflict. Do not invent polic
 - Worker: Redis + RQ when asynchronous events are needed; avoid adding infrastructure in milestone 00 without use.
 - Frontend: Next.js, TypeScript, Tailwind, shadcn/ui (when UI phase begins).
 - Tests: pytest, Hypothesis for financial invariants, Playwright for the completed UI. Prefer pure functions and explicit DB transactions.
-- Compose: local PostgreSQL; reproducible seeded development. Use pinned version ranges/lockfiles; do not assume exact library versions without verifying installs.
+- Compose: local PostgreSQL; reproducible setup and contract-based imports of Argon-provided data. Use pinned version ranges/lockfiles; do not assume exact library versions without verifying installs.
 - Dataset ownership: Argon researches and constructs demonstration/evaluation data. Codex must not generate, download, curate or seed that data. Only minimal isolated application test fixtures are permitted; consume Argon data through the versioned data contract.
 - Keep imports and modules simple. Domain operations should not import the agent framework.
 - No shell commands that delete user data, no deployments, no git push, no purchases, no production credentials or external writes without explicit approval.
