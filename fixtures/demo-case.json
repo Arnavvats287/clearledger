@@ -1,0 +1,28 @@
+{
+  "scenario_id": "CASE-204",
+  "description": "Synthetic receipt/withholding/damage scenario; withholding status stipulated, not legal calculation",
+  "organization_id": "DEMO-ORG",
+  "customer": {"customer_id": "C-APEX", "name": "Apex Industrial (Synthetic)"},
+  "invoices": [{"invoice_id": "INV-101", "gross_paise": 12000000, "open_paise": 12000000}],
+  "bank_receipt": {"utr": "DEMO-UTR-204", "amount_paise": 11650000, "currency": "INR"},
+  "remittance_claims": [
+    {"reason": "INCOME_TAX_TDS", "amount_paise": 100000, "support_status": "SUPPORTED_BY_APPROVED_SYNTHETIC_FIXTURE"},
+    {"reason": "DAMAGED_GOODS", "amount_paise": 250000, "support_status": "INSUFFICIENT_EVIDENCE", "delivery_reference": "DN-457"}
+  ],
+  "expected": {
+    "receipt_journal": {
+      "debits": [{"account": "1010", "amount_paise": 11650000}],
+      "credits": [{"account": "2300", "amount_paise": 11650000}]
+    },
+    "application_journal": {
+      "debits": [
+        {"account": "2300", "amount_paise": 11650000},
+        {"account": "1310", "amount_paise": 100000}
+      ],
+      "credits": [{"account": "1200", "amount_paise": 11750000}]
+    },
+    "remaining_invoice_ar_paise": 250000,
+    "unapplied_receipt_paise": 0,
+    "damage_claim_resolution": "AWAITING_CUSTOMER_EVIDENCE"
+  }
+}
