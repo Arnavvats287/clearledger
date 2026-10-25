@@ -8,6 +8,8 @@
 
 ## Milestone 04B - Gemini cost-control/configuration audit - 2026-10-25
 
+Verified implementation checkpoint: **`fe60caac8c905bff67c43a6dbede3a2952e0a87e`**, message `fix: harden milestone 04 Gemini cost controls`. Reviewed exactly 20 intended files; staged whitespace and local-secret/runtime/dataset exclusions passed. All required checks passed before commit; no application changes followed verification. This documentation-only follow-up records the hash. No push.
+
 Branch `feat/milestone-04b-gemini-controls` starts at verified M04 status `128a522` (implementation `b968ccb6`). Targeted hardening preserves deterministic parsing, privacy projection, isolation, strict semantic validation, all financial invariants and all 273 regression tests. No later milestone, financial CSV contract, accounting behavior, dependency or Argon data changed. Configuration/traceability: `docs/DOCUMENTS.md`, `docs/SECURITY.md`, `REQUIREMENTS_AUDIT.md`.
 
 Audit findings and implemented changes:
