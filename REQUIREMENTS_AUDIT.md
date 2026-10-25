@@ -1,5 +1,13 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 04C independent pilot follow-up - 2026-10-25
+
+Approved integration/evaluation only, from `f2f71fe`; no product/schema/accounting/security requirement changed. `scripts/verify_pilot.py`, `pilot_package.py`, `pilot_runtime.py` and answer-only `pilot_score.py` exercise real HTTP APIs on disposable PostgreSQL, with allowlisted inputs and hidden answers loaded only after application shutdown. `tests/test_pilot_harness.py` adds 36 isolated boundary/scoring tests; all 301 regressions remain. Full gate **337 passed**, isolated restart **2 passed**. Commands, private logs and checkpoint: STATUS. Aggregate counts/accuracy/limitations: `docs/PILOT_EVALUATION.md`.
+
+- Import/proposal integration now observed on the provided independent pilot: 8/8 CSV files, 91 input rows, 21 receipts, 20 cases/22 stages, 68 immutable originals; per-row duplicate/conflict probes and replay/idempotency checks pass. No false supported proposals or unexpected financial mutations. Simulated source-backed operator attestations are reported separately, never inferred from hidden truth or presented as natural intent discovery.
+- Document compatibility is **partial**: 35 ASCII85 PDFs fail the published filter allowlist, 10 email canonical sidecars omit the application subject prefix, only 3/47 answer offsets transfer unchanged, prose requires semantic review, and no remittance contains an exact imported bank UTR. No files/offsets were rewritten, filter/security gates relaxed or links manufactured. Zero structured-reference recall is reported; real semantic extraction and supported correlation accuracy remain not evaluable on this package/configuration.
+- G4's prior blanket absence of Argon application measurements is superseded **only for this pilot**. Full benchmark scale, independently blind evaluation, A/B/C comparisons, real provider/privacy/terms, remote CI/Linux application runs and human-review/accounting outcomes remain unverified/future. G1 authentication/strong production isolation remains deferred; G2/G3 regressions pass. No tax/case/approval/posting features were implemented, and no existing acceptance requirement was waived. STOP after 04C.
+
 ## Milestone 04B cost-control follow-up — 2026-10-25
 
 Targeted hardening from verified 04 (`b968ccb6`, status `128a522`); no extraction redesign or financial/schema-contract changes. Original milestone requirements and deferred G1/G4 remain intact.

@@ -1,10 +1,45 @@
 # Build status
 
-- Repo state: **Milestone 04B cost-control audit/hardening implemented and locally verified. G2/G3 remain closed; full authentication/production isolation, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
-- Current task: **Milestone 04B complete; STOP before milestone 05.**
-- Verified checks: **301 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/migrations/integrity PASS. Separate isolated PostgreSQL restart: 2 passed, now including quota durability. Development safely upgraded to 0006_provider_budgets; all 16 pre-existing tables' row fingerprints unchanged, no shared reset/downgrade/restart.**
+- Repo state: **Milestone 04C independent pilot integration/evaluation locally verified, with document compatibility gaps explicitly reported. G2/G3 remain closed; production authentication/isolation, remote CI and full Argon benchmark remain deferred/unverified (G1/G4).**
+- Current task: **Milestone 04C complete; STOP before milestone 05.**
+- Verified checks: **337 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/PostgreSQL migrations/integrity PASS. Separate isolated restart: 2 passed. Pilot: 8 CSV files/91 rows/21 receipts, 20 cases, 68 originals, no false supported proposal or financial mutation. Development head unchanged at 0006; no development migration/reset/downgrade/restart.**
 - External integrations: **Optional Gemini adapter implemented, disabled by default; no live/paid Gemini call performed.**
-- Open decisions: Provider/model/privacy/terms review and live behavior, OCR, stronger production auth/isolation, remote CI and Argon accuracy remain unverified/future. Tax adjudication stays in later approved milestones.
+- Open decisions: Pilot PDF/canonical/structured-extraction/UTR incompatibilities; live provider/privacy/terms, OCR, production auth/isolation, remote CI and full Argon benchmark remain unresolved/unverified. Tax adjudication stays in later approved milestones.
+
+## Milestone 04C - independent pilot integration and evaluation - 2026-10-25
+
+Branch `feat/milestone-04c-pilot-evaluation` starts at verified status `f2f71fe`. Integration/evaluation only: no application modules, schema, dependency, accounting behavior or CSV contract changed. Original independent ZIP is unchanged; no generator was run or dataset constructed/modified. Full aggregate report, definitions, scenario-family outcomes and reproduction: `docs/PILOT_EVALUATION.md`. Audit/plan updated without waiving original requirements or marking milestone 11 complete.
+
+New harness files: `scripts/pilot_package.py` (bounded path/manifest/hash checks and explicit app-input allowlist); `scripts/pilot_runtime.py` (real loopback HTTP services, disposable PostgreSQL, imports/replays/negative probes, exact/advanced matching, source-backed simulated attestations, originals/parsing/extraction/span/correlation/auth/tenant/privacy checks); `scripts/pilot_score.py` (answer-only, independent brute-force subset oracle); `scripts/verify_pilot.py` (validator pin, separate input/storage/evaluation paths, cleanup/private results). Only organization provisioning uses direct application writes; all financial data/evidence/documents use APIs. Scoring loads hidden answers after both API processes stop and disposable databases are removed. Runtime receives no hidden/sidecar values. This is dataflow isolation, not a stronger host/OS security claim.
+
+Package SHA-256 `438fbedcce8016fa0aaead3910876b8fb9e2b6f1dd41406db8c0ec5829855927`; CRC/exact coverage and all 237 manifest-listed digests pass (238 files, 458956 expanded bytes). Independently executed reviewed validator passes 20 cases/22 stages/68 sources/47 pointers/73 events. Fixed-seed comparison is NOT TESTED (no generator/compare run); internal expected-journal checks are not application posting evidence. API/development schema inspected first; both test databases migrate/check to 0006. Final read-only check: development head still 0006, no `clearledger_pilot_*` databases remain.
+
+Measured financial results: dev 11 customers/11 aliases/19 invoices/11 bank rows+receipts; eval 9/9/11/10+10. All 8 CSV files and 91 rows import successfully. Sixteen file replays, 21 duplicate-row probes, 21 +1-paise natural-key conflicts and 8 extra-header requests preserve financial records. Evaluator confirms the visible-input probes cover the supplied hidden negative fixture without exposing it to runtime. Exact/advanced proposal attempts run in unattested and separately labeled simulated-attested modes (84 primary evaluations/168 matching replays). Alias-owner-supported literal memo attestations: 12 dev/10 eval; never generated from hidden allocations or presented as naturally verified intent.
+
+Unattested exact recall 0/3 dev and 0/3 eval is expected without verified intent; no supported claims are made. Independent exhaustive subset oracle: 11/11 dev, 10/10 eval. Multi-invoice candidate recall: 4/4 dev, 2/2 eval. Candidate-plus-partial-analysis expected-cash coverage: 10/10 dev, 9/9 eval; ambiguity and unknown duplicate-payer abstentions correct. Simulated-attested exact recall 3/3 each; advanced cash candidates 10/10 dev, 8/9 eval (remaining target stays partial analysis, missing memo intent). Zero wrong supported outputs among 23 conditional supported proposals. Zero customer/alias/invoice/bank/receipt balance/status/version mutations. These are proposal mechanics, not accounting settlements or proven real-world precision.
+
+Document gaps retained: all 68 originals/hash checks persist; 33 parse READY, 35 PDFs return controlled UNSUPPORTED_PDF_FILTER because they use ASCII85+Flate outside the published allowlist. Ten EML sidecars omit the application's subject prefix. Only 3/47 hidden offsets transfer unchanged (47/47 original hashes match); canonical equality 23/68. All 68 baseline extraction runs require review: prose is outside deterministic grammar, real provider remains disabled, invoice-reference recall 0/23. Twenty remittances lack exact bank UTR literals: all correlation attempts UNRESOLVED, no eligible UTR target or supported correlation accuracy. No filter gates relaxed, spans rebased, mock accuracy substituted or source text promoted to authority. These compatibility gaps block a complete end-to-end document benchmark, not the completion of this diagnostic integration task.
+
+Privacy/security: 33 readable-source probes, 24 project safely and 9 abstain; zero independently recognized PAN/GSTIN/IFSC/email markers survive projection. Unparsed PDFs are not counted as anonymization-tested. Explicit opt-in requests still yield 33 BLOCKED / 35 no-text review outcomes, zero attempts/reservations/transmissions. All envelopes retain human review/no authority. Injection never causes tools/approval/writeoff/posting. Four foreign-scope 404 checks and one auth 401 per split pass. Production auth/isolation and real-provider/real-data privacy remain G1/G4 limitations.
+
+Executed commands/results:
+
+```powershell
+./.venv/Scripts/python.exe -I -B local-data/pilot/inspection/clearledger_pilot_v1/validation/validate.py --root local-data/pilot/inspection/clearledger_pilot_v1
+# Independent validator PASS; reproduction NOT_TESTED_NO_COMPARE_PATH.
+./.venv/Scripts/python.exe -m pytest tests/test_pilot_harness.py -q --basetemp=local-data/pilot-unit-temp
+# 36 passed in 0.86s; only minimal isolated fixtures.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_pilot.py
+# Integration/safety assertions PASS; measured document failures preserved in report.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# 337 passed in 134.92s; lock/deps/Ruff lint+format/9 strict typed modules/bounds/migrations/integrity PASS.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# 2 passed in 8.72s; only owned disposable container restarted/removed.
+```
+
+Both full/restart runs retain one existing Starlette/HTTPX deprecation warning; no skipped/weakened regressions. Local ignored logs: `local-data/pilot/independent-validation.log`, `local-data/pilot/verified-integration.log`, `local-data/verification/20261025T013247119424Z.log`, `local-data/verification/isolated-restart-20261025T012516905321Z.log`. Final detailed pilot run: `local-data/pilot-runs/909833d8bc0e41e499b893692adae225/` (summary, actual responses, evaluator-only per-scenario comparisons); none committed. Earlier private failed attempts corrected harness assumptions about controlled PDF rejection and primary/additional truth keys, without modifying product behavior. A later scorer regression fixes order-independent combination comparison and protects unmapped-receipt denominators. Final review added Windows reserved-device/trailing-dot/space path rejection and eight regression cases; the final gate passes 337 tests. Final strict-boundary pilot recheck `684fa94997e14a8f829e502de6c1259a` has identical outcome aggregates to the standalone measured run (its timings are not substituted for the standalone performance figures).
+
+Standalone pilot timing: dev 600 timed API calls / 33.855s / p95 424.722ms; eval 507 / 27.577s / p95 426.404ms. Evaluator peak Python-traced memory 21257781 bytes; API/parser/PostgreSQL RSS and system CPU/peak not measured. Dataset-specific compatibility work should be a separately versioned Argon successor; no dataset changes are authorized by this task. Full-size/blind/A-B-C evaluation, remote CI/Linux, live Gemini/privacy/terms, tax/claims/case lifecycle, approvals/journals and human-review metrics remain deferred/not implemented. STOP after 04C.
 
 ## Milestone 04B - Gemini cost-control/configuration audit - 2026-10-25
 
