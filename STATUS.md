@@ -1,10 +1,55 @@
 # Build status
 
-- Repo state: **Milestone 03 implemented and locally verified. Audit G2/G3 remain closed; authentication, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
-- Current task: **Milestone 03 complete; STOP before milestone 04.**
-- Verified checks: **188 tests passed against Docker PostgreSQL; lock/dependencies, Ruff lint/format, strict domain mypy, bounded numeric benchmarks, migrations/integrity and all regressions passed. Separate owned-container restart verification: 2 passed. Shared development database was not restarted, reset or destroyed.**
-- External integrations: **None**.
-- Open decisions: Exact email extraction model and tax rule references to be selected/verified in later phases. Use stub extractors for local tests.
+- Repo state: **Milestone 04 implemented and locally verified. G2/G3 remain closed; full authentication/production isolation, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
+- Current task: **Milestone 04 complete; STOP before milestone 05.**
+- Verified checks: **273 full tests passed; lock/dependencies/lint/format/8 strict typed modules/bounds/migrations/integrity PASS. Separate isolated PostgreSQL restart: 2 passed. Development safely upgraded to 0005_documents; all pre-existing rows unchanged, no shared reset/downgrade/restart.**
+- External integrations: **Optional Gemini adapter implemented, disabled by default; no live/paid Gemini call performed.**
+- Open decisions: Provider/model/privacy/terms review and live behavior, OCR, stronger production auth/isolation, remote CI and Argon accuracy remain unverified/future. Tax adjudication stays in later approved milestones.
+
+## Milestone 04 — secure document intelligence · 2026-10-25
+
+Branch `feat/milestone-04-document-intelligence` starts at latest verified status checkpoint `0dfaa91` (application `e28c359`), preserving history. The original 04 checklist/tests/real-import exit remain intact. AGENTS/original prompt/security/architecture now explicitly record the user's approved **separate Gemini transport exception**, while parser/extractor has no network/DB/tools/policy. No financial/security requirement was waived. Complete API/format/privacy contracts: `docs/DOCUMENTS.md`; requirement traceability: `REQUIREMENTS_AUDIT.md`.
+
+Implemented authenticated, tenant-scoped PDF/email/text/remittance-JSON ingestion; strict types/MIME/path/size/page/decompression/resource guards; exclusive content-addressed/fsynced originals with SHA-256; canonical pages/hash/parser version; immutable metadata, deduplication, operation keys and audit events. Scans/mixed empty pages require OCR; malformed/unsupported data fails closed. Repeated/concurrent uploads produce one document/event. An actual HTTP import/extraction and separate API process restart/fresh read preserve metadata/originals.
+
+Deterministic exact JSON/line formats run first; semantic extraction is optional. `remittance-extraction-1.0` contains source-backed invoice/UTR/payer refs, generic claimed categories/reason codes, nullable strict integer-paise amounts, spans and uncertainty/unparsed fields. Independent checks enforce page/quote/range/identifier labels/boundaries, claim/category/amount/reason containment, currency units, money boundaries, Unicode and schema validity. Every envelope marks authenticity unverified, financial authority false, layout unverified and human review required. Schema success never legitimizes a claim or authorizes settlement.
+
+Official **google-genai 2.33.0**, **pypdf 6.21.2** installed/locked. Provider/model/key configurable; key is private configuration/stdin, never model text/frontend/command line. External calls require server/provider/key/model/privacy-review configuration, explicit request opt-in **and** approved-synthetic upload attestation; defaults remain off. No Gemini key/live model/paid call was used. Tests exercise fake providers, mocked SDK configuration and the **real SDK over MockTransport under the actual worker guard**, without external HTTP.
+
+Privacy-v1 combines PAN/GSTIN/IFSC/accounts/contact/phone/email/URL detection with an allowlisted financial projection masking unknown words/numbers/symbols. Essential labeled refs/amounts remain; sensitive overlap and unsupported/truncated money fail closed. Reversible offsets/mapping stay private in memory; originals/maps are never sent/logged. Model spans are validated against its exact projection, restored by offsets, then checked against original canonical text. This does not prove arbitrary real data anonymous: unusual formats/ambiguous identifiers may require review. Only approved synthetic external use is supported.
+
+Parser/transport subprocesses inherit no DB credentials/session or policy API. Parser denies network; transport permits only Google host/public TLS addresses. Both deny tools/subprocesses, application/.env/policy reads and filesystem writes after trusted imports. Windows job aggregate memory **512 MiB**, max **2 processes** (venv redirector + interpreter), kill-on-close; POSIX 512 MiB address-space/5 CPU seconds/no file/core output. ≤2 jobs/process, parser wall deadline 10s. Gateway defaults: 10s request timeout (+3s hard parent deadline), 2 attempts, 10 attempts/minute, concurrency 1, 4096 output tokens/100000-byte JSON reply. SDK hidden retries/function calling/tools are disabled. Metrics record usage/latency/attempts and optional integer-paise estimates, null when unknown/incomplete; no prompt logging. These guards are defense in depth, not independent OS-user/container isolation against arbitrary dependency RCE. Synchronous company locking favors consistent idempotency over throughput; limits are per process.
+
+Late remittance correlation stores immutable LINKED/CANDIDATES/UNRESOLVED/SEARCH_INCOMPLETE snapshots. Only a locally attested unique exact UTR, valid bank source, latest successful extraction, current expected receipt version and nonconflicting known invoice/customer evidence can link. Wrong/multiple UTRs, unknown/conflicting owners, stale/invalid evidence or superseded extraction abstain. New state stales historical associations; retries conflict instead of silently accepting changed inputs. No invoice/receipt balances/versions/statuses, financial audit/source records or allocations/journals change.
+
+Migration **0005_documents** adds documents, document_extractions, document_associations, document_operations and document_events, with scoped FKs/indexes/uniqueness and immutable UPDATE/DELETE/TRUNCATE triggers. **Financial CSV v1.0 is unchanged**; document JSON is a separate interface. Argon data/demo files were not generated, downloaded, changed or assumed integrated. Existing demo fixture SHA-256 remains `4a3c91af85aefead5eff0d1cdb28fbede190e995445e2f98af54568efb31c6da`. A random local document token was initialized only in ignored `.env`, without displaying it; external AI remains disabled and no Gemini key was generated. Example configuration contains placeholders only.
+
+Development first upgraded up-only to existing 0004, then additive 0005. Ignored `local-data/m04_upgrade.py` compares every persisted column of all **11 pre-existing application tables** before/after upgrade/check. Result **0004_advanced_matching → 0005_documents**, all row fingerprints equal, no schema drift; final read confirmed 0005. Logs: `local-data/m04-development-upgrade.log`, `local-data/m04-development-schema.json`. No shared/portable database reset, downgrade, destruction or restart. Destructive checks use independent UUID-named disposable DBs; isolated Docker restart removes only its owned labelled resources.
+
+Actual commands/results:
+
+```powershell
+./.venv/Scripts/uv.exe add 'pypdf>=6.21.2,<7' 'google-genai>=2.33,<3'
+./.venv/Scripts/uv.exe run --frozen alembic upgrade head
+./.venv/Scripts/uv.exe run --frozen alembic revision --autogenerate --rev-id 0005_documents -m "secure document intelligence"
+./.venv/Scripts/uv.exe run --frozen python local-data/m04_upgrade.py
+# Up-only development migration/check PASS; existing records unchanged.
+./.venv/Scripts/python.exe -m pytest tests/test_document_domain.py tests/test_document_security.py -q -m 'not postgres'
+# Final focused security run: 52 passed, 3 deliberately deselected DB cases, 10.49s.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# FINAL: lock/dependencies/lint/format/types/matching-bounds/tests-migrations PASS.
+# 273 passed, 1 existing upstream Starlette/HTTPX warning, 110.92s; no skips/deselections.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# 2 passed, 1 existing warning, 7.74s; owned disposable container only.
+```
+
+All **188 regressions retained**, **85 new tests**: real PDF/email/canonical/hash/spans; malformed/active/encrypted/scanned/decompression/MIME/page/size limits; path/auth/tenant/Unicode integrity; actual worker capability denial and SDK mock-HTTP; PII/leakage/adversarial inputs/outputs; independent strict schema/money/label/category validation; provider failures/timeouts/retries/rate/concurrency/usage; duplicate/concurrent uploads/extractions; late/wrong/ambiguous/conflicting/superseded/stale correlation; immutable triggers and financial non-mutation; actual HTTP import and process restart. Complete migration roundtrip/drift/legacy-history/integrity checks pass. Strict mypy expands from 3 to **8 modules**, without ignores/weakening. CI uses the same gate with external models off; no real credentials needed, remote execution unobserved. Gate logs redact both file and environment URL/password/key/token/secret values; a canary regression covers differing secret values under the same key.
+
+Failures corrected without weakening assertions: valid email lazy-runtime reads initially hit the parser guard; runtime-only reads are now allowed while application/policy reads remain denied. Immutability testing needed a real association row to exercise row triggers. Explicit short pytest IDs fix Windows' 32767-character environment limit on the oversized fixture; live-smoke helper use was corrected. A one-process Windows cap blocked the venv redirector; two processes now share one aggregate memory cap. Hypothesis found overlapping `invoice Invoice I-1` labels masking an essential reference; overlap-aware projection fixes it without narrowing the property domain. Platform-aware typing fixed Windows resource annotations without suppressions. Final money review added rejection of partial comma/overprecision amounts and signed paise, including pre-provider privacy abstention. All final tests pass.
+
+Final logs: `local-data/verification/20261024T234937643553Z.log`, `isolated-restart-20261024T233403553520Z.log`, `local-data/m04-final-security-focused.log`. Earlier corrected diagnostics remain local (`m04-domain.log`, `m04-integration.log`, `m04-focused-final.log`, `m04-focused-4.log` and earlier verification logs). Shared container ID/StartedAt/RestartCount matched the pre-isolated-run snapshot. No real Gemini latency/accuracy/billing/provider-terms or real-data privacy approval is claimed.
+
+Remaining limitations: OCR/HTML/attachments/office/archives unsupported; PDF visual layout unverified; atypical/multilingual/privacy/accuracy require human review; no live Gemini call or Argon evaluation. G1 full authenticated actors/roles, hardened production isolation/storage/quotas and trusted shared real-data use remain open. G4 remote Linux/Actions and Argon benchmarks remain unverified; G2/G3 stay closed. No milestone 05 cases/claim lifecycle, agents/LangGraph, Redis/MCP, tax adjudication, approvals, frontend or ledger posting. Git hash is recorded after checkpoint review. **STOP after milestone 04.**
 
 ## Milestone 03 — advanced deterministic matching · 2026-10-25
 
@@ -60,7 +105,7 @@ Separate Docker restart verification passed; shared container ID/StartedAt/Resta
 | 01 | Local import/restart verification complete | Historical tests retained; new real process/fresh-connection/isolated-container persistence and replay checks | G2 closed; authentication/Argon benchmark claims remain deferred |
 | 02 | Local matching verification hardening complete | Different-key overlapping PostgreSQL sessions, non-mutation, immutable history and uniqueness checks; full suite 129 passed | G3 closed; G1/G4 remain deferred/unverified |
 | 03 | Implemented; locally verified | 188 full tests; strict types/lint/format/dependencies; migrations/legacy history; bounded benchmark; 2 isolated restart tests | Proposal-only; G1/G4 deferred; see current entry above |
-| 04 | Not started | — | — |
+| 04 | Implemented; local synthetic/offline verification complete | 273 full tests + 2 isolated restart tests; 8 strict typed modules; security/migration gate PASS | Gemini off by default; live/OCR/real-data/production/remote/Argon limits explicit |
 | 05 | Not started | — | — |
 | 06 | Not started | — | — |
 | 07 | Not started | — | — |

@@ -14,6 +14,8 @@ dependencies = [
   "sqlalchemy>=2.0.36,<2.1",
   "alembic>=1.14,<2",
   "psycopg[binary]>=3.2,<4",
+  "pypdf>=6.21.2,<7",
+  "google-genai>=2.33,<3",
 ]
 
 [dependency-groups]
@@ -34,5 +36,10 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["src/clearledger/money.py", "src/clearledger/matching_domain.py", "src/clearledger/advanced_domain.py"]
+files = [
+  "src/clearledger/money.py", "src/clearledger/matching_domain.py",
+  "src/clearledger/advanced_domain.py", "src/clearledger/document_contract.py",
+  "src/clearledger/document_privacy.py", "src/clearledger/remittance_parser.py",
+  "src/clearledger/extraction_provider.py", "src/clearledger/worker_security.py",
+]
 

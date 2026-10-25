@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from clearledger.api import router
 from clearledger.config import Settings
 from clearledger.db import build_engine, get_session
+from clearledger.document_api import router as document_router
+from clearledger.extraction_provider import Gateway, GeminiTransport
 from clearledger.matching_api import router as matching_router
 
 
@@ -31,8 +33,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="ClearLedger", version="0.1.0", lifespan=lifespan)
     app.state.settings = config
+    app.state.extraction_gateway = None
+    if (
+        config.extraction_provider == "gemini"
+        and config.external_ai_enabled
+        and config.privacy_review_reference
+        and config.gemini_api_key
+        and config.gemini_model
+    ):
+        app.state.extraction_gateway = Gateway(
+            GeminiTransport(
+                config.gemini_api_key.get_secret_value(), config.gemini_model, config.llm_timeout_ms
+            ),
+            attempts=config.llm_attempts,
+            requests_per_minute=config.llm_requests_per_minute,
+            input_rate=config.llm_input_paise_per_million_tokens,
+            output_rate=config.llm_output_paise_per_million_tokens,
+        )
     app.include_router(router)
     app.include_router(matching_router)
+    app.include_router(document_router)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

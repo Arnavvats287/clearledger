@@ -10,6 +10,14 @@ from sqlalchemy.engine import make_url
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def offline_model_defaults(monkeypatch):
+    """Local .env credentials must never enable paid calls in automated tests."""
+    monkeypatch.setenv("EXTERNAL_AI_ENABLED", "false")
+    monkeypatch.setenv("EXTRACTION_PROVIDER", "disabled")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--isolated-restart-container",

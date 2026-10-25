@@ -1,5 +1,7 @@
 # API contracts and state machines (target, evolve via migrations)
 
+Milestone 04's separate authenticated `/documents` ingestion/read/extract/span/correlation APIs and strict versioned schema are defined in [DOCUMENTS.md](DOCUMENTS.md). Document parse states are READY/NEEDS_OCR/PARSE_FAILED; immutable extraction runs are SUCCEEDED/NEEDS_REVIEW/FAILED/BLOCKED; immutable associations are LINKED/CANDIDATES/UNRESOLVED/SEARCH_INCOMPLETE with computed staleness. These metadata states never mutate receipt/invoice/case/claim/approval/posting state. "Linked" confirms only the locally attested reference association; schema success never grants authenticity or financial authority. Existing financial CSV and matching APIs are unchanged.
+
 Milestone 02's implemented verification, matching and stale-snapshot endpoints are specified in [MATCHING.md](MATCHING.md). They create proposals only; exact matching does not enable the later allocation/posting transitions below.
 
 Milestone 03 adds GET `/receipts/{id}/advanced-matching-context` and POST `/receipts/{id}/match-advanced` using the same evidence, actor/idempotency and proposal-history conventions. Advanced outcomes are UNIQUE/AMBIGUOUS/UNRESOLVED/SEARCH_INCOMPLETE with explicit search completeness, intent and candidate allocations; details/bounds/partial evidence are in MATCHING. These are immutable analysis outcomes, not receipt/case/posting state transitions. Exact-v1 remains unchanged and no financial application endpoint is enabled.

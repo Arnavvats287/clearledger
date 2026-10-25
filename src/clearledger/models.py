@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
@@ -359,3 +360,151 @@ class MatchingRequest(ScopedRecord, Base):
     request_sha256: Mapped[str] = mapped_column(String(64))
     evidence_id: Mapped[UUID | None]
     proposal_id: Mapped[UUID | None]
+
+
+def document_fk(table: str):
+    return ForeignKeyConstraint(
+        ["organization_id", "document_id"],
+        ["documents.organization_id", "documents.id"],
+        name=f"fk_{table}_document",
+    )
+
+
+class Document(ScopedRecord, Base):
+    __tablename__ = "documents"
+    __table_args__ = (
+        *scope_constraints("documents"),
+        UniqueConstraint("organization_id", "content_sha256", name="uq_document_content"),
+        CheckConstraint("size_bytes BETWEEN 1 AND 2097152", name="ck_document_size"),
+        CheckConstraint(
+            "parse_status IN ('READY','NEEDS_OCR','PARSE_FAILED')", name="ck_document_status"
+        ),
+        CheckConstraint(
+            "mime IN ('application/pdf','message/rfc822','text/plain','application/json')",
+            name="ck_document_mime",
+        ),
+    )
+    content_sha256: Mapped[str] = mapped_column(String(64))
+    canonical_sha256: Mapped[str] = mapped_column(String(64))
+    source_name: Mapped[str] = mapped_column(String(128))
+    mime: Mapped[str] = mapped_column(String(64))
+    document_type: Mapped[str] = mapped_column(String(32))
+    actor_id: Mapped[str] = mapped_column(String(100))
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    synthetic_approved: Mapped[bool] = mapped_column(Boolean)
+    pages: Mapped[list] = mapped_column(JSONB)
+    parser_version: Mapped[str] = mapped_column(String(40))
+    parse_status: Mapped[str] = mapped_column(String(32))
+    parse_error: Mapped[str | None] = mapped_column(String(64))
+
+
+class DocumentExtraction(ScopedRecord, Base):
+    __tablename__ = "document_extractions"
+    __table_args__ = (
+        *scope_constraints("document_extractions"),
+        document_fk("document_extractions"),
+        UniqueConstraint(
+            "organization_id", "document_id", "input_sha256", name="uq_extraction_input"
+        ),
+        UniqueConstraint(
+            "organization_id", "document_id", "extraction_version", name="uq_extraction_version"
+        ),
+        UniqueConstraint("organization_id", "id", "document_id", name="uq_extraction_document"),
+        CheckConstraint("extraction_version > 0", name="ck_extraction_version"),
+        CheckConstraint(
+            "status IN ('SUCCEEDED','NEEDS_REVIEW','FAILED','BLOCKED')", name="ck_extraction_status"
+        ),
+    )
+    document_id: Mapped[UUID]
+    extraction_version: Mapped[int] = mapped_column(Integer)
+    input_sha256: Mapped[str] = mapped_column(String(64))
+    schema_version: Mapped[str] = mapped_column(String(40))
+    route: Mapped[str] = mapped_column(String(32))
+    reason: Mapped[str] = mapped_column(String(64))
+    provider: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str | None] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(32))
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    inputs: Mapped[dict] = mapped_column(JSONB)
+    result: Mapped[dict] = mapped_column(JSONB)
+    metrics: Mapped[dict] = mapped_column(JSONB)
+
+
+class DocumentAssociation(ScopedRecord, Base):
+    __tablename__ = "document_associations"
+    __table_args__ = (
+        *scope_constraints("document_associations"),
+        document_fk("document_associations"),
+        ForeignKeyConstraint(
+            ["organization_id", "extraction_id", "document_id"],
+            [
+                "document_extractions.organization_id",
+                "document_extractions.id",
+                "document_extractions.document_id",
+            ],
+            name="fk_association_extraction",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "receipt_id"],
+            ["receipts.organization_id", "receipts.id"],
+            name="fk_association_receipt",
+        ),
+        UniqueConstraint(
+            "organization_id", "document_id", "input_sha256", name="uq_document_association"
+        ),
+        CheckConstraint(
+            "status IN ('LINKED','CANDIDATES','UNRESOLVED','SEARCH_INCOMPLETE')",
+            name="ck_association_status",
+        ),
+        CheckConstraint(
+            "(status = 'LINKED') = (receipt_id IS NOT NULL)", name="ck_association_target"
+        ),
+    )
+    document_id: Mapped[UUID]
+    extraction_id: Mapped[UUID]
+    receipt_id: Mapped[UUID | None]
+    status: Mapped[str] = mapped_column(String(32))
+    input_sha256: Mapped[str] = mapped_column(String(64))
+    inputs: Mapped[dict] = mapped_column(JSONB)
+    result: Mapped[dict] = mapped_column(JSONB)
+
+
+class DocumentOperation(ScopedRecord, Base):
+    __tablename__ = "document_operations"
+    __table_args__ = (
+        *scope_constraints("document_operations"),
+        document_fk("document_operations"),
+        UniqueConstraint("organization_id", "idempotency_key", name="uq_document_operation_key"),
+        ForeignKeyConstraint(
+            ["organization_id", "extraction_id"],
+            ["document_extractions.organization_id", "document_extractions.id"],
+            name="fk_document_operation_extraction",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "association_id"],
+            ["document_associations.organization_id", "document_associations.id"],
+            name="fk_document_operation_association",
+        ),
+        CheckConstraint(
+            "(operation = 'UPLOAD' AND extraction_id IS NULL AND association_id IS NULL) OR "
+            "(operation = 'EXTRACT' AND extraction_id IS NOT NULL AND association_id IS NULL) OR "
+            "(operation = 'CORRELATE' AND association_id IS NOT NULL AND extraction_id IS NULL)",
+            name="ck_document_operation",
+        ),
+    )
+    document_id: Mapped[UUID]
+    idempotency_key: Mapped[UUID]
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    operation: Mapped[str] = mapped_column(String(16))
+    extraction_id: Mapped[UUID | None]
+    association_id: Mapped[UUID | None]
+
+
+class DocumentEvent(ScopedRecord, Base):
+    __tablename__ = "document_events"
+    __table_args__ = (*scope_constraints("document_events"), document_fk("document_events"))
+    document_id: Mapped[UUID]
+    actor_id: Mapped[str] = mapped_column(String(100))
+    event_type: Mapped[str] = mapped_column(String(64))
+    entity_id: Mapped[UUID]
+    details: Mapped[dict] = mapped_column(JSONB)

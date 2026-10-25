@@ -19,6 +19,9 @@ jobs:
           --health-cmd "pg_isready -U clearledger_ci -d postgres"
           --health-interval 5s --health-timeout 5s --health-retries 12
     env:
+      EXTRACTION_PROVIDER: disabled
+      EXTERNAL_AI_ENABLED: 'false'
+      GEMINI_API_KEY: ''
       TEST_DATABASE_URL: postgresql+psycopg://clearledger_ci:ephemeral-ci-only@127.0.0.1:5432/postgres
       UV_CACHE_DIR: ${{ github.workspace }}/.uv-cache-clean
     steps:

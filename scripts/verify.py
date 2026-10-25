@@ -44,7 +44,10 @@ def main():
     redactions = [env["TEST_DATABASE_URL"]]
     values = dotenv_values(ROOT / ".env")
     redactions.extend(
-        value for key, value in values.items() if value and ("PASSWORD" in key or "URL" in key)
+        value
+        for key, value in [*values.items(), *env.items()]
+        if value
+        and any(marker in key.upper() for marker in ("PASSWORD", "URL", "KEY", "TOKEN", "SECRET"))
     )
     with log_path.open("w", encoding="utf-8") as log:
         for name, command in commands:

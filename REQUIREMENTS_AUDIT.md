@@ -1,5 +1,22 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 04 follow-up — 2026-10-25
+
+Original `04-documents-and-extraction.md` requirements/tests/real-import exit remain intact. The approved extension and AGENTS/SECURITY consistently allow a **separate** bounded Gemini transport; parser/extractor retain no DB/tools/policy/arbitrary network. Financial/security gates and Argon ownership are unchanged. See current STATUS for exact commands/logs/checkpoint and [DOCUMENTS](docs/DOCUMENTS.md) for the complete versioned contract.
+
+| Original / approved requirement | Code / test trace | Finding |
+|---|---|---|
+| 04.1 local immutable bytes/hash/source/type/version/company/audit | LocalOriginals, Document/Event/Operation, 0005; digest/idempotency/concurrent upload/auth/tenant/tamper/immutable-trigger tests | Locally verified; logical immutability, not host-admin-proof WORM |
+| 04.2 bounded PDF/plain email, page/spans, optional OCR | document_parse/worker/security; real PDF/email/canonical/decompression/active/encrypted/scanned/MIME tests | Verified; OCR unsupported/NEEDS_OCR, visual layout unverified |
+| 04.3 strict refs/UTR/payer/claims/paise/spans/unknowns | document_contract, remittance_parser, independent semantics; money unit/prefix/sign/category/label/Unicode/span tests | Verified; consistency never authenticity/legitimacy/approval |
+| 04.4 no-tool isolated extraction/offline fixture parser/optional model | Typed Transport/Gateway, isolated Gemini worker; fake provider/schema/adversarial/retry/rate/concurrency tests; actual SDK over mocked HTTP under real guard | Offline verified, SDK 2.33.0 locked; live paid/provider behavior unverified |
+| 04.5 late unique verified receipt reference or candidate review | association_context/correlate; wrong/ambiguous UTR, unknown/conflicting owners, latest extraction/receipt/version/tenant tests | Verified local attestation; no customer/AR/cash/case mutation |
+| Approved privacy/security additions | Projection-v1/private offsets, sanitized provider input, Google-only/no-DB/file/tool guard and authenticated document API; PII/leakage/capability/SDK/auth tests | Verified synthetic fixtures; arbitrary real-data anonymization/RCE containment not claimed |
+| Original exit: real import smoke/tests/status | Live Uvicorn upload/extraction and restart/fresh read; full gate **273 passed**, separate isolated PG restart **2 passed**, 8 strict typed modules/lock/lint/format/migrations/bounds PASS | All 188 regressions retained; no skipped/weakened assertion |
+| Development safety / contract / dataset | Up-only 0004→0005 with all 11 old tables' row fingerprints equal/check; unchanged financial CSV v1.0, separate document JSON | Verified; no shared reset/downgrade/restart or Argon data generation/modification/integration |
+
+G1 remains **open/deferred**: local document bearer protection does not authenticate financial actors or supply production roles, maker-checker, hardened OS isolation or posting authority. G4 remote Actions/full Linux application execution and Argon accuracy remain **unverified**, as do live Gemini, real-data privacy and provider-terms approval. G2/G3 regressions pass. OCR and generalized financial evidence adjudication/case lifecycle are optional/future, not silently claimed implemented. No milestone 05, tax adjudication, agents/LangGraph, Redis/MCP, approvals, frontend or journal posting. STOP after 04.
+
 ## Milestone 03 follow-up — 2026-10-25
 
 The original 00–02 audit/hardening below remains historical evidence. The user subsequently authorized milestone 03 from `52be8c9`; its implementation now fulfills the preserved original 03 checklist plus approved advanced extensions. No acceptance requirement was removed or dataset ownership changed. **188 tests pass**, including all 129 regressions; the expanded complete gate also passes lock/dependencies, Ruff format/lint, strict domain mypy, bounded numeric benchmarks and PostgreSQL migrations/integrity. Separate isolated-container restart verification: **2 passed**. See current STATUS for exact commands, local logs, measurements and checkpoint.
