@@ -1,4 +1,4 @@
-"""Local nonfinancial outbox worker. Run separately; no Redis, model or tool runtime."""
+"""Local nonfinancial outbox/workflow host. No Redis or financial mutation tools."""
 
 import argparse
 import json

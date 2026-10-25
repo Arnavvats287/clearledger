@@ -1,5 +1,44 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 07 Director–Investigator traceability - 2026-10-25
+
+Authorized from verified `e9b970b`, branch `feat/milestone-07-directed-investigation`.
+Original `prompts/07-directed-investigation.md` is preserved and authoritative.
+Contract and operational limitations: `docs/INVESTIGATIONS.md`.
+
+| Original requirement | Implementation | Code/test evidence |
+|---|---|---|
+| Deterministic Director: case/claims/source kinds/limits -> typed objectives | `investigation_contract`, `investigation_director`, `investigation_service.snapshot` | Strict capability schemas, independent Hypothesis authority/uncertainty properties, tax review and deterministic replay |
+| Actual LangGraph plan/investigator/verifier/consistency/next/emit | `investigation_graph`; locked LangGraph 1.2.17, PostgreSQL `investigation_checkpoint` | Native checkpoint/pending-write persistence, committed-result resume and owned-container restart fingerprints |
+| Seven read-only scoped capabilities; no arbitrary SQL/posting tool | `investigation_broker`, existing `EvidenceReader` READ ONLY functions | Unknown SQL/file/network/approval tool rejection, cross-tenant access, scope/lease fencing, retained M06 DML-rejection coverage |
+| Precise grounded hypotheses, source facts/inference/contradictions/missing data | Typed proposals/findings; independent M06 source verification and deterministic consistency | Signed promotion support, opposing facts, forged quote/hash/offset/record, unsupported classification/unknowns, prompt injection and tax abstention |
+| Strict rounds/tools/token/spend/deadline and bounded retries | Persisted `Limits`, reservation/result journal, existing provider gateway/shared quota admission | All bound-exhaustion tests, repeated-tool stop, provider failure/recovery, failed-attempt accounting, unknown remote outcome not repeated |
+| Durable run/history/idempotency/concurrency/staleness | Nine scoped tables, additive 0009, append-only/state/version guards, exact outbox lease and run identity | Real concurrent different-key API requests, no duplicate snapshot, immutable histories, stale source versions, source/config basis and resume CAS checks |
+| Sanitized trace in event history; selective new-evidence reruns | Step/terminal events and immutable traces; per-claim invalidations/currentness | PII projection/non-leakage, explicit tracing suppression, rerun only affected rebate while preserving unrelated damage history, oversized automatic rerun explicitly reviewed |
+| Controlled failure/recovery and reproducible provenance | JSON-only source/run/config/algorithm/objective checkpoints; immutable operation outcomes | Checkpoint capacity -> review, final trace even before first tool, expired-worker rejection, process/fresh connection/container persistence |
+| Optional structured LLM adapter; deterministic no-credential execution | Fixed investigation schema in existing isolated Gemini worker; deterministic/fake providers | Disabled adapter never constructs transport, default remittance payload unchanged, fixed task selection, local/shared limits and retained provider controls |
+
+Financial safety is unchanged: hypotheses never set claim SUPPORTED/ACCEPTED/RESOLVED,
+settle cash, alter invoice/receipt balances or post journals. Existing financial/API,
+matching, security, migration, concurrency and restart assertions are retained. Only
+minimal isolated code fixtures were added; no Argon dataset/hidden answers were used.
+
+Final exact-state verification: **507 passed in 757.81s (458 retained + 49 new), no skips**.
+All lock/dependency/Ruff/16-module strict typing/bounds/PostgreSQL migration and integrity
+gates passed. Final owned-container restart: **2 passed in 16.07s**. Development up-only
+0008 -> 0009 preserved every old-table fingerprint (38 tables). Exact commands, private
+logs and checkpoint are recorded in STATUS.
+Focused integration/recovery results and isolated restart checks are already recorded
+in private local logs; the first full run exposed a remittance transport payload
+compatibility regression, fixed in code without changing its existing assertion.
+
+Remaining limitations are deferred, not resolved: G1 production authenticated roles/
+RLS, reviewed publisher key custody/PKI, remote CI, real Gemini accuracy/privacy/cost,
+live model reproducibility and the full Argon benchmark/ablation. Existing pilot email
+offset incompatibilities remain. Both pilot ZIP digests are unchanged. No 08 financial
+policy/posting, approval workflow, MCP, Redis or dataset construction is implemented.
+
+
 ## Milestone 06 evidence retrieval and verification - 2026-10-25
 
 Authorized from verified `ec7b420`, branch `feat/milestone-06-evidence-verification`.

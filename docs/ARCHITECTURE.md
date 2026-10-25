@@ -92,3 +92,25 @@ include relevant external evidence; per-claim bases filter category/invoice rele
 and batch reevaluation/hypothesis reads reuse one consistent context. Empty external
 contexts retain existing hashes. See [EVIDENCE.md](EVIDENCE.md) for trust, limits and
 protocol. This adds factual verification, not financial policy or claim approval.
+
+## Milestone 07 bounded investigation
+
+`investigation_contract/director` define typed objectives, hypotheses and conservative
+consistency independently of the graph framework. `investigation_models/service`
+own snapshots, scoped request identity, selective invalidation and run read models.
+`investigation_broker` is the trusted bridge to the seven existing read-only tools and
+deterministic verifier; only projected DTOs reach `investigation_provider`.
+`investigation_graph` implements the original required LangGraph nodes.
+`investigation_checkpoint` persists native JSON checkpoints/pending writes in PostgreSQL;
+`investigation_runtime` fences short metadata transactions and durable reservations
+against the exact leased outbox/run. No write transaction spans a model/tool call.
+`investigation_api` exposes authenticated start/resume and bounded read/history views.
+
+The existing outbox dispatches investigation events to the checkpointed host outside
+its ordinary single-transaction consumer; other consumers retain existing semantics.
+Crash recovery reuses committed operations, never refunds uncertain calls and rejects
+expired workers. New evidence invalidates only affected claim findings. The existing
+isolated Gemini worker supports a fixed optional investigation schema; external
+execution and LangSmith telemetry stay disabled. LangGraph is required by the original
+07 prompt; its locked dependencies introduce no extra service. See
+[INVESTIGATIONS.md](INVESTIGATIONS.md). No policy/posting or approval capability is added.

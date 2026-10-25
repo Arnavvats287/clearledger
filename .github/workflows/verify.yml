@@ -22,6 +22,8 @@ jobs:
       EXTRACTION_PROVIDER: disabled
       EXTERNAL_AI_ENABLED: 'false'
       GEMINI_API_KEY: ''
+      INVESTIGATION_EXTERNAL_ENABLED: 'false'
+      INVESTIGATION_PROVIDER: deterministic
       TEST_DATABASE_URL: postgresql+psycopg://clearledger_ci:ephemeral-ci-only@127.0.0.1:5432/postgres
       UV_CACHE_DIR: ${{ github.workspace }}/.uv-cache-clean
     steps:

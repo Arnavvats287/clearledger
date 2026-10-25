@@ -36,6 +36,12 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 - Milestone 06 implements the original evidence checklist with a separate versioned source manifest, PostgreSQL read-only tools/FTS and deterministic factual verification. Source attestations do not authorize finance; full user roles, investigation and policy stay in later milestones. Contract and limits: docs/EVIDENCE.md.
 
 ## Evaluation tripwires
+Milestone 07 implements the original bounded LangGraph checklist, with PostgreSQL
+native checkpoints, deterministic Director/verifier, restricted Investigator, durable
+budget/lease recovery and selective claim reruns. `docs/INVESTIGATIONS.md` is its API/
+security contract; actual verification and limitations are in STATUS and the audit.
+Hypotheses are not claim approvals or financial policy. Stop before milestone 08.
+
 Incorrect autonomous customer resolution, duplicate cash application, over-allocation, unbalanced posting, unsupported writeoff, fabricated citation accepted, or unauthorized approval is a BLOCKER. Address before moving on.
 
 ## Review gate

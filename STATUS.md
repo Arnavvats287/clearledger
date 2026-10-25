@@ -1,11 +1,72 @@
 # Build status
 
-- Repo state: **Milestone 06 implemented and locally verified.**
-- Current task: **Milestone 06 complete from `ec7b420`; STOP before 07.**
-- Verification: **458 full tests passed (391 retained + 67 new), all gates PASS; final isolated restart 2 passed.**
-- Data safety: **Development up-only 0007 -> 0008; all records in 35 existing tables unchanged. Both pilot ZIP digests unchanged.**
-- Authority/privacy: **Read-only factual results only; no balances, claims settled/approved or journals changed. Gemini disabled; no paid/external calls or dataset construction.**
+- Repo state: **Milestone 07 implemented and locally verified.**
+- Current task: **Milestone 07 from `e9b970b`; STOP before 08.**
+- Verification: **507 tests passed (458 retained + 49 new), all gates PASS; final isolated restart 2 passed.**
+- Data safety: **Development up-only 0008 -> 0009; all records in 38 existing tables unchanged. Both pilot ZIP digests unchanged.**
+- Authority/privacy: **Hypotheses/review metadata only; no balances, claims settled/approved or journals changed. Gemini disabled; no paid/external calls or dataset construction.**
 - Deferred: **Production authenticated roles/isolation G1, reviewed upstream source/key custody/PKI, remote CI, real provider/privacy and full Argon benchmark; ten pilot email offsets remain unresolved.**
+
+## Milestone 07 Director–Investigator workflow - 2026-10-25
+
+Branch `feat/milestone-07-directed-investigation` starts at verified `e9b970b`.
+Original 07 requirements remain the checklist. `docs/INVESTIGATIONS.md` defines the
+workflow/API/limits; REQUIREMENTS_AUDIT maps requirements to implementation/tests.
+LangGraph 1.2.17 is introduced because the original prompt explicitly requires it;
+PostgreSQL remains the sole durable store/outbox. No new external service is added.
+
+Implemented: deterministic typed Director objectives; plan/investigator/verifier/
+consistency/next/emit graph; restricted seven-tool read-only broker; independently
+verified projected pointers and contradictions; explicit uncertainty/tax review;
+immutable run/request/findings/operation/result/trace/native-checkpoint histories;
+snapshot idempotency and CAS; source/config/per-claim basis staleness; exact outbox
+lease/run fencing; durable budget reservations and bounded retries. Case changes
+are review metadata only. Terminal outcomes always have sanitized traces, including
+pre-call failures; checkpoint resource/integrity failures route safely to review.
+New evidence reruns only affected previously investigated claims. Oversized automatic
+reruns create an explicit limit event and review outcome instead of truncating claims.
+
+Optional Gemini uses the existing isolated SDK worker/fixed schema/model validation,
+synthetic-only gates and shared PostgreSQL quotas. External execution and LangSmith
+tracing stay disabled. Deterministic/fake tests require no credential or paid call.
+The original remittance transport's default payload is preserved exactly. No existing
+test assertion was weakened. Actual usage/cost are not inferred from offline reservation
+units. Freshness/unknown/authority decisions remain deterministic.
+
+Executed checks to date (private logs under ignored `local-data/`):
+
+- Focused domain/workflow/restart: **39 passed in 135.92s**, `m07-focused.log`.
+- Selective rerun/privacy/disabled-provider/resume: **4 passed**, `m07-routing.log`.
+- Lease ownership and oversized automatic review: **2 passed**, `m07-boundaries.log`.
+- Transport/default-payload/recovery checks: **7 passed**, `m07-recovery.log`.
+- Terminal trace/budget/capacity/retry checks: **11 passed**, `m07-terminal.log`.
+- Initial full frozen gate: **498 passed, 1 failed**, `verification/20261025T075318334244Z.log`.
+  Failure was an extra task discriminator in the default remittance transport. The
+  implementation now emits it only for investigation requests; the old assertion is
+  unchanged. A sandbox-only pytest temporary-directory denial was rerun outside the
+  sandbox; no check is claimed passed from that failed attempt.
+- Up-only development migration: `uv run --frozen python local-data/m07_upgrade.py`
+  **PASS**, including Alembic drift and unchanged fingerprints in all 38 old tables;
+  private `m07-development-schema.json` and `m07-upgrade.log`. No development downgrade.
+- Final exact-state gate: `uv run --frozen python scripts/verify.py` **PASS**: **507 passed in 757.81s**, no skips. Lock/dependency checks, Ruff lint/format, 16-module strict typing, matching bounds and all disposable PostgreSQL migration/integrity/integration checks passed. Private log: `local-data/verification/20261025T082520850494Z.log`.
+- Final owned-container restart: `uv run --frozen python scripts/verify_isolated_restart.py` **PASS**: **2 passed in 16.07s**. Native checkpoints, operations, findings and traces persisted across process/fresh connection/container restart. Private log: `local-data/verification/isolated-restart-20261025T082601059750Z.log`. Only ownership-labelled disposable resources were restarted/removed.
+- Windows commands used repository-local `.venv/Scripts/uv.exe`; focused runs supplied TEST_DATABASE_URL from ignored `.env` and used `--require-postgres`. An earlier regression gate passed 506 tests before final terminal-trace coverage (`20261025T081642604881Z.log`); the final 507-test gate includes that hardening.
+- The verified implementation hash is recorded by a follow-up status checkpoint after staging/security review. No application or schema changes follow the final passing gate.
+
+Default bounds: 10 claims, 24 rounds, 32 tool calls, 65,536/32,768 reserved input/output
+tokens, zero allowed external spend paise, 30s decision deadline, two attempts/request;
+limits are frozen and not refunded/reset on resume. A response arriving after deadline
+cannot establish positive support; bounded subprocess cleanup may take extra time.
+Lost remote outcomes abstain rather than repeat. Shared quotas are company/provider/
+PostgreSQL; concurrency gateways are process/configuration local. Immutable histories
+and per-claim validity are separate from whole-run version staleness.
+
+Remaining limitations: production authenticated identities/RBAC/RLS (G1), upstream
+publisher/PKI/key custody, remote CI, live Gemini/provider/privacy/model reproducibility,
+actual cost and full Argon benchmark/ablation remain unverified. Both pilot ZIP hashes
+match the prior checkpoint; hidden answers were not read. All CSV 1.0/financial invariants
+are preserved. No tax adjudication, posting, approval workflow, Redis, MCP, frontend,
+dataset work or milestone 08 is implemented. No push.
 
 ## Milestone 06 evidence retrieval and verification - 2026-10-25
 

@@ -173,3 +173,12 @@ worker delivery. Case registration/worker operations remain distinct from the da
 read-only evidence tools. Verifier SUPPORTED is a factual predicate, not the claim state
 SUPPORTED or permission to accept/settle; existing state gates remain. Evidence contract,
 limits and trusted-source assumptions: [EVIDENCE.md](EVIDENCE.md).
+
+Milestone 07 adds separate persistent investigation runs/findings and native graph
+checkpoints. Existing UNASSESSED placeholders remain immutable historical records;
+SUPPORTED investigation findings do not bypass claim adjudication gates. Fresh workflow
+completion can move a case only to AWAITING_REVIEW through existing legal metadata
+transitions, never acceptance/settlement. New evidence appends finding invalidations
+and reinvestigates only affected previously investigated claims. Per-claim currentness
+is separate from whole-run snapshot staleness. APIs, durable retry/lease semantics and
+oversized-case review behavior: [INVESTIGATIONS.md](INVESTIGATIONS.md).

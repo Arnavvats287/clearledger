@@ -205,7 +205,7 @@ def document_event(session, org, event, settings, store):
     return None
 
 
-def reevaluate(session, org, event, store):
+def reevaluate(session, org, event, store, settings=None):
     case = root(session, org, event.case_id)
     from clearledger.case_models import CaseVersion
     from clearledger.evidence_runtime import EvidenceOriginals
@@ -297,6 +297,10 @@ def reevaluate(session, org, event, store):
             },
         )
     )
+    if settings is not None:
+        from clearledger.investigation_service import schedule_affected
+
+        schedule_affected(session, org, case, targets, settings, event.id)
     return case
 
 
@@ -346,5 +350,5 @@ def consume(session, org, event, settings, store):
             store,
         )
     if event.event_type == "case.reevaluation.requested":
-        return reevaluate(session, org, event, store)
+        return reevaluate(session, org, event, store, settings)
     raise ValueError("Event type not allowed")

@@ -16,6 +16,8 @@ def offline_model_defaults(monkeypatch):
     monkeypatch.setenv("EXTERNAL_AI_ENABLED", "false")
     monkeypatch.setenv("EXTRACTION_PROVIDER", "disabled")
     monkeypatch.setenv("GEMINI_API_KEY", "")
+    monkeypatch.setenv("INVESTIGATION_EXTERNAL_ENABLED", "false")
+    monkeypatch.setenv("INVESTIGATION_PROVIDER", "deterministic")
 
 
 def pytest_addoption(parser):

@@ -138,6 +138,9 @@ def revise(
         case.state = "INVESTIGATING"
     event = record(session, org, case, actor, kind, store, details, changed.values())
     if invalidate:
+        from clearledger.investigation_service import invalidate as invalidate_investigations
+
+        invalidate_investigations(session, org, case, affected, event)
         targets = [
             ("hypothesis_id", h.id)
             for h in group_rows(session, Hypothesis, org, ids)

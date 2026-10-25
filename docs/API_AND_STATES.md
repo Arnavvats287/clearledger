@@ -52,3 +52,14 @@ only and carry no financial authority; they do not perform claim state transitio
 All previous claim/settlement capability gates remain. Case/customer/invoice/version
 scope and exact citations are required. Both existing financial CSV and matching APIs
 remain compatible. No arbitrary SQL, model invocation, approvals or posting is exposed.
+
+## Milestone 07 investigation contract
+
+[INVESTIGATIONS.md](INVESTIGATIONS.md) defines authenticated, tenant-scoped start/resume
+commands and run/findings/trace read APIs. States are QUEUED, RUNNING, COMPLETED,
+AWAITING_REVIEW and STALE; terminal histories cannot be rewritten. Typed hypothesis
+states are SUPPORTED, CONTRADICTED, INSUFFICIENT_EVIDENCE and NEEDS_TAX_REVIEW, always
+requiring human review and carrying no financial authority. The Investigator has seven
+read-only capabilities through a trusted scoped broker. Optional external extraction
+is disabled; it does not expose a general model/tool invocation endpoint. Existing
+claim transitions, financial CSV/matching contracts and approval/posting gates remain.

@@ -76,6 +76,27 @@ def deliver(engine, org, identifier, token, settings):
     if token is None:
         return "DEAD"
     try:
+        with Session(engine) as inspection:
+            event = inspection.scalar(
+                select(DomainEvent)
+                .join(OutboxEvent, OutboxEvent.event_id == DomainEvent.id)
+                .where(
+                    OutboxEvent.organization_id == org,
+                    DomainEvent.organization_id == org,
+                    OutboxEvent.id == identifier,
+                )
+            )
+            if event is not None and event.event_type == "investigation.requested":
+                from uuid import UUID
+
+                from clearledger.investigation_graph import execute
+                from clearledger.investigation_runtime import Runtime
+
+                run_id = UUID(event.payload["run_id"])
+            else:
+                run_id = None
+        if run_id:
+            return execute(Runtime(engine, org, run_id, identifier, token, settings))
         with Session(engine) as session, session.begin():
             lock_company(session, org)
             row = session.scalar(

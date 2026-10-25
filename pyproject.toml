@@ -16,6 +16,7 @@ dependencies = [
   "psycopg[binary]>=3.2,<4",
   "pypdf>=6.21.2,<7",
   "google-genai>=2.33,<3",
+  "langgraph>=1,<2",
 ]
 
 [dependency-groups]
@@ -45,5 +46,6 @@ files = [
   "src/clearledger/case_domain.py", "src/clearledger/case_schemas.py",
   "src/clearledger/evidence_contract.py", "src/clearledger/evidence_domain.py",
   "src/clearledger/evidence_runtime.py",
+  "src/clearledger/investigation_contract.py", "src/clearledger/investigation_director.py",
 ]
 

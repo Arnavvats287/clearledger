@@ -211,3 +211,19 @@ attestations can support factual predicates; nothing authorizes financial action
 See [docs/EVIDENCE.md](docs/EVIDENCE.md) for exact contracts, privacy, source trust,
 limits and a minimal isolated application demonstration command. No dataset, real
 provider call, model investigator, tax policy or posting is introduced.
+
+## Director–Investigator workflow (milestone 07)
+
+Start a bounded run with `POST /cases/{case_id}/investigations`, supplying current case
+version/context and explicit unresolved claim IDs. The existing PostgreSQL case worker
+executes the persisted LangGraph and exposes immutable findings/trace through
+`/investigations/{run_id}`. Default execution uses a deterministic Investigator; Gemini
+and external telemetry stay disabled. Findings require human review and never approve
+claims or mutate money. Source-backed citations, complete conservative verification,
+per-claim stale flags and durable budgets protect reruns/recovery. Detailed API examples,
+configuration and limits: [docs/INVESTIGATIONS.md](docs/INVESTIGATIONS.md).
+
+Run `uv run --frozen python scripts/verify.py` for the complete gate and
+`uv run --frozen python scripts/verify_isolated_restart.py` for an owned disposable
+container restart. Development migration is up-only (`alembic upgrade head`); never
+reset or downgrade an existing database. CSV 1.0 and both pilot datasets are unchanged.

@@ -61,3 +61,21 @@ never writes case/claim/balance/approval state; unknown/expired/conflicting/unce
 inputs abstain. Search returns privacy-projected excerpts/safe facts; full originals
 are privileged reviewer pointers, outside model tools. Errors do not reflect arbitrary
 field names or sensitive values. Gemini stays disabled. Details: [EVIDENCE.md](EVIDENCE.md).
+
+Milestone 07 retains these controls in a Director–Investigator workflow. The provider
+receives projected DTOs and seven enum-valued capability names; the trusted broker
+supplies tenant/customer/case/claim/invoice scope and separately verifies original
+citations. Provider output cannot select SQL, paths, URLs, tool implementations,
+approval actions or financial mutations. Classification/uncertainty schemas reject
+extra instructions; only exact offered pointers can be cited. Deterministic source
+verification, not parsing a model response, decides factual support. Tax remains review.
+
+Native graph checkpoints are JSON-only, scoped to company/case/run, append-only and
+protected by exact outbox leases. Durable operation reservations survive failures;
+resume never resets budgets, repeats an uncertain remote call, or accepts stale inputs.
+LangSmith tracing is disabled explicitly. Optional Gemini reuses the isolated transport,
+synthetic-only/privacy gates, model validation and shared quotas; both external switches
+remain false by default. All retrieved originals, including external evidence, must be
+approved synthetic data before any opted-in model request. No paid call was authorized
+or made. Production authenticated roles/RLS and upstream PKI/key custody remain open.
+See [INVESTIGATIONS.md](INVESTIGATIONS.md) for bounds and recovery limitations.

@@ -216,6 +216,7 @@ class GeminiTransport:
         *,
         max_input_tokens: int = 8192,
         max_output_tokens: int = 4096,
+        task: str = "remittance",
     ) -> None:
         import re
 
@@ -223,6 +224,9 @@ class GeminiTransport:
             raise ValueError("Invalid Gemini configuration")
         self._key, self.model, self.timeout_ms = api_key, model, timeout_ms
         self.max_input_tokens, self.max_output_tokens = max_input_tokens, max_output_tokens
+        if task not in {"remittance", "investigation"}:
+            raise ValueError("Unsupported isolated task")
+        self.task = task
 
     def generate(self, pages: list[str]) -> ProviderReply:
         from clearledger.document_runtime import run_worker
@@ -237,6 +241,7 @@ class GeminiTransport:
                     "pages": pages,
                     "max_input_tokens": self.max_input_tokens,
                     "max_output_tokens": self.max_output_tokens,
+                    **({"task": self.task} if self.task != "remittance" else {}),
                 },
                 timeout=self.timeout_ms / 1000 + 3,
             )

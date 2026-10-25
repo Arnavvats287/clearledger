@@ -137,3 +137,11 @@ Source authentication means a separately configured upstream signed attestation,
 textual approval, PDF layout verification or deduction legitimacy. Model-facing tool
 excerpts are projected; immutable raw reviewer pointers remain privileged and outside
 the allowlist. No external model call is made. See [EVIDENCE.md](EVIDENCE.md).
+
+Milestone 07 preserves document ingestion, extraction caches, canonical source spans
+and isolated privacy boundaries. Its optional Investigator adapter selects a fixed
+separate schema in the existing bounded Gemini transport; default remittance payloads
+remain byte-for-field compatible. The model gets projected evidence pointers, never
+raw reviewer originals, publisher keys or database access. Workflow quotas/resume
+metadata are separate from document extraction results and use existing shared provider
+admission. Both external switches remain disabled. See [INVESTIGATIONS.md](INVESTIGATIONS.md).

@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
 from clearledger.advanced_domain import Limits
+from clearledger.investigation_contract import Limits as InvestigationLimits
 
 
 class Settings(BaseSettings):
@@ -19,6 +20,9 @@ class Settings(BaseSettings):
     document_api_token: SecretStr | None = None
     case_read_token: SecretStr | None = None
     evidence_trusted_sources_json: SecretStr | None = None
+    investigation_limits: InvestigationLimits = InvestigationLimits()
+    investigation_provider: Literal["deterministic", "gemini"] = "deterministic"
+    investigation_external_enabled: bool = False
     case_outbox_max_attempts: int = Field(default=3, ge=1, le=10)
     case_outbox_lease_seconds: int = Field(default=30, ge=5, le=300)
     extraction_provider: Literal["disabled", "gemini", "fake"] = "disabled"

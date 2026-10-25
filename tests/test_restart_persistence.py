@@ -265,6 +265,49 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
             evidence_models = (EvidenceRecord, EvidenceRequest, EvidenceEvent)
             evidence_before = tenant_rows(engine, organization_id, evidence_models)
             assert all(len(rows) == 1 for rows in evidence_before.values())
+            # M07 checkpoints/findings survive both fresh API processes and the
+            # separately enabled owned-container restart. No shared container is touched.
+            from clearledger.investigation_models import (
+                Investigation,
+                InvestigationCheckpoint,
+                InvestigationFinding,
+                InvestigationOperation,
+                InvestigationRequest,
+                InvestigationResult,
+                InvestigationTrace,
+                InvestigationWrite,
+            )
+
+            current_case = client.get(f"/cases/{doc_case['id']}", headers=auth()).json()
+            claim_id = client.get(f"/cases/{doc_case['id']}/claims", headers=auth()).json()[0]["id"]
+            investigation_body = {
+                "expected_case_version": current_case["version"],
+                "expected_context_sha256": current_case["context_sha256"],
+                "claim_ids": [claim_id],
+            }
+            investigation_key = uuid4()
+            investigation = client.post(
+                f"/cases/{doc_case['id']}/investigations",
+                headers=auth(investigation_key),
+                json=investigation_body,
+            )
+            assert investigation.status_code == 200, investigation.text
+            assert set(drain(engine, organization_id, settings, 100)) == {"DELIVERED"}
+            investigation_models = (
+                Investigation,
+                InvestigationCheckpoint,
+                InvestigationFinding,
+                InvestigationOperation,
+                InvestigationRequest,
+                InvestigationResult,
+                InvestigationTrace,
+                InvestigationWrite,
+            )
+            investigations_before = tenant_rows(engine, organization_id, investigation_models)
+            assert len(investigations_before["investigations"]) == 1
+            assert len(investigations_before["investigation_checkpoints"]) >= 5
+            finding_path = f"/investigations/{investigation.json()['id']}/findings"
+            findings_before = client.get(finding_path, headers=auth()).json()
             case_models = (
                 Case,
                 CaseVersion,
@@ -324,6 +367,10 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
         assert tenant_rows(fresh_engine, organization_id) == before
         assert tenant_rows(fresh_engine, organization_id, case_models) == case_before
         assert tenant_rows(fresh_engine, organization_id, evidence_models) == evidence_before
+        assert (
+            tenant_rows(fresh_engine, organization_id, investigation_models)
+            == investigations_before
+        )
         assert len(before["customers"]) == len(before["invoices"]) == 1
         assert len(before["bank_transactions"]) == len(before["receipts"]) == 1
         assert len(before["source_imports"]) == 3
@@ -337,6 +384,18 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
         with running_api(url, organization_id) as (client, second_pid):
             assert second_pid != first_pid
             assert client.get("/cases", headers=auth()).json() == cases_before_api
+            assert client.get(finding_path, headers=auth()).json() == findings_before
+            replay_investigation = client.post(
+                f"/cases/{doc_case['id']}/investigations",
+                headers=auth(investigation_key),
+                json=investigation_body,
+            )
+            assert replay_investigation.status_code == 200
+            assert replay_investigation.json()["id"] == investigation.json()["id"]
+            assert (
+                tenant_rows(fresh_engine, organization_id, investigation_models)
+                == investigations_before
+            )
             assert all(not c["is_stale"] for c in cases_before_api)
             replay = register(
                 (fresh_engine, organization_id, None, client, None), evidence_body, evidence_key
