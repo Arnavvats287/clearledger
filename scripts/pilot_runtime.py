@@ -451,7 +451,7 @@ def documents(api, visible):
     return observations
 
 
-def run_split(visible, url, output):
+def run_split(visible, url, output, *, include_compat=False):
     output.mkdir(parents=True, exist_ok=False)
     engine = create_engine(url, pool_pre_ping=True)
     company, other_company, token = uuid4(), uuid4(), uuid4().hex + uuid4().hex
@@ -499,6 +499,11 @@ def run_split(visible, url, output):
             )
             attested = match_all(api, data["receipts"], data["invoices"])
             sources = documents(api, visible)
+            supplemental = {}
+            if include_compat:
+                from pilot_compat_runtime import structured_remittances
+
+                supplemental = structured_remittances(api, visible, data)
             other_token = uuid4().hex + uuid4().hex
             with application(
                 url,
@@ -538,6 +543,8 @@ def run_split(visible, url, output):
                 "latencies_ns": api.latencies,
             },
         }
+        if include_compat:
+            result["compatibility_structured_remittances"] = supplemental
         (output / "observations.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
         return result
     finally:

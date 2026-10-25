@@ -1,10 +1,48 @@
 # Build status
 
-- Repo state: **Milestone 04C independent pilot integration/evaluation locally verified, with document compatibility gaps explicitly reported. G2/G3 remain closed; production authentication/isolation, remote CI and full Argon benchmark remain deferred/unverified (G1/G4).**
-- Current task: **Milestone 04C complete; STOP before milestone 05.**
-- Verified checks: **337 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/PostgreSQL migrations/integrity PASS. Separate isolated restart: 2 passed. Pilot: 8 CSV files/91 rows/21 receipts, 20 cases, 68 originals, no false supported proposal or financial mutation. Development head unchanged at 0006; no development migration/reset/downgrade/restart.**
+- Repo state: **Pilot v1.1 compatibility re-evaluation verified; frozen v1.0 baseline preserved. G2/G3 remain closed; production authentication/isolation, remote CI and full Argon benchmark remain deferred/unverified (G1/G4).**
+- Current task: **Pilot v1.1 re-evaluation complete; STOP before milestone 05.**
+- Verified checks: **347 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/PostgreSQL migrations/integrity PASS. Isolated restart: 2 passed. v1.1: 35/35 PDFs parse with exact canonical text, 25/25 deterministic supplemental extractions, 21/21 attested UTR links, 4/4 negative abstentions, zero financial mutation/false links. Ten EML offsets remain incompatible. Development data untouched.**
 - External integrations: **Optional Gemini adapter implemented, disabled by default; no live/paid Gemini call performed.**
-- Open decisions: Pilot PDF/canonical/structured-extraction/UTR incompatibilities; live provider/privacy/terms, OCR, production auth/isolation, remote CI and full Argon benchmark remain unresolved/unverified. Tax adjudication stays in later approved milestones.
+- Open decisions: Ten EML offsets and native Windows compatibility-validator path handling remain unresolved upstream; free-form semantic extraction/live provider/privacy/terms, OCR, production auth/isolation, remote CI and full benchmark remain unverified. Tax adjudication stays in later approved milestones.
+
+## Pilot v1.1 compatibility re-evaluation - 2026-10-25
+
+Resumed on `test/pilot-v1-1-compatibility` from verified `b7ca509`. Resume inspection found a clean tree: interruption had stopped after branch/package inspection; no v1.1 code/tests/application runs existed. Continued the existing harness rather than replacing completed functionality. Original `docs/PILOT_EVALUATION.md`, source ZIP and baseline observations are unchanged. New aggregate comparison: `docs/PILOT_V1_1_EVALUATION.md`. No application modules, parser filters, CSV contract, schema, dependency, financial behavior, dataset construction or later milestone changed.
+
+Changed harness: recognized both known archive roots with existing strict manifest/path/resource checks; separately allowlisted public supplemental JSON; added pinned compatibility validator with explicit Windows path-only adapter; uniform deterministic source/span/correlation/attestation/version/idempotency probes in `pilot_compat_runtime.py`; evaluator-only target and actual-email-text diagnostics in `pilot_compat_score.py`; predecessor preservation comparison. No hidden targets/source-sidecars are passed to APIs/models, no attestations derived from sealed answers, and no financial matches inferred from JSON UTR association.
+
+Successor ZIP SHA-256 `26594c6f3ae11916f16aed1577d418e255e18d1e56a9c0ed84361dc85b841f13`: 271 files/270 manifest entries/506582 bytes verified. Predecessor `438fbedcce8016fa0aaead3910876b8fb9e2b6f1dd41406db8c0ec5829855927` unchanged. Eight CSVs, 68 canonical sidecars, two inventories, original business expectations and citation offsets identical; exactly 35 PDFs changed bytes. The package and extracted evaluator copy remain unmodified. No generator or upgrade script was run.
+
+Original pinned validator PASS. Additional supplied validator FAILS natively on Windows (`str(relative_path)` backslashes vs slash manifest keys), before DB creation on the first attempt. Independent on-disk coverage/hash verification passes; a separately logged evaluator copy changes only that expression to `.as_posix()`, preserving all assertions. Adapter PASS: 35 filter/canonical PDFs, 21 positive JSONs, four negatives, 25 invoice references, 34 updated PDF citation hashes. Both native failure and adapter success are recorded, never silently conflated; packaged executable unchanged. This is a portability discrepancy, not a waived security/integrity check.
+
+Actual disposable PostgreSQL/HTTP run `58f8acde007249dba9975741b793c50f`: dev 21/21 and eval 14/14 PDFs READY/canonical-equal. Legacy 68/68 sources READY; canonical equality improves baseline 23/68 to 58/68. All 47 source citation hashes match successor originals; direct pointer compatibility improves 3/47 to 37/47 (34/34 PDF, 3/3 TXT, 0/10 EML). Every EML body uniquely and exactly matches its old sidecar inside actual API canonical text. Measured prefixes/quote deltas: 55 characters for four dev emails, 56 for six eval; actual byte offsets measured independently. No pointers rewritten, guessed, relabeled or submitted as corrected evidence. The ten email offsets remain open.
+
+Supplemental sources scored separately from legacy corpus: dev 13/13, eval 12/12 deterministic SUCCEEDED; 48/48 returned spans verified by API. Without operator attestations: 21 CANDIDATES, four UNRESOLVED, zero LINKED. Explicitly simulated attestations of extracted UTR literals plus current expected receipt versions: 21/21 correct links; four negative controls remain UNRESOLVED. Wrong source attestation rejects 25/25 (422); missing expected version 21/21 and stale expected version 21/21 reject (409); 50 same-/fresh-key correlation replays equal. No wrong-owner scenario was added; existing owner/tenant/conflict regressions remain. UTR link is only a source association, never payment intent, identity/claim approval or settlement.
+
+All financial CSV imports/replays/conflicts, exact/advanced matching, auth/tenant and non-mutation probes retained. Original 91 financial input rows/21 receipts and every customer/alias/invoice/bank/receipt balance/status/version unchanged after all document operations. External models disabled; zero provider attempts/reservations/transmissions or recognized-identifier projection failures. Sources are untrusted and review-required, not externally authenticated. New JSONs are author-controlled extensions informed by prior truth, not a prospective blind/Gemini accuracy benchmark.
+
+Executed commands/results:
+
+```powershell
+./.venv/Scripts/python.exe -m pytest tests/test_pilot_harness.py tests/test_pilot_compatibility.py -q --basetemp=local-data/pilot-v11-unit-temp
+# Final targeted run: 46 passed in 1.00s (36 existing + 10 new compatibility cases).
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_pilot.py --archive local-data/pilot/clearledger_pilot_v1_1_compat.zip
+# First attempt stopped at native validator portability error before DB creation.
+# Second: logged adapter PASS, disposable application integration/safety PASS.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# 347 passed in 128.48s; all lock/dependency/lint/format/type/bounds/migration/integrity gates PASS.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# 2 passed in 8.62s; only owned labelled test container/volume restarted and removed.
+```
+
+Preserved completed application observations and reused them for final evaluator-only `evaluate`, `evaluate_compat`, `compare_successor` and immutable-package checks, rather than repeating the expensive API run after adding diagnostics. New private outputs `summary-verified.json` and `evaluator/details-verified.json` contain those final measurements; original observations/summary remain intact. The full verification gate ran after code/test completion. All 337 regressions retained plus ten new tests; one existing Starlette/HTTPX deprecation warning, no skips or weakened assertions.
+
+Ignored logs: `local-data/pilot/v11-integration-1.log`, `v11-integration-2.log`; `local-data/pilot-runs/58f8acde007249dba9975741b793c50f/` (native/adapter validator logs, original API outputs, evaluator-only results); `local-data/verification/20261025T031638842859Z.log`; `local-data/verification/isolated-restart-20261025T031637899348Z.log`. Standalone application timing: dev 799 requests/43.554s/p95 427.967ms; eval 683/36.360s/p95 428.092ms. Evaluator Python-traced peak 23009259 bytes; API/parser/DB RSS and system CPU not measured. More requests than v1.0, so no speedup comparison is claimed.
+
+Final read-only check confirms development head still `0006_provider_budgets`, zero remaining `clearledger_pilot_*` databases, and both ZIP hashes unchanged. The original v1.0 report, DOCUMENTS/DATA_CONTRACT specifications, product source and lockfile have no diff.
+
+Remaining limitations: native Windows validator portability, ten email citation offsets, original prose requiring semantic extraction, no live model/privacy/provider-terms verification, no production auth/isolation or full blind/large Argon evaluation. No tax adjudication, cases, agents, Redis/MCP, approvals, frontend or journals. STOP before milestone 05.
 
 ## Milestone 04C - independent pilot integration and evaluation - 2026-10-25
 

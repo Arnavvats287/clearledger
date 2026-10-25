@@ -1,5 +1,12 @@
 # ClearLedger requirements-alignment audit
 
+## Pilot v1.1 compatibility follow-up - 2026-10-25
+
+Targeted harness-only re-evaluation from `b7ca509`; no application/schema/security/accounting or original acceptance requirement changed. Frozen v1.0 evaluation is unchanged. `scripts/pilot_compat_runtime.py` tests declared public JSON originals and explicit UTR attestations; `pilot_compat_score.py` reads sealed targets only after application shutdown. `pilot_package.py` verifies both known roots and preserved predecessor bytes; the validator adapter normalizes one Windows path expression while preserving every assertion and original package byte.
+
+Observed improvements: 35/35 recompressed PDFs parse with exact application canonical text; all 34 PDF citations align. Legacy pointer compatibility improves 3/47 to 37/47; ten EML pointers remain incompatible, with exact bodies but measured subject-prefix shifts of 55/56 characters. Supplemental results are separate: 25/25 deterministic JSON extractions, 48/48 API-verified spans, no unattested links, 21/21 correctly attested UTR links and 4/4 negative abstentions. No false link or financial mutation. Source-authenticity/approval is not inferred; the new sources are author-controlled extensions, not independent blind benchmark evidence.
+
+The supplied compatibility validator fails natively on Windows due to slash representation; the explicit evaluator path adapter passes after independent manifest verification. This is not silently reported as native success. Full results/logs and verification are in STATUS and `docs/PILOT_V1_1_EVALUATION.md`. EML export, real semantic-provider/privacy accuracy, production authority/isolation and full Argon/remote CI coverage remain open; no milestone 05 work is authorized or started.
 ## Milestone 04C independent pilot follow-up - 2026-10-25
 
 Approved integration/evaluation only, from `f2f71fe`; no product/schema/accounting/security requirement changed. `scripts/verify_pilot.py`, `pilot_package.py`, `pilot_runtime.py` and answer-only `pilot_score.py` exercise real HTTP APIs on disposable PostgreSQL, with allowlisted inputs and hidden answers loaded only after application shutdown. `tests/test_pilot_harness.py` adds 36 isolated boundary/scoring tests; all 301 regressions remain. Full gate **337 passed**, isolated restart **2 passed**. Commands, private logs and checkpoint: STATUS. Aggregate counts/accuracy/limitations: `docs/PILOT_EVALUATION.md`.

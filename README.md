@@ -1,5 +1,7 @@
 # ClearLedger
 
+Pilot v1.1 compatibility results are reported separately in [PILOT_V1_1_EVALUATION.md](docs/PILOT_V1_1_EVALUATION.md); the v1.0 report remains the frozen baseline. To evaluate the supplied successor, use `uv run --frozen python scripts/verify_pilot.py --archive local-data/pilot/clearledger_pilot_v1_1_compat.zip` with both original archives retained locally. External models remain disabled.
+
 Independent pilot evaluation: place the supplied archive in ignored `local-data/pilot/clearledger_pilot_v1.zip`, configure local TEST_DATABASE_URL with CREATEDB permission, and run `uv run --frozen python scripts/verify_pilot.py`. The harness uses disposable databases and real loopback HTTP APIs with Gemini disabled; it never edits/regenerates the package. Results, compatibility blockers and reproduction details: [PILOT_EVALUATION.md](docs/PILOT_EVALUATION.md). Detailed fixture-bearing outputs remain ignored locally.
 
 Milestone 04 adds secure, local document intelligence. Development schema head is `0006_provider_budgets`; upgrade safely with `uv run --frozen alembic upgrade head`, never reset/downgrade development data. Set a random ≥32-character `DOCUMENT_API_TOKEN` in ignored `.env`; document routes fail closed without it. Originals live under `DOCUMENT_ROOT` (default ignored `local-data/documents`); back up that volume with PostgreSQL.
