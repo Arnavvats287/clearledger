@@ -560,7 +560,11 @@ def test_migration_refuses_lossy_history_downgrade(environment, migration_config
 def test_upgrade_legacy_history_roundtrip_and_mixed_algorithm_reads(
     disposable_database,
     migration_config,
+    monkeypatch,
 ):
+    from clearledger import case_events
+    from clearledger.case_models import DomainEvent, OutboxEvent
+
     url = disposable_database.render_as_string(hide_password=False)
     engine = build_engine(url)
     org = uuid4()
@@ -572,9 +576,19 @@ def test_upgrade_legacy_history_roundtrip_and_mixed_algorithm_reads(
         with Session(engine) as session, session.begin():
             session.add(Organization(id=org, name="Test"))
         with TestClient(create_app(Settings(database_url=url, organization_id=org))) as client:
-            receipt = setup(client)
-            assert add_evidence(client, receipt).status_code == 200
-            exact = match(client, receipt).json()
+            # Model the actual pre-0007 publisher boundary while constructing
+            # legacy rows. Never suppress missing-schema errors in production.
+            # Restore every hook before exercising upgraded application behavior.
+            with monkeypatch.context() as legacy:
+                for publisher in (
+                    "receipt_accepted",
+                    "matching_evidence_registered",
+                    "matching_proposed",
+                ):
+                    legacy.setattr(case_events, publisher, lambda *args: None)
+                receipt = setup(client)
+                assert add_evidence(client, receipt).status_code == 200
+                exact = match(client, receipt).json()
             assert exact["outcome"] == "EXACT_MATCH"
             models = (
                 Invoice,
@@ -598,6 +612,23 @@ def test_upgrade_legacy_history_roundtrip_and_mixed_algorithm_reads(
             assert tenant_rows(engine, org, models) == before
             assert client.get(f"/matching-proposals/{exact['id']}").json() == exact
             new = advanced(client, receipt).json()
+            with Session(engine) as session:
+                published = session.scalar(
+                    select(DomainEvent).where(
+                        DomainEvent.organization_id == org,
+                        DomainEvent.matching_proposal_id == UUID(new["id"]),
+                    )
+                )
+                assert published is not None and published.event_type == "matching.proposed"
+                assert (
+                    session.scalar(
+                        select(OutboxEvent).where(
+                            OutboxEvent.organization_id == org,
+                            OutboxEvent.event_id == published.id,
+                        )
+                    )
+                    is not None
+                )
             assert new["outcome"] == "UNIQUE" and new["result"]["intent_verified"]
             assert {row["id"] for row in client.get(f"/receipts/{receipt}/matches").json()} == {
                 exact["id"],

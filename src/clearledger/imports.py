@@ -220,6 +220,9 @@ def register_row(session, organization_id, run_id, actor_id, kind, number, row):
         session.add(receipt)
         session.flush()
         receipt_id = receipt.id
+        from clearledger.case_events import receipt_accepted
+
+        receipt_accepted(session, receipt, actor_id)
         event(session, organization_id, run_id, actor_id, "receipts.created", receipt.id, number)
     return record.id, True, receipt_id
 

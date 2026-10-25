@@ -48,10 +48,29 @@ Phase 00 can choose a simpler conventional Python package layout. Avoid creating
 
 ## Milestone 04 implementation boundary
 
-The implementation stays in `src/clearledger`, extending the existing service/SQLAlchemy layout. `document_api` authenticates local document access and derives company scope; `documents` is the transactional metadata orchestrator; `document_runtime.LocalOriginals` stores exclusive content-addressed originals. `document_parse` runs in `document_worker`, with bounded PDF/MIME processing and no network. `document_contract`, `remittance_parser` and `document_privacy` define typed untrusted facts, deterministic-first parsing, independent source/semantic validation and private offset-preserving projection/restoration. No persistent claims/cases or general evidence adjudicator are introduced.
+The implementation stays in `src/clearledger`, extending the existing service/SQLAlchemy layout. `document_api` authenticates local document access and derives company scope; `documents` is the transactional metadata orchestrator; `document_runtime.LocalOriginals` stores exclusive content-addressed originals. `document_parse` runs in `document_worker`, with bounded PDF/MIME processing and no network. `document_contract`, `remittance_parser` and `document_privacy` define typed untrusted facts, deterministic-first parsing, independent source/semantic validation and private offset-preserving projection/restoration. That milestone introduced no persistent claims/cases or general evidence adjudicator; milestone 05 now adds the case subsystem below.
 
 Approved Gemini transport exception: the typed `extraction_provider.Transport` receives only sanitized pages. `gemini_worker` uses the official SDK in a separate minimal-environment process; `worker_security` denies tools, local DB/arbitrary network and application-file reads. Only the configured Google host/public TLS endpoints are allowed. This transport is not an investigator, agent, tool runtime or policy service. The parser retains zero network. Shared Python audit/OS resource guards are defense in depth, not a separate OS-principal/container sandbox against arbitrary dependency RCE; deployment remains local/synthetic-only.
 
 External AI is disabled by default and requires explicit synthetic approval, server/provider/model/key/review configuration and request opt-in. The orchestrator independently validates provider output before appending immutable extraction/audit metadata; no DB/session is passed to the provider. Raw bytes and private mappings never enter model content. Synchronous requests retain the existing company transaction lock through bounded processing, favoring consistent idempotency over throughput; there is no Redis/worker queue. Gateway/worker concurrency and attempt limits are per API process. Milestone 04B adds independently committed, append-only PostgreSQL reservations under a separate company/provider advisory lock for shared daily request/token budgets and rolling-minute RPC admission. This is not an account-global Google quota; see docs/DOCUMENTS.md for conservative charging, cache identity and limits.
 
-Five additive immutable tables record documents, extractions, candidate/reference associations, operation keys and document audit events. Exact UTR correlation is separately attested, bounded, scoped and version checked; conflicting/unknown owners, stale extraction or multiple receipts abstain. It never creates financial allocations, changes receipt/invoice versions/balances or grants authenticity/legitimacy. Milestone 05 will supply case/claim lifecycle and late-evidence event replay; milestone 06 supplies generalized financial evidence validation. Full document/API/privacy/format contracts are in [DOCUMENTS.md](DOCUMENTS.md); CSV DATA_CONTRACT 1.0 is unchanged.
+Five additive immutable tables record documents, extractions, candidate/reference associations, operation keys and document audit events. Exact UTR correlation is separately attested, bounded, scoped and version checked; conflicting/unknown owners, stale extraction or multiple receipts abstain. It never creates financial allocations, changes receipt/invoice versions/balances or grants authenticity/legitimacy. Milestone 05 supplies case/claim lifecycle and late-evidence event replay; milestone 06 supplies generalized financial evidence validation. Full document/API/privacy/format contracts are in [DOCUMENTS.md](DOCUMENTS.md); CSV DATA_CONTRACT 1.0 is unchanged.
+
+## Milestone 05 persistent case boundary
+
+`case_domain` and strict `case_schemas` define state/paise rules and typed contracts.
+`case_models` supplies scoped PostgreSQL aggregates/history; `case_repository`
+encapsulates bounded membership/lookups. `case_sources` independently revalidates
+existing financial/document contracts; `case_lifecycle` records revision/invalidation
+transactions. `case_service` owns versioned commands, `case_api` authentication and
+safe typed transport. `case_events` publishes with the original source transaction;
+`case_processing` handles only known event kinds and deterministic review metadata.
+`case_outbox` leases/acks/retries with transactionally deduped effects; `case_worker`
+is the separate bounded polling process. No queue framework, Redis or new dependency
+is introduced. This keeps database ownership outside extraction and preserves the
+existing application/matching services. Details and operational bounds: [CASES.md](CASES.md).
+
+Immutable case-local proposal bindings/invalidation overlays preserve existing
+matching proposal history. Merges retain physical source IDs and canonical redirects.
+Company locks plus CAS, compound tenant FKs, commit-required revisions and append-only
+triggers protect case writes. No case component calls Gemini or financial posting.

@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     matching_limits: Limits = Limits()
     document_root: Path = Path("local-data/documents")
     document_api_token: SecretStr | None = None
+    case_read_token: SecretStr | None = None
+    case_outbox_max_attempts: int = Field(default=3, ge=1, le=10)
+    case_outbox_lease_seconds: int = Field(default=30, ge=5, le=300)
     extraction_provider: Literal["disabled", "gemini", "fake"] = "disabled"
     external_ai_enabled: bool = False
     privacy_review_reference: str = ""

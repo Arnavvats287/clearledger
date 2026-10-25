@@ -1,5 +1,33 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 05 traceability - 2026-10-25
+
+Authorized from verified `16db2df`, branch `feat/milestone-05-case-management`.
+The original `prompts/05-cases-and-events.md` remains the checklist.
+
+| Requirement | Implementation | Code-test evidence |
+|---|---|---|
+| Cases, receipt/invoice links, claims/states, hypotheses placeholder, versions/events/outbox | `case_models.py`, additive `0007_cases`, `docs/CASES.md` | PostgreSQL migration up/down/up/drift, scoped FKs and immutable-write/history tests |
+| Deterministic receipt/remittance lifecycle, individual claims and separate claimed/settled amounts | `case_sources.py`, `case_processing.py`, `case_lifecycle.py` | Before/after receipt, two claims, claimed sum exceeding cash, JSON field reparse, conflicting extraction revisions |
+| Typed legal transitions and immutable provenance | `case_domain.py`, `case_schemas.py`, `case_service.py` | Property-based graph/paise oracles; invalid, forbidden, stale and replayed commands; database guards |
+| New evidence versions/reopens, precisely invalidates and reevaluates without duplicate cash | lifecycle, immutable case-proposal overlays | Affected claim reopens; unaffected hypothesis preserved; original matching proposals retained; stale balances/originals; financial row equality |
+| Background safe retry/event-ID dedupe | `case_events.py`, `case_outbox.py`, `case_worker.py` | Concurrent leases, partial-effect rollback, lease expiry/old token, bounded DEAD history, replay/backfill, restart fingerprints |
+| Concurrent, tenant-scoped and authenticated metadata APIs | `case_repository.py`, `case_api.py`, locks/CAS/command keys | Real concurrent sessions same/different keys; GET-only credential; foreign sources/claims/cases; safe errors; injection non-execution |
+
+Focused PostgreSQL/restart run: **35 passed** (`local-data/m05-final-focused-3.log`).
+Final full gate: **391 passed in 229.09s**, all lint/format/lock/dependency/11-module strict typing/bounds/migration/integrity checks PASS; isolated-container restart **2 passed in 10.69s**. Development migration 0006 -> 0007 retained every old-table fingerprint. Exact commands, private logs and checkpoint are in STATUS.
+All original 347 tests/assertions are retained, including G2/G3 regressions.
+
+All normative states remain represented. Adjudication/settlement destinations require
+validated capabilities from 06/08/09 and return 403 today; hypotheses are UNASSESSED,
+not rule evidence. Review insufficiency/disputes/tax uncertainty are metadata only.
+This enforces the original security/accounting prerequisites, without waiving future
+requirements. No posting, balances, tax rule, AI investigator, Redis, MCP, frontend
+or dataset work was added. G1 production auth/RBAC/isolation, remote CI, live Gemini
+privacy/terms, full Argon benchmark/ablation and ten pilot email offsets remain
+unresolved. Local bearer controls do not close G1. Prior pilot results/data unchanged.
+
+
 ## Pilot v1.1 compatibility follow-up - 2026-10-25
 
 Targeted harness-only re-evaluation from `b7ca509`; no application/schema/security/accounting or original acceptance requirement changed. Frozen v1.0 evaluation is unchanged. `scripts/pilot_compat_runtime.py` tests declared public JSON originals and explicit UTR attestations; `pilot_compat_score.py` reads sealed targets only after application shutdown. `pilot_package.py` verifies both known roots and preserved predecessor bytes; the validator adapter normalizes one Windows path expression while preserving every assertion and original package byte.

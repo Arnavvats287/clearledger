@@ -21,6 +21,27 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from test_imports import BANK, CUSTOMER, INVOICE, csv_bytes, post
 
+from clearledger.case_models import (
+    Case,
+    CaseCommand,
+    CaseDocument,
+    CaseInvalidation,
+    CaseInvoice,
+    CaseProposal,
+    CaseReceipt,
+    CaseVersion,
+    Claim,
+    ClaimSource,
+    ClaimVersion,
+    DomainEvent,
+    EventConsumption,
+    EvidenceLink,
+    Hypothesis,
+    OutboxDelivery,
+    OutboxEvent,
+    Reevaluation,
+)
+from clearledger.case_outbox import drain
 from clearledger.config import Settings
 from clearledger.db import build_engine
 from clearledger.document_contract import ExtractionError
@@ -176,8 +197,12 @@ def test_shared_development_container_is_rejected_before_any_docker_call(monkeyp
 
 
 def test_financial_import_survives_process_restart_and_fresh_connection(
-    disposable_database, migration_config, request
+    disposable_database, migration_config, request, monkeypatch, tmp_path
 ):
+    from test_documents import TOKEN, auth, extract, upload
+
+    monkeypatch.setenv("DOCUMENT_API_TOKEN", TOKEN)
+    monkeypatch.setenv("DOCUMENT_ROOT", str(tmp_path / "restart-originals"))
     url = disposable_database.render_as_string(hide_password=False)
     organization_id = uuid4()
     engine = build_engine(url)
@@ -202,6 +227,55 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
                 assert response.status_code == 200, response.text
                 results[kind] = response.json()
                 assert response.json()["inserted"] == 1
+            document = upload(client).json()
+            extraction = extract(client, document["id"])
+            assert extraction.status_code == 200
+            settings = Settings(database_url=url, organization_id=organization_id)
+            delivered = drain(engine, organization_id, settings, 100)
+            assert set(delivered) == {"DELIVERED"}
+            doc_case = next(
+                c
+                for c in client.get("/cases", headers=auth()).json()
+                if document["id"] in c["document_ids"]
+            )
+            response = client.post(
+                f"/cases/{doc_case['id']}/attach-evidence",
+                headers=auth(),
+                json={
+                    "expected_case_version": doc_case["version"],
+                    "document_id": document["id"],
+                    "document_version": document["version"],
+                    "raw_sha256": document["content_sha256"],
+                    "canonical_sha256": document["canonical_sha256"],
+                    "span": extraction.json()["result"]["claims"][0]["description"],
+                },
+            )
+            assert response.status_code == 200, response.text
+            assert set(drain(engine, organization_id, settings, 100)) == {"DELIVERED"}
+            case_models = (
+                Case,
+                CaseVersion,
+                Claim,
+                ClaimSource,
+                ClaimVersion,
+                DomainEvent,
+                EventConsumption,
+                Hypothesis,
+                OutboxEvent,
+                CaseCommand,
+                CaseDocument,
+                CaseInvalidation,
+                CaseInvoice,
+                CaseProposal,
+                CaseReceipt,
+                EvidenceLink,
+                OutboxDelivery,
+                Reevaluation,
+            )
+            case_before = tenant_rows(engine, organization_id, case_models)
+            assert len(case_before["claims"]) == len(case_before["evidence_links"]) == 1
+            assert len(case_before["hypotheses"]) == 2
+            cases_before_api = client.get("/cases", headers=auth()).json()
             before_api = {
                 path: client.get(path).json()
                 for path in (
@@ -235,6 +309,7 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
             if container is None:
                 assert connection.scalar(text("SELECT pg_backend_pid()")) != first_backend
         assert tenant_rows(fresh_engine, organization_id) == before
+        assert tenant_rows(fresh_engine, organization_id, case_models) == case_before
         assert len(before["customers"]) == len(before["invoices"]) == 1
         assert len(before["bank_transactions"]) == len(before["receipts"]) == 1
         assert len(before["source_imports"]) == 3
@@ -247,6 +322,8 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
 
         with running_api(url, organization_id) as (client, second_pid):
             assert second_pid != first_pid
+            assert client.get("/cases", headers=auth()).json() == cases_before_api
+            assert all(not c["is_stale"] for c in cases_before_api)
             for path, expected in before_api.items():
                 assert client.get(path).json() == expected
             for kind, row in payloads.items():
@@ -276,5 +353,7 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
                 assert final[model.__tablename__] == before[model.__tablename__]
             assert len(final["source_imports"]) == 4
             assert len(final["audit_events"]) == len(before["audit_events"]) + 5
+            assert drain(fresh_engine, organization_id, settings, 100) == {}
+            assert tenant_rows(fresh_engine, organization_id, case_models) == case_before
     finally:
         fresh_engine.dispose()

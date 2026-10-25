@@ -19,7 +19,7 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 
 ## Dependency and sequencing notes
 - Approved milestone 04C is integration/evaluation of the existing independently constructed pilot through disposable application instances. It does not authorize dataset construction/modification, external model calls, later product features or completion of the full milestone 11 benchmark. Measured compatibility gaps and deferred capabilities are in `docs/PILOT_EVALUATION.md`.
-- Milestone 04 preserves the original checklist with the approved Gemini/privacy extension. `docs/DOCUMENTS.md` defines its separate API/format, no-tool/DB transport and synthetic-only opt-in. Verification is recorded in STATUS; fake-provider checks do not prove live Gemini/real-data privacy, production auth/isolation, remote CI or Argon accuracy. Financial CSV 1.0 is unchanged; case/claim lifecycle remains 05 and generalized evidence adjudication 06.
+- Milestone 04 preserves the original checklist with the approved Gemini/privacy extension. `docs/DOCUMENTS.md` defines its separate API/format, no-tool/DB transport and synthetic-only opt-in. Verification is recorded in STATUS; fake-provider checks do not prove live Gemini/real-data privacy, production auth/isolation, remote CI or Argon accuracy. Financial CSV 1.0 is unchanged; case/claim lifecycle is implemented in 05 (CASES.md); generalized evidence adjudication remains 06.
 - Milestone 03's advanced-mitm-v1 API, search-completeness crosswalk, configured hard bounds and optional source-memo partial-allocation evidence are documented in `docs/MATCHING.md`; original 03 checklist/benchmark gates remain binding. Exact-v1 and CSV contract 1.0 remain compatible. Verification is recorded in STATUS, not inferred from this plan.
 - Existing milestone prompts, including original tests and exit gates, remain the implementation checklists; approved scope changes and open gaps are traced in `REQUIREMENTS_AUDIT.md`. Do not silently waive requirements or infer completion from a passing test count.
 - Argon owns all demonstration/evaluation dataset research and construction. Codex must not generate, download, curate or seed datasets; only minimal isolated code-test fixtures are permitted. Data imports follow `docs/DATA_CONTRACT.md`.
@@ -30,6 +30,8 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 - From milestone 08, simulate a bank receipt ledger or reconciliation trace separate from clearing, avoiding duplicate bank entries.
 - Never turn a synthetic approved withholding fixture into a general TDS compliance assertion.
 - Authenticated actor/role and maker-checker requirements remain normative. Current local actor labels are not authentication. Milestone 08 must not expose unrestricted simulated posting merely because the full review workflow is scheduled for milestone 09; the authorization gate is required before any posting is enabled.
+
+- Milestone 05 uses a PostgreSQL leased outbox and deterministic UNASSESSED hypotheses. It preserves all original lifecycle states while gating adjudication/settlement outcomes on later validated capabilities; no operator label bypasses 06/08/09 prerequisites. Source checklist and test traceability are in REQUIREMENTS_AUDIT and CASES.md.
 
 ## Evaluation tripwires
 Incorrect autonomous customer resolution, duplicate cash application, over-allocation, unbalanced posting, unsupported writeoff, fabricated citation accepted, or unauthorized approval is a BLOCKER. Address before moving on.

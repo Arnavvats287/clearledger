@@ -183,3 +183,17 @@ Local development system, anonymized/synthetic data, one company, INR, no real b
 Before each milestone: read specs; make a limited plan. During: test driven implementation and targeted integration checks. After: publish changed files, run commands and observed outputs, unresolved risks, and update `STATUS.md`. **Do not silently continue to the next milestone.**
 
 Milestone 04B adds durable company/provider daily request/input/output token budgets, shared RPC admission and validated-result reuse across revision labels. See [document configuration](docs/DOCUMENTS.md) and `.env.example`. Gemini model ID has no assumed default: an explicitly authorized uncached request must validate the exact ID with provider metadata and count its full input before generation. No live model/pricing check or paid call was performed.
+
+## Persistent case management (milestone 05)
+
+Safely apply `uv run --frozen alembic upgrade head` before starting the API/worker.
+Never downgrade/reset development data. With the same ignored `.env` company, database
+and originals directory, run `uv run --frozen python -m clearledger.case_worker` in a
+second terminal, or `--once --limit 100` for a bounded drain. No Redis/Gemini is needed.
+Use the authenticated, paginated `/cases` APIs; existing sources can be backfilled
+through POST `/cases/reconcile` in bounded cursor pages. Document/source ingestion
+acknowledgement is separate from eventual case processing. Pending/retry/dead work
+is visible under case `/work`; failed source events are also retained in the database.
+Exact API bodies, state/authority restrictions, retry bounds and examples are in
+[docs/CASES.md](docs/CASES.md). The optional strong CASE_READ_TOKEN is GET-only.
+Local bearer authentication does not replace the deferred production user/role system.

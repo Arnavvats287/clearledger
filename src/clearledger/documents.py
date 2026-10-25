@@ -91,16 +91,19 @@ def operation(session, org, key, fingerprint, kind, document_id=None):
 
 
 def audit(session, org, doc, actor, kind, entity, **details):
-    session.add(
-        DocumentEvent(
-            organization_id=org,
-            document_id=doc.id,
-            actor_id=actor,
-            event_type=kind,
-            entity_id=entity,
-            details=details,
-        )
+    entry = DocumentEvent(
+        organization_id=org,
+        document_id=doc.id,
+        actor_id=actor,
+        event_type=kind,
+        entity_id=entity,
+        details=details,
     )
+    session.add(entry)
+    session.flush()
+    from clearledger.case_events import document_changed
+
+    document_changed(session, entry)
 
 
 def integrity(doc, store):

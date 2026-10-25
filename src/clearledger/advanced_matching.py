@@ -254,6 +254,9 @@ def create_advanced(session, organization_id, receipt_id, body, key, actor, limi
         )
         session.add(proposal)
         session.flush()
+        from clearledger.case_events import matching_proposed
+
+        matching_proposed(session, proposal, actor)
         event(
             session,
             organization_id,

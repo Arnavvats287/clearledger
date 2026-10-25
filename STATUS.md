@@ -1,10 +1,119 @@
 # Build status
 
-- Repo state: **Pilot v1.1 compatibility re-evaluation verified; frozen v1.0 baseline preserved. G2/G3 remain closed; production authentication/isolation, remote CI and full Argon benchmark remain deferred/unverified (G1/G4).**
-- Current task: **Pilot v1.1 re-evaluation complete; STOP before milestone 05.**
-- Verified checks: **347 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/PostgreSQL migrations/integrity PASS. Isolated restart: 2 passed. v1.1: 35/35 PDFs parse with exact canonical text, 25/25 deterministic supplemental extractions, 21/21 attested UTR links, 4/4 negative abstentions, zero financial mutation/false links. Ten EML offsets remain incompatible. Development data untouched.**
-- External integrations: **Optional Gemini adapter implemented, disabled by default; no live/paid Gemini call performed.**
-- Open decisions: Ten EML offsets and native Windows compatibility-validator path handling remain unresolved upstream; free-form semantic extraction/live provider/privacy/terms, OCR, production auth/isolation, remote CI and full benchmark remain unverified. Tax adjudication stays in later approved milestones.
+- Repo state: **Milestone 05 implemented and locally verified.**
+- Current task: **Persistent deduction case management from `16db2df`; STOP before 06.**
+- Focused checks: **391 full tests passed (347 retained + 44 new); all required gates PASS. Isolated restart: 2 passed.**
+- Financial boundary: **No posting, write-offs, balance mutation or tax adjudication.**
+- External integrations: **Gemini disabled; no external/paid calls or dataset changes.**
+- Deferred: **Production auth/RBAC/isolation G1, remote CI, live provider/privacy review, full Argon benchmark and ten email offsets. G2/G3 coverage preserved.**
+
+## Milestone 05 persistent deduction case management - 2026-10-25
+
+Branch `feat/milestone-05-case-management` starts at verified `16db2df`; history
+preserved. Eighteen additive scoped tables (`0007_cases`) add cases, individual
+untrusted claims, evidence/source relationships, hypothesis placeholders, immutable
+versions/domain events, case-local proposal invalidation and a PostgreSQL outbox.
+Existing CSV 1.0, immutable matching history, originals, parsing/PII and provider
+isolation remain intact. Contract/commands: `docs/CASES.md`; checklist traceability:
+`REQUIREMENTS_AUDIT.md`.
+
+Design: source publication shares the original ingestion/matching/document transaction.
+A separate no-model worker leases and dedupes effects transactionally, with bounded
+retry/expiry/DEAD history; no queue dependency. Only current source-backed correlation
+merges cases, preserving physical IDs/history via canonical redirects. Company locks,
+CAS and fresh source context hashes reject stale commands. Late evidence reopens
+only affected claim review, invalidates those hypotheses and case proposal bindings,
+and schedules explicit target IDs. Identical assertions reuse the claim but preserve
+each extraction/index; conflicting revisions stay separately unresolved. Claim totals
+are independent of verified settled amounts (always zero here).
+
+Authority: normative lifecycle vocabulary/edges are retained; legal adjudication and
+settlement destinations return 403 until later validated capabilities exist. Local
+write/GET-only bearer credentials protect metadata; actor labels grant no role.
+Tax-review is uncertainty routing, hypotheses UNASSESSED, and evidence labels are
+unverified annotations. No later milestone was implemented or waived.
+
+Actual focused commands (private logs ignored under local-data):
+
+```text
+uv run --frozen pytest tests/test_cases.py tests/test_case_domain.py tests/test_restart_persistence.py tests/test_postgres.py --require-postgres -q
+# Earlier expanded run: 41 passed in 56.29s.
+uv run --frozen pytest tests/test_cases.py tests/test_restart_persistence.py tests/test_postgres.py --require-postgres -q
+# Final focused run: 35 passed, 1 existing upstream warning in 68.39s.
+# local-data/m05-final-focused-3.log
+```
+
+Negative checks found a claim-trigger field-access defect and SQLAlchemy interpreting
+unspaced JSON check literals as bind parameters; both were fixed and reverified.
+Source review found structured JSON needed field-aware reparse in the case consumer;
+coverage now checks that independent boundary. No assertions were removed/weakened.
+The existing restart test now fingerprints all 18 case tables, including claim,
+evidence, hypothesis, command/outbox history, alongside all previous financial/audit
+and quota checks.
+
+Initial complete gate: 390 passed / 1 failed in 235.70s, with the legacy 0003
+migration fixture trying to run new case publishers before their tables existed.
+Only that fixture's pre-0007 setup now models the historical absence of publishers;
+all hooks are restored before upgraded behavior, and a new assertion verifies the
+advanced proposal's domain/outbox event. All 139 existing assertions across the two
+modified regression modules are preserved (AST comparison). Focused legacy regression:
+1 passed in 3.52s (`local-data/m05-legacy-migration.log`). No production missing-schema
+fallback, skipped check or weakened assertion was introduced. Final full rerun PASS as recorded below.
+
+```text
+uv run --frozen python scripts/verify_isolated_restart.py
+# PASS: 2 tests, 1 existing warning in 10.69s.
+# local-data/verification/isolated-restart-20261025T050342036136Z.log
+uv run --frozen python local-data/m05_upgrade.py
+# PASS: development 0006_provider_budgets -> 0007_cases, Alembic drift check PASS.
+# Before/after fingerprints identical for every record in all 17 existing tables.
+# local-data/m05-development-migration.log; local-data/m05-development-schema.json
+```
+
+The up-only development helper is local/ignored, derived from the previous safe
+migration verifier; it rolls back on any old-table mismatch. No shared container
+restart/reset/downgrade, portable PostgreSQL change, Argon file change or external
+model call occurred. Only the restart runner's UUID-labelled owned container and
+volume were restarted and removed. Operational limits and open production/future
+capabilities are explicitly documented in CASES.md.
+
+Final complete command and actual result:
+
+```text
+uv run --frozen python scripts/verify.py
+# lock/dependencies/Ruff lint/format/strict mypy (11 modules)/matching-bounds PASS
+# tests/migrations PASS: 391 passed, 1 existing upstream warning in 229.09s.
+# No skipped tests. Includes original 347 + 44 new unit/property/integration cases.
+# local-data/verification/20261025T050741098548Z.log
+python -m clearledger.case_worker --help
+# PASS: CLI entry point and bounded --once/--limit options.
+```
+
+The full gate includes disposable migration upgrade/downgrade/upgrade and metadata
+checks, source/tenant/integrity constraints, finance non-mutation and G2/G3 regressions.
+The separate owned-container run repeats restart coverage with a real database restart;
+its 2 tests are not 2 additional unique tests. Local external_ai_enabled was checked
+false. No live Gemini/provider accuracy or remote CI result is claimed.
+
+Review: 37 intended files, no new dependencies; all actual local credentials and
+private-data paths excluded. AST comparison retains all 139 original assertions in
+the two updated regression modules; every other existing test file is unchanged.
+New domain/service/repository/API/outbox modules, 0007 migration, case/property tests
+and documentation are the only changes. Original financial CSV contract and pilot
+baseline/dataset files are unchanged. Git completion hash is recorded below after
+checkpoint creation; no push.
+
+Remaining limitations: local bearer credentials are not production authenticated
+users/RBAC/strong isolation; case writes are serialized per company. Worker must run
+separately; ingestion acknowledgement precedes eventual case processing. Bounds
+(256 members, depth 64, 100 receipts/documents/associations, 2000 group rows) fail
+closed; DEAD sources require operational investigation and no unlimited redrive is
+exposed. Existing source changes without a published lifecycle event are detected
+as stale on read/command and require explicit refresh/reconciliation. Generalized
+evidence validation, investigations, support/acceptance/settlement authority, tax,
+approvals/recovery/accounting remain 06-09. Remote CI, live provider/privacy/terms,
+full Argon benchmark and the ten EML offset issues remain deferred/unverified.
+STOP after 05.
 
 ## Pilot v1.1 compatibility re-evaluation - 2026-10-25
 

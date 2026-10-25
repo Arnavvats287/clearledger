@@ -58,3 +58,5 @@ Before posting also validate: customer identity, bank transaction provenance, re
 - Validated exact matches may be eligible for automatic simulated cash application only under explicit configuration, verified customer and no ambiguous candidate.
 - High-value/hard-to-explain cases go to Controller. Thresholds are configurable fictional demo policy, never an Indian legal obligation.
 - TDS and GST-TDS route to specialized rule evaluation and unsupported cases to `NEEDS_TAX_REVIEW`.
+
+Milestone 05 stores customer assertions and review progress separately from immutable UNASSESSED hypothesis records. Evidence annotations and matching proposal links grant no settlement authority. Claimed totals may exceed cash and remain distinct from verified settled paise (zero until an authorized later settlement capability). Source changes invalidate review inputs; current APIs cannot accept/resolve deductions or mark cash settled by operator label. See [CASES.md](CASES.md).

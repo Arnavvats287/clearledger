@@ -436,6 +436,9 @@ def register_evidence(session, organization_id, receipt_id, body, key, actor):
         )
         session.add(record)
         session.flush()
+        from clearledger.case_events import matching_evidence_registered
+
+        matching_evidence_registered(session, record, actor)
         event(
             session,
             organization_id,
@@ -503,6 +506,9 @@ def create_proposal(session, organization_id, receipt_id, body, key, actor):
         )
         session.add(proposal)
         session.flush()
+        from clearledger.case_events import matching_proposed
+
+        matching_proposed(session, proposal, actor)
         event(
             session,
             organization_id,
