@@ -8,6 +8,8 @@
 
 ## Pilot v1.1 compatibility re-evaluation - 2026-10-25
 
+Verified compatibility checkpoint: **`9094abeb367751c04a01dfe93f519af5001ce4cb`**, message `test: verify pilot v1.1 document compatibility`. All required gates passed; reviewed exactly ten intended files and staged whitespace/secret/raw-data/hidden-fixture exclusions. Product source, original baseline report and specification contracts unchanged. This documentation-only follow-up records the hash; no push.
+
 Resumed on `test/pilot-v1-1-compatibility` from verified `b7ca509`. Resume inspection found a clean tree: interruption had stopped after branch/package inspection; no v1.1 code/tests/application runs existed. Continued the existing harness rather than replacing completed functionality. Original `docs/PILOT_EVALUATION.md`, source ZIP and baseline observations are unchanged. New aggregate comparison: `docs/PILOT_V1_1_EVALUATION.md`. No application modules, parser filters, CSV contract, schema, dependency, financial behavior, dataset construction or later milestone changed.
 
 Changed harness: recognized both known archive roots with existing strict manifest/path/resource checks; separately allowlisted public supplemental JSON; added pinned compatibility validator with explicit Windows path-only adapter; uniform deterministic source/span/correlation/attestation/version/idempotency probes in `pilot_compat_runtime.py`; evaluator-only target and actual-email-text diagnostics in `pilot_compat_score.py`; predecessor preservation comparison. No hidden targets/source-sidecars are passed to APIs/models, no attestations derived from sealed answers, and no financial matches inferred from JSON UTR association.
