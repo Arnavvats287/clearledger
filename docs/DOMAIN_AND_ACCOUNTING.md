@@ -78,3 +78,7 @@ GL balances. Services and deferred DB guards enforce conservation and exact pais
 Only exact reviewed synthetic tax stipulations are supported, with no universal rule.
 Proof-backed private settlement transitions do not loosen public label-based case gates.
 Operational closure/recovery remains M09; verified finance authority is denied by default.
+
+## Milestone 09 operational closure
+
+Closure and customer follow-up do not settle money. Zero AR alone is insufficient: all linked receipts must be fully applied, claims resolved with current sources, proposals terminal and mandatory evidence/work complete. Closing requires verified independent controller authority. Late responses reopen review only; prior journals/settlements remain immutable. Negative/reversal and zero-cash-only follow-up limitations remain unchanged. See [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md).

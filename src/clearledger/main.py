@@ -17,6 +17,8 @@ from clearledger.extraction_provider import Gateway, GeminiTransport
 from clearledger.finance_api import router as finance_router
 from clearledger.investigation_api import router as investigation_router
 from clearledger.matching_api import router as matching_router
+from clearledger.review_access import enforce as review_access
+from clearledger.review_api import router as review_router
 
 
 class HealthResponse(BaseModel):
@@ -36,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             engine.dispose()
 
     app = FastAPI(title="ClearLedger", version="0.1.0", lifespan=lifespan)
+    app.middleware("http")(review_access)
     app.state.settings = config
     # A trusted host must supply a verified identity adapter. Local tokens/labels do not qualify.
     app.state.finance_identity_verifier = None
@@ -69,6 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(evidence_router)
     app.include_router(finance_router)
     app.include_router(investigation_router)
+    app.include_router(review_router)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

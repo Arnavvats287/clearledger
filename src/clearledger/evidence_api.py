@@ -110,6 +110,12 @@ def read_scope(
     authorization: Annotated[str | None, Header()] = None,
 ) -> UUID:
     settings = request.app.state.settings
+    if getattr(request.state, "review_reviewer", None) is not None:
+        org = settings.organization_id
+        if org is None:
+            raise HTTPException(503, "Configure company before evidence retrieval")
+        begin_readonly(session, org)
+        return company_scope(request, session)
     write = settings.document_api_token.get_secret_value() if settings.document_api_token else ""
     read = settings.case_read_token.get_secret_value() if settings.case_read_token else ""
     if len(write) < 32 or (read and secrets.compare_digest(write.encode(), read.encode())):

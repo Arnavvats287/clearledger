@@ -142,6 +142,7 @@ def main():
                 "pytest",
                 "tests/test_restart_persistence.py",
                 "tests/test_finance_restart.py",
+                "tests/test_review_restart.py",
                 "-q",
                 "--require-postgres",
                 "--isolated-restart-container",

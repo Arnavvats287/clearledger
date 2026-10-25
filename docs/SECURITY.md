@@ -89,3 +89,14 @@ alone is insufficient. Immutable/deferred DB guards independently enforce ledger
 balance consistency. Test identities do not establish production SSO/RBAC/RLS or legal
 tax authority. No external AI is enabled. Boundaries, adapter obligations and open G1:
 [ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).
+
+## Milestone 09 identity and reviewer controls
+
+Explicit opt-in loopback-only LOCAL_DEMO_ONLY password sessions support AR_ANALYST, CONTROLLER and AUDITOR for bounded operational metadata. Salted PBKDF2, hashed random expiring sessions, version-based revocation, immutable audit and shared PostgreSQL login admission are implemented. Demo identities cannot approve/post or close financial cases. Verified human review roles use the existing trusted identity port with current grants; closure additionally requires APPROVE and independent maker-checker. Finance stays denied without that adapter. Read-only users cannot mutate; untrusted comments/customer replies never grant authority. Drafts cannot transmit. Production SSO/MFA/RLS and shared real-data deployment remain G1, not resolved by demo login. Full contract and bounds: [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md).
+
+The M09 role profile also guards legacy imports/documents/matching/case operations.
+REVIEW_DEMO_ENABLED automatically activates it; REVIEW_ACCESS_ENABLED activates it
+without demo users for a reviewed trusted host. Missing/old service credentials cannot
+bypass auditor restrictions. Source mutations revalidate grants under the company lock
+and preserve canonical actor/role audit; evidence POST queries remain DB READ ONLY.
+Both flags false is the old local-only compatibility profile, never production-ready.

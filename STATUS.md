@@ -1,11 +1,94 @@
 # Build status
 
-- Repo state: **Milestone 08 implemented and locally verified.**
-- Current task: **Milestone 08 from `c4cd3e3`; STOP before 09.**
-- Verification: **563 tests passed (507 retained + 56 new), all gates PASS; 3 isolated restart checks passed.**
-- Data safety: **Development up-only 0009 -> 0010; all old-table fingerprints unchanged (47 tables). Both pilot ZIP digests unchanged.**
-- Authority/privacy: **Conditional simulated finance only; default identity unavailable denies access. Gemini disabled; no paid/external calls or dataset construction.**
-- Deferred: **Production authenticated roles/isolation G1, reviewed upstream source/key custody/PKI, remote CI, real provider/privacy and full Argon benchmark; ten pilot email offsets remain unresolved.**
+- Repo state: **Milestone 09 implemented and locally verified.**
+- Current task: **Milestone 09 from `1839916` (M08 `addd409`); STOP before 10.**
+- Focused verification: **610 tests passed (563 retained + 47 new), all gates PASS; 4 final isolated restart checks passed.**
+- Development data: **Up-only 0010 -> 0011, all 59 old-table fingerprints unchanged.**
+- Authority/privacy: **Local demo roles are operational-only; finance and closure still require trusted verified identity. Gemini disabled.**
+- Deferred: **Production SSO/RLS/shared deployment G1, publisher PKI/key custody, real tax/provider/privacy, remote CI and full Argon evaluation remain unverified.**
+
+## Milestone 09 reviewer and recovery workflow - 2026-10-26 (IST)
+
+Branch `feat/milestone-09-review-recovery` starts at verified `1839916`. Original
+`prompts/09-approvals-recovery.md` is the checklist. Exact contract and reproduction:
+`docs/REVIEW_RECOVERY.md`. No dependency, service, mail transport, model tool or UI added.
+
+Implemented explicit local demo AR_ANALYST/CONTROLLER/AUDITOR users, console-only
+versioned provisioning, salted PBKDF2 passwords, hashed opaque expiring sessions,
+shared login admission, current-role/version revocation and immutable auth histories.
+Default demo disabled; loopback only. REVIEW_DEMO_ENABLED also activates whole-app
+role admission. REVIEW_ACCESS_ENABLED enables it without local demo users for a reviewed
+trusted host. Older imports/documents/matching/cases cannot bypass auditor restrictions
+by omitting identity or substituting old service tokens; mutation grants are rechecked
+under the company lock, reads under its shared lock. Existing evidence POST queries
+remain PostgreSQL READ ONLY. Canonical actor/role audit replaces supplied X-Actor-ID.
+Both flags false is explicitly the old local-only compatibility profile, not shared or
+production authentication. These identities never install a finance adapter
+or grant approval/posting/closure authority. Existing trusted identity port adds explicit
+review grants with live revalidation; production SSO/RBAC/RLS G1 is not claimed resolved.
+
+M08 source/policy/proposal/submission/approve-or-reject/posting gates remain intact.
+New typed operational APIs provide scoped case/claim reads, immutable reviewer comments,
+verified source-linked draft requests (no recipient/send path), controller evidence
+requests with exact optional proposal binding, source-backed versioned customer responses,
+reply threads and independent close/reopen commands. Responses remain unverified sender
+assertions, reopen affected claims/cases, invalidate stale unposted work and schedule
+existing selective outbox reevaluation. Immutable journals/approvals never reverse.
+
+Closure requires trusted human controller plus current APPROVE, maker-checker, a fresh
+context, zero open invoice/unapplied receipt paise, resolved current claims, terminal
+proposals, actual posting proof and no outstanding mandatory response/work. Zero AR,
+local controller labels, AI or document approvals are insufficient. PARTIALLY_SETTLED
+is reused from M08. Closed cases reopen on late evidence without financial mutation.
+After complete reevaluation, zero-open/resolved cases may reclose through the existing
+legal readiness edges with independently verified closure proof and intermediate immutable
+versions; this never creates another journal or bypasses an unresolved mandatory action.
+
+Additive 0011 adds seven scoped tables with composite FKs, command/session uniqueness,
+append-only history/truncate protection, versioned user guards and deferred audit/case
+revision checks. Old financial/state schemas and CSV 1.0 remain unchanged. Review writes
+serialize under the existing company lock; source preflight stays truly READ ONLY.
+Same-key replay, different-key CAS, source hashes, stable actor IDs and safe denial audit
+are explicit. Lock/statement waits 3/10 seconds, drafts/response targets <=20, closure
+history/proposal bounds 2000 and existing source budgets fail closed.
+
+Actual commands/results (repository-local `.venv/Scripts/uv.exe` on Windows):
+
+- `uv run --frozen python local-data/m09_focused.py`: initial **26 passed in 73.57s**; private `local-data/m09-focused.log`.
+- `uv run --frozen python local-data/m09_closure_focused.py`: **4 passed in 21.16s**, closure/restart focus; private `local-data/m09-closure-restart-focused.log`.
+- `uv run --frozen python local-data/m09_all_focused.py`: **38 passed in 171.05s**, all five new modules; private `local-data/m09-all-focused.log`.
+- Initial expanded security run: 7 passed, 1 test-setup failure (foreign-tenant outbox was not drained). Fixed the fixture setup; all assertions retained and the entire 38-test group then passed.
+- `uv run --frozen python scripts/verify_isolated_restart.py`: final **4 passed in 50.39s**, private `local-data/verification/isolated-restart-20261025T185423682839Z.log` (initial pre-hardening run: 4 passed in 49.69s). Only invocation-owned labelled temporary PostgreSQL resources restarted/removed; shared development untouched.
+- `uv run --frozen python local-data/m09_upgrade.py`: **PASS**, development up-only 0010 -> 0011, Alembic drift check, identical fingerprints for every old table (59). Private `local-data/m09-development-schema.json`, `local-data/m09-upgrade.log`. No reset/downgrade of development.
+- `uv run --frozen python scripts/verify.py`: final run **PASS**, **610 passed in 1172.29s (19m32s)**, no skips; private `local-data/verification/20261025T185406644687Z.log`; lock/dependency/Ruff lint/format, 21-module strict typing and matching bounds passed. All PostgreSQL tests/migrations/integrity/concurrency checks passed. No application, schema or test changes followed this gate; source fingerprints matched. The implementation hash will be recorded after the staged checkpoint.
+
+The first full gate (`20261025T181111321151Z.log`) was deliberately interrupted before
+completion when review found that legacy routes could bypass the new role profile; it
+is not counted as passing. Implemented whole-app role admission/current-grant checks and
+added nine route/profile tests. The expanded focused run passed 44 tests and exposed a
+new restart fixture still using the now-forbidden old bearer token; corrected that test
+to use the actual demo session while retaining every persistence assertion. Two new
+fixture checks then needed the existing SearchResult.items field and a legal source
+state before asserting the old financial capability gate. Final targeted command
+`uv run --frozen python local-data/m09_final_closure_boundary.py`: **13 passed in 43.27s**,
+private `local-data/m09-final-closure-boundary.log`, including actual close/late reply/
+reclose with unchanged financial rows. No assertion was relaxed.
+
+Final staged review: 41 intended files, no local credentials/private data, whitespace checks passed and Git identity configured. No existing regression tests/assertions changed. New coverage includes local-versus-trusted authority,
+read-only/actor spoof denial, grant revocation, fake signed/unsigned delivery sources,
+source spans, immutable histories/audit, late closed-case response, stale proposals,
+real concurrent requests/closure, rollback/retry and financial non-mutation. Review
+process/fresh connection/owned-container persistence and replay extend the original
+restart gate without removing checks.
+
+Both original pilot ZIP digests match prior checkpoints. No original pilot or 420-receipt
+benchmark was modified or evaluated. Gemini/external investigation remain disabled; no
+paid calls. Remaining: production IdP/SSO/MFA/RLS and shared real-data readiness, publisher
+key custody/PKI, real tax/legal policies, live model accuracy/privacy, remote CI and full
+Argon benchmark/ablation; prior ten email-offset incompatibilities stay unresolved.
+No automatic email, ERP, reversals, zero-cash-only settlement, tax decisions, credit notes
+or frontend. Financial closure fails closed when trusted authority is unavailable or
+any mandatory claim/action remains unresolved. STOP before Milestone 10; no push.
 
 ## Milestone 08 policy and accounting simulation - 2026-10-25
 

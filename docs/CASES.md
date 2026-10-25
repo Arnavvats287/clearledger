@@ -190,3 +190,7 @@ transitions, never acceptance/settlement. New evidence appends finding invalidat
 and reinvestigates only affected previously investigated claims. Per-claim currentness
 is separate from whole-run snapshot staleness. APIs, durable retry/lease semantics and
 oversized-case review behavior: [INVESTIGATIONS.md](INVESTIGATIONS.md).
+
+## Milestone 09 operational extension
+
+The M05 public actor-label state gates remain unchanged. New authenticated operational commands append review/draft/response histories, use existing evidence attachment/reevaluation/invalidation, and conservatively reject stale snapshots. M08 PARTIALLY_SETTLED is retained; trusted controller closure checks balances and mandatory operational completion. Late source-backed customer evidence can reopen CLOSED without reversing ledger history. Sender identity and deduction legitimacy are never inferred from an operator recording a reply. See [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md).

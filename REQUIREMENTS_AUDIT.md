@@ -1,5 +1,38 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 09 original-checklist traceability - 2026-10-26 (IST)
+
+Authorized from status `1839916` (M08 `addd409`), branch
+`feat/milestone-09-review-recovery`. `prompts/09-approvals-recovery.md` is unchanged.
+Contract: `docs/REVIEW_RECOVERY.md`. No original acceptance requirement is waived.
+
+| Original requirement | Implementation | Verification traceability |
+|---|---|---|
+| Single-company local users/AR_ANALYST/CONTROLLER/AUDITOR; no production SSO claim | `review_users/password/identity/models`, 0011 | Local login/logout, salted/hash-only storage, current version/role revocation, disabled default, shared admission, remote/forwarded spoof denial, tenant isolation |
+| Versioned approve/reject/request-evidence, maker-checker, audit/reasons | Existing `finance_service/api` retained; new `review_service/api`, immutable action/audit | Retained M08 approval/self-approval/stale/replay tests; controller request binding invalidates unposted proposal, auditor/actor spoof denial and immutable reason audit |
+| Draft-only evidence/customer follow-up from verified facts; sources visible | `review_sources` uses existing READ ONLY `EvidenceReader`; fixed template | Intact invoice CSV facts, signed/current WMS canonical citations, unsigned source rejection, no send/recipient, financial non-mutation |
+| Response/evidence/reopen/reevaluate affected claims, stale proposal/history | Existing attach/revise/outbox + `review_service` versioned reply threads | Actual source-span verification, stale versions, foreign scope, old approved proposal blocked, rollback/retry, concurrent same/different keys, history retention |
+| Financial + operational guarded closure; partial settlements | Existing M08 PARTIALLY_SETTLED + independent `review_lifecycle` | Successful fully posted cash closure, zero-AR unresolved-claim rejection, open AR rejection, grant revalidation, maker-checker/CAS, late response reopens CLOSED with unchanged ledger |
+| Authenticated API/restart regression exit | All five `test_review*` modules; retained old tests and complete gate | 38 initial focused passed; final 13 targeted passed in 43.27s; 4 final owned restart checks passed in 50.39s; full frozen gate PASS: 610 tests in 1172.29s, no skips; all static/dependency/migration/integrity checks PASS |
+
+Final review found and closed an old-route authorization bypass: enabling demo/role
+mode now gates legacy imports/documents/matching/case reads and writes, canonicalizes
+actor provenance and rechecks current grants under locks. Omitting credentials/using
+old service tokens cannot evade it. Added nine positive/negative whole-app role tests;
+evidence search/verify stay DB READ ONLY and old financial capability gates stay closed.
+The first incomplete full gate was interrupted for this fix and is not a passing result.
+Safe reclosure after harmless late evidence uses the existing graph and complete closure
+proof; it does not create new posting or resolve unsupported claims. Production role
+mode is explicit: both switches false retains local-only legacy compatibility, not G1.
+
+Additive development 0010 -> 0011 preserved all 59 old-table fingerprints; both pilot
+ZIP digests unchanged. No dataset/420-benchmark modification, real provider/paid call,
+new tax rule, financial reversal, UI or M10 work. G1 production authenticated deployment/
+SSO/MFA/RLS remains unresolved: local demo sessions cannot grant finance or closure
+permission; unavailable trusted authority defaults denied. Positive trusted-port tests
+are test fixtures, not SSO proof. Publisher PKI/key custody, remote CI, live provider/
+privacy and full Argon benchmark/ablation stay deferred. Exact final results/logs and checkpoint are recorded in STATUS. All 563 prior tests are retained, 47 are new; 4 final isolated restart tests passed. Source fingerprints matched after the final gate.
+
 ## Milestone 08 accounting traceability - 2026-10-25
 
 Authorized from `c4cd3e3`, branch `feat/milestone-08-policy-ledger`. Original

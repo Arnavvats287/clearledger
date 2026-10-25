@@ -16,6 +16,9 @@ Permission = Literal[
     "REVIEW_TAX_POLICY",
     "APPROVE",
     "SIMULATE_POST",
+    "REVIEW_READ",
+    "REVIEW_WORK",
+    "REVIEW_CONTROL",
 ]
 
 

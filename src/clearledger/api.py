@@ -43,6 +43,20 @@ def company_scope(request: Request, session: DB) -> UUID:
         raise HTTPException(
             503, "Configure and provision ORGANIZATION_ID before using business APIs"
         )
+    reviewer = getattr(request.state, "review_reviewer", None)
+    if reviewer is not None and request.state.review_readonly:
+        import hashlib
+
+        from sqlalchemy import text
+
+        from clearledger.review_service import current_reviewer
+
+        if not session.info.get("evidence_readonly"):
+            session.execute(text("SET LOCAL lock_timeout = '3000ms'"))
+            session.execute(text("SET LOCAL statement_timeout = '10000ms'"))
+        key = int.from_bytes(hashlib.sha256(organization_id.bytes).digest()[:8], "big", signed=True)
+        session.execute(text("SELECT pg_advisory_xact_lock_shared(:key)"), {"key": key})
+        current_reviewer(session, organization_id, reviewer, "READ")
     return organization_id
 
 

@@ -128,3 +128,13 @@ Case contexts add posted T1 ownership only when it exists; unposted hashes are r
 Claim settled counters derive from ledger records, not hypotheses. No graph receives
 finance tools/credentials; no new dependency/service/queue is introduced. Contract:
 [ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).
+
+## Milestone 09 review boundary
+
+`review_contract` defines strict operational DTOs; `review_identity/password/users` isolate local demo authentication from the trusted finance identity port. `review_sources` uses the existing PostgreSQL READ ONLY evidence reader. `review_lifecycle` independently checks closure; `review_service` owns versioned transactions, invalidations and immutable records; `review_api` enforces current roles and safe denial audit. Additive 0011 adds seven scoped tables. No mail transport, new worker, AI tool or financial service is added. See [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md).
+
+`review_access` supplies an opt-in whole-application admission boundary, activated
+also by demo mode. Existing DB/company dependencies recheck grants under their locks;
+legacy case/document/evidence access accepts only this server-created identity context.
+No credential headers are synthesized. Finance keeps its independent M08 authority
+port. Default legacy compatibility is local-only and does not resolve G1 deployment.

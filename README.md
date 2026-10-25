@@ -239,3 +239,7 @@ INR 2,500 remaining AR. The restart runner also checks financial ledger persiste
 No development reset/downgrade/seeding, external AI, real tax determination or ERP posting
 is enabled. Production identity/G1, live provider/source PKI and remote/Argon evaluation
 remain unverified. Full review/correspondence/recovery/closure remains milestone 09.
+
+## Milestone 09 review and recovery
+
+[Review/recovery contract](docs/REVIEW_RECOVERY.md) documents explicit local demo users/roles, password/session lifecycle, source-linked drafts, replies and guarded case close/reopen. Enable REVIEW_DEMO_ENABLED only in an ignored local environment; provision users with `uv run --frozen python -m clearledger.review_users analyst --role AR_ANALYST`. No default passwords, no automatic email, no finance authority from demo sessions. Production finance/closure still require a trusted identity adapter. Verify with `uv run --frozen python scripts/verify.py` and `uv run --frozen python scripts/verify_isolated_restart.py`.

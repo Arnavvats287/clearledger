@@ -43,6 +43,8 @@ def document_scope(
 ) -> UUID:
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    if getattr(request.state, "review_reviewer", None) is not None:
+        return company_scope(request, session)
     configured = request.app.state.settings.document_api_token
     if configured is None or len(configured.get_secret_value()) < 32:
         raise HTTPException(503, "Configure a strong DOCUMENT_API_TOKEN for local document access")

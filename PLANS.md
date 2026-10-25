@@ -40,7 +40,7 @@ M08's minimum finance authorization/approval gate is separate from M09 role prov
 and correspondence/recovery. It defaults denied when trusted identity is unavailable;
 local bearer/actor labels grant no authority. Only reviewed synthetic tax mechanics are
 supported, with independent evidence, maker-checker and atomic simulation. Contract:
-`docs/ACCOUNTING_SIMULATOR.md`; observed results are in STATUS. Stop before M09.
+`docs/ACCOUNTING_SIMULATOR.md`; observed results are in STATUS. M08 stopped before M09.
 
 Milestone 07 implements the original bounded LangGraph checklist, with PostgreSQL
 native checkpoints, deterministic Director/verifier, restricted Investigator, durable
@@ -52,3 +52,5 @@ Incorrect autonomous customer resolution, duplicate cash application, over-alloc
 
 ## Review gate
 After each phase, request: source diff summary, exact verification commands/output, observed new behavior, unknowns, and a demo command. If not verifiable, phase remains incomplete.
+
+Milestone 09 adds the original local role/reviewer/draft/response/closure workflow in docs/REVIEW_RECOVERY.md. Demo sessions remain operational-only; financial approval and closure require the trusted authority port. Production G1 stays open, and no M10 UI or benchmark dataset work is included. Observed results are recorded in STATUS.

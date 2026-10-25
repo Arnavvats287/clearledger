@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     database_url: str
     organization_id: UUID | None = None
+    review_demo_enabled: bool = False
+    review_access_enabled: bool = False
     matching_limits: Limits = Limits()
     document_root: Path = Path("local-data/documents")
     document_api_token: SecretStr | None = None

@@ -91,6 +91,8 @@ def scoped_access(request, session):
 def access(
     request: Request, session: DB, authorization: Annotated[str | None, Header()] = None
 ) -> UUID:
+    if getattr(request.state, "review_reviewer", None) is not None:
+        return scoped_access(request, session)
     settings = request.app.state.settings
     write = settings.document_api_token.get_secret_value() if settings.document_api_token else ""
     read = settings.case_read_token.get_secret_value() if settings.case_read_token else ""

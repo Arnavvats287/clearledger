@@ -5,6 +5,7 @@ from clearledger import (
     evidence_models,  # noqa: F401
     finance_models,  # noqa: F401
     investigation_models,  # noqa: F401
+    review_models,  # noqa: F401
 )
 from clearledger.config import Settings
 from clearledger.db import build_engine

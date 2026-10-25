@@ -10,8 +10,8 @@ both pilot ZIPs are unchanged. Only isolated code fixtures exercise accounting.
 Production identity integration is **not configured**. Every new finance endpoint
 returns `VERIFIED_FINANCE_IDENTITY_UNAVAILABLE` (503) until a trusted host supplies
 `app.state.finance_identity_verifier`, implementing `finance_identity.IdentityVerifier`.
-There is no environment flag, finance API token, demo-login endpoint or body field that
-manufactures identity. DOCUMENT_API_TOKEN, CASE_READ_TOKEN, X-Actor-ID, source text and
+These finance APIs have no environment flag, finance API token, demo-login adapter or
+body field that manufactures verified identity. DOCUMENT_API_TOKEN, CASE_READ_TOKEN, X-Actor-ID, source text and
 model outputs cannot authorize finance. Existing imports/document/case access remains
 unchanged; this does not resolve the application's broader production-authentication G1.
 
@@ -199,3 +199,7 @@ source PKI/key custody/live-bank authentication, real tax/legal rules, live Gemi
 remote CI and Argon benchmark/ablation remain unverified. External AI stays disabled.
 No production-ready identity/tax/accounting claim follows from fixture tests. All
 observed commands, counts, logs, migration fingerprints and checkpoints are in STATUS.
+
+## Milestone 09 reviewer integration
+
+M09 adds local demo identity only for operational metadata; it never installs a finance adapter or grants financial permissions. Submission and approve/reject continue to use the M08 verified identity/current-source/version/hash/maker-checker gates above. Evidence requests and late source-backed replies invalidate stale unposted proposals; posted journals and approvals remain immutable history. Operational closure now uses independent financial/claim/work checks and current verified controller authority. Production identity remains unavailable by default. See [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md).

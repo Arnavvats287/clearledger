@@ -73,3 +73,7 @@ identity defaults unavailable; local tokens/actor labels cannot grant permission
 Normative journal states, maker-checker, fresh evidence/policy/approval and DB conservation
 are enforced. Proven posting can advance settlement metadata to PARTIALLY_SETTLED;
 closure/recovery and broader reviewer workflow remain M09. Unknown claims remain review.
+
+## Milestone 09 implemented contract
+
+[REVIEW_RECOVERY.md](REVIEW_RECOVERY.md) defines demo login/logout and safe role-based reads, reviewer comments, draft-evidence-request/request-evidence/record-response and explicit close/reopen commands. Financial submission and approve/reject reuse M08 version/hash-bound endpoints with no authorization relaxation. Late responses invalidate unposted work and reopen affected claims/cases without reversing settled money. CLOSED requires verified current controller authority, zero financial outstanding, resolved current claims and completed mandatory actions/work. Local tokens/actor labels cannot close or grant financial permission.

@@ -186,3 +186,13 @@ curl.exe --fail-with-body -X POST http://127.0.0.1:8000/imports/customers `
 ```
 
 Use `/imports/payer-aliases`, `/imports/invoices` and `/imports/bank-transactions` with their corresponding CSVs and new request keys. Retain each original key for network retries. Inspect results with `GET /imports/<import_id>` and receipts with `GET /receipts`. No Argon data is bundled, fetched or imported automatically; external dataset compatibility is unverified until Argon supplies files conforming to this version.
+
+## Milestone 09 authorization profile (CSV schemas unchanged)
+
+[REVIEW_RECOVERY.md](REVIEW_RECOVERY.md) defines explicit whole-application role mode.
+When REVIEW_DEMO_ENABLED or REVIEW_ACCESS_ENABLED is true, imports require authenticated
+analyst/controller authority; auditor/missing/old-service-token requests cannot mutate.
+The server records canonical actor/role provenance, instead of trusting X-Actor-ID.
+Local demo roles do not authorize financial approval/posting. Both switches false retain
+the original local-only compatibility profile, which is not production authentication.
+No CSV column, paise type, format, identity constraint or version 1.0 semantics changed.
