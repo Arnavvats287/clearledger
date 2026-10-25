@@ -1,5 +1,28 @@
 # ClearLedger requirements-alignment audit
 
+## Authorized post-M09 application evaluation - 2026-10-26
+
+Baseline `b0485f2`, branch `eval/post-m09-development-snapshot`; this does not complete
+M11 or start M10. Source-only independent export:385 files at explicitly confirmed
+2026-01-19T12:00:00+05:30, not a 420-receipt/426-stage schedule.
+
+| Requirement | Traceability / observed evidence |
+|---|---|
+| Actual APIs, disposable PostgreSQL, original CSV/schema/roles | `application_eval_host/runtime`, unchanged application0011; 4 CSVs/979rows, 184receipts, role-authenticated source operations; finance503 |
+| Visible-only data, no generation/truth/code exposure | `application_eval_inputs.Snapshot`, sealed paths/digests, explicit cutoff, sanitized child env, public interface only; no benchmark imports/scoring |
+| Matching/abstention and source/citation/extraction measurements | 184exact+184advanced, real same-key replays; 381READY, 6 deterministic/375review, 381valid/381forged span probes; actual API canonical text, no invented dataset offsets |
+| Case/evidence/investigation/financial non-mutation | 189case roots, 183native queries/4205unauthenticated hits; claims0/investigations0 (NOT EVALUABLE); no signed evidence fabricated, no financial/provider changes |
+| Scorer output and temporal integrity | Natural receipt keys in 184snapshot predictions; zero original-stage bindings, empty native stage list; no answers/labels/financial capability outputs invented |
+| Reproducibility/negative tests | `test_application_evaluation`:11focused pass; tamper/forbidden input/cutoff/projection/first-login tests and actual API integration; full621 gate PASS (1160.76s, no skips), all required static/migration checks pass; 4 existing restart checks pass |
+
+Report:docs/POST_M09_APPLICATION_EVALUATION.md; exact private runs/commands in STATUS.
+Four advanced status labels vary with fresh UUID search partitions; 184natural-key
+abstention predictions remain identical. Recorded as a limitation, no application tuning.
+All610 previous tests preserved. Full stage/held-out accuracy, authenticated source
+support, meaningful deduction investigation, genuine identity/RLS, live model/privacy,
+remote CI and complete Argon benchmarks remain unverified, not resolved. No product,
+source dataset, benchmark generator/scorer or financial contract was rewritten.
+
 ## Milestone 09 original-checklist traceability - 2026-10-26 (IST)
 
 Authorized from status `1839916` (M08 `addd409`), branch

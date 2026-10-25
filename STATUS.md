@@ -1,11 +1,84 @@
 # Build status
 
-- Repo state: **Milestone 09 implemented and locally verified.**
-- Current task: **Milestone 09 from `1839916` (M08 `addd409`); STOP before 10.**
-- Verification: **610 tests passed (563 retained + 47 new), all gates PASS; 4 final isolated restart checks passed.**
-- Development data: **Up-only 0010 -> 0011, all 59 old-table fingerprints unchanged.**
-- Authority/privacy: **Local demo roles are operational-only; finance and closure still require trusted verified identity. Gemini disabled.**
-- Deferred: **Production SSO/RLS/shared deployment G1, publisher PKI/key custody, real tax/provider/privacy, remote CI and full Argon evaluation remain unverified.**
+- Repo state: **Post-M09 application evaluation completed within visible-snapshot scope; verification passed.**
+- Application baseline: **Verified `b0485f2` (M09 `5c91290`); no product or schema changes. STOP before 10.**
+- Evaluation scope: **385 visible files at operator-confirmed 2026-01-19T12:00:00+05:30; 184 receipts, not the full 420-receipt/426-stage study.**
+- Observed safety: **No financial mutation, no posting, no provider reservations; source hashes unchanged.**
+- Checks so far: **621 tests passed (610 retained + 11 new), all required gates PASS; 4 applicable isolated restart checks passed.**
+- Deferred: **Original-stage binding, answer-based accuracy, meaningful deduction investigation, source authentication, production IdP/RLS, remote CI and live Gemini remain unverified/NOT EVALUABLE.**
+
+## Post-M09 independent application evaluation - 2026-10-26 (IST)
+
+Authorized from `b0485f2`, branch `eval/post-m09-development-snapshot`. This is a separate
+API evaluation harness, not M10 UI, M11 completion or a product/benchmark rewrite.
+Read original specifications/contracts and prior pilot runtime before integrating the
+independent benchmark's public prediction interface. No hidden answers, benchmark Python,
+source corpus/generator or scorer were loaded. Only the operator's visible export enters
+the predictor. Benchmark project/inputs are read-only and no data is generated/modified.
+Report: `docs/POST_M09_APPLICATION_EVALUATION.md`; prior pilot report/ZIPs are retained.
+
+Implemented `scripts/application_eval_inputs/contract/host/runtime.py` plus
+`evaluate_application_snapshot.py`. The input seal accepts only four original CSVs and
+exported document directories, rejects non-runtime paths/links/tampering/resource excess,
+and checks CSV times against the explicit export cutoff. A generated disposable DB
+migrates to existing 0011 and passes drift check; only company/demo analyst provisioning
+writes directly. Actual imports/matching/documents/cases/evidence run via role-protected
+HTTP and the normal bounded worker. No fake finance adapter, intent attestations,
+publisher keys or evidence signatures are supplied; Gemini/tracing/budgets disabled.
+All input originals, date/paise schemas and financial/role/evidence gates are preserved.
+
+Final measured private run: `local-data/application-evaluations/30f74f6a075a4ba0adc2925323ab7920`.
+385 files / 530900 bytes: customers30, aliases81, invoices684, bank/receipts184 each;
+all four CSV imports and eight replay probes HTTP200. 381 documents READY and original/
+canonical integrity preserved; 381 actual spans valid and 381 forged quotes HTTP422.
+Six deterministic JSON extractions (2 invoice refs, 6 UTR refs exact); 375 NEEDS_REVIEW.
+Five unattested correlations: 4 CANDIDATES/1 UNRESOLVED, none LINKED. Cases189 (184receipt,
+5document-only), claims0, investigations0. All183 native evidence queries HTTP200,
+4205 hits, none authenticated. 1881 outbox deliveries, no pending work. No financial
+changes/journals/allocations/settlements/reservations; finance read with demo identity
+HTTP503. AR8696422470 paise and unapplied cash4600151914 paise remain unchanged.
+
+Exact outcomes: 176NO_SUPPORTED_MATCH, 8AMBIGUOUS, zero supported allocations. Advanced:
+112UNIQUE (mathematics only),17AMBIGUOUS,39UNRESOLVED,16SEARCH_INCOMPLETE. All184 natural-key
+snapshot predictions abstain; no source text or amount is promoted into payment intent.
+Original-stage schedule/anchors were not supplied. Native `stage-predictions.json` is
+intentionally empty; `snapshot-predictions.json` records only this manual cutoff.
+No stage bindings, accuracy, legal conclusions, monetary/journal capabilities or
+benchmark citations are invented. Full420/426 coverage and deduction legitimacy are
+NOT EVALUABLE / REVIEW REQUIRED, not successful or incorrect predictions.
+
+Four advanced outcome labels varied across fresh imports because generated UUID order
+changes meet-in-the-middle partitions/conservative size-pruning flags. Same visible
+hashes/bounds; no application tuning. All184 natural-key snapshot predictions match
+across the two runs and balances are unchanged. This intermediate-status repeatability
+limitation is documented, not silently fixed in an evaluation task.
+
+4176 measured calls:3794HTTP200,381expected forged-span422,1expected finance503. Final
+wall525.939s; p50 33.363ms,p95 455.721ms,max3506.113ms. Parent traced peak40191007 bytes
+excludes child/DB RSS. One local run, not SLA/provider performance. No original-stage
+chronology can be reconstructed from a single export lacking authorized availability/
+stage metadata. Canonical TXT/dataset citation bindings remain distinct from API pages.
+
+Actual commands/results (Windows uses `.venv/Scripts/uv.exe`, workspace UV_CACHE_DIR):
+
+- `uv run --frozen python scripts/evaluate_application_snapshot.py --inputs C:\Users\Asus\Downloads\benchmark-local\clearledger-benchmarks\inputs\clearledger-dev --as-of 2026-01-19T12:00:00+05:30`: PASS for observed API/safety scope, final output above; private `local-data/application-evaluation-final-console.log`.
+- `uv run --frozen python local-data/application_eval_focused.py`: **11 passed in 10.58s**, `local-data/application-eval-focused.log`; unit isolation/prediction/cold-clock and real API/PG integration.
+- `uv run --frozen python scripts/verify_isolated_restart.py`: **4 passed in 48.87s**, `local-data/verification/isolated-restart-20261025T203338069911Z.log`; unchanged application/migrations, owned temporary container only.
+- `uv run --frozen python scripts/verify.py`: **PASS**, **621 passed in 1160.76s (19m20s)**, no skips; all lock/dependency/Ruff lint/format/21-module typing/matching-bound/PostgreSQL migration/integrity gates passed. Private `local-data/verification/20261025T210932104880Z.log`. Earlier interrupted gates are not counted as passing. No executable code/test changes followed the final passing gate; fingerprints matched.
+
+Initial diagnostic run `2dc90e433b524a1b81b398c52637ec4b` used an incorrect client search
+limit100; 183 typed HTTP422 rejections were harness errors. Fixed to existing max50,
+added successful known-customer evidence-query assertion and reran the entire snapshot.
+No application validation was weakened. A final runner-only first-login uptime guard
+was added with a fake-clock test; the measured run already logged in correctly. Exact
+measured host code/hash is retained privately; captured metrics/source digests are not
+rewritten. Incomplete verification gates were stopped for those fixes, not passed.
+
+All610 existing regression tests/assertions retained. No migrations, dependencies,
+financial schemas, app code, pilot datasets, benchmark project or original data changed.
+No paid calls, remote push or M10 work. Detailed raw observations/predictions/fixture
+contents are ignored. Source/authority, stage, production and remote/provider limitations
+remain open. Final staged review passed: 11 intended files, no local credentials/private data, no prior test assertions removed, whitespace/identity checks passed. Implementation commit identifier will be recorded in a follow-up status checkpoint. Both original pilot ZIP hashes match and all source export hashes remained unchanged.
 
 ## Milestone 09 reviewer and recovery workflow - 2026-10-26 (IST)
 

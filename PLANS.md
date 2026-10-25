@@ -54,3 +54,9 @@ Incorrect autonomous customer resolution, duplicate cash application, over-alloc
 After each phase, request: source diff summary, exact verification commands/output, observed new behavior, unknowns, and a demo command. If not verifiable, phase remains incomplete.
 
 Milestone 09 adds the original local role/reviewer/draft/response/closure workflow in docs/REVIEW_RECOVERY.md. Demo sessions remain operational-only; financial approval and closure require the trusted authority port. Production G1 stays open, and no M10 UI or benchmark dataset work is included. Observed results are recorded in STATUS.
+
+Authorized post-M09 application evaluation is a separate visible-export API integration,
+not M10 or full M11 completion. Preserve original 420-receipt/426-stage chronology; a
+single manual export cutoff cannot supply it. No hidden truth, benchmark generation,
+financial authority or dataset modifications are authorized. Measurements and unverified
+capabilities are in docs/POST_M09_APPLICATION_EVALUATION.md and STATUS.md.
