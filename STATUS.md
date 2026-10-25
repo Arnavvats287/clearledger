@@ -9,6 +9,15 @@
 
 ## Milestone 07 Director–Investigator workflow - 2026-10-25
 
+Verified implementation checkpoint: **`cc8eae30a14a01b8213d2ff719c8cfc9c21b1a48`**,
+message `feat: implement milestone 07 director-investigator workflow`. Reviewed/staged
+exactly 38 intended files; staged whitespace, local credential/private-data exclusions
+and preservation of all existing test assertions passed. All required checks passed
+before commit: 507 tests, every static/migration gate and 2 isolated restart checks.
+This follow-up records the hash only; no application/schema/test changes followed the
+final passing gate. Working tree was clean after implementation commit. No push; stop
+before 08.
+
 Branch `feat/milestone-07-directed-investigation` starts at verified `e9b970b`.
 Original 07 requirements remain the checklist. `docs/INVESTIGATIONS.md` defines the
 workflow/API/limits; REQUIREMENTS_AUDIT maps requirements to implementation/tests.

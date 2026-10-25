@@ -5,6 +5,8 @@
 Authorized from verified `e9b970b`, branch `feat/milestone-07-directed-investigation`.
 Original `prompts/07-directed-investigation.md` is preserved and authoritative.
 Contract and operational limitations: `docs/INVESTIGATIONS.md`.
+Verified implementation checkpoint: `cc8eae30a14a01b8213d2ff719c8cfc9c21b1a48`;
+507 full tests and 2 isolated restart checks passed before commit.
 
 | Original requirement | Implementation | Code/test evidence |
 |---|---|---|
