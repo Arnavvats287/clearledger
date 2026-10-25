@@ -9,6 +9,15 @@
 
 ## Post-M09 independent application evaluation - 2026-10-26 (IST)
 
+Verified implementation checkpoint: **`cf6bf7537719d87519bc1e6bb3068af39be6d987`**,
+message `test: add post-m09 visible snapshot application evaluation`. Reviewed/staged
+11 intended files; local credential/private-data, whitespace and prior-assertion checks
+passed. Required verification passed before commit: 621 tests, all static/dependency/
+migration/integrity gates and 4 applicable isolated restart checks. Working tree was
+clean after implementation commit. This follow-up records its hash only; executable
+source/test fingerprints remain unchanged. Source export and both pilot ZIP hashes
+are preserved. No remote push; STOP before Milestone 10.
+
 Authorized from `b0485f2`, branch `eval/post-m09-development-snapshot`. This is a separate
 API evaluation harness, not M10 UI, M11 completion or a product/benchmark rewrite.
 Read original specifications/contracts and prior pilot runtime before integrating the
@@ -78,7 +87,7 @@ All610 existing regression tests/assertions retained. No migrations, dependencie
 financial schemas, app code, pilot datasets, benchmark project or original data changed.
 No paid calls, remote push or M10 work. Detailed raw observations/predictions/fixture
 contents are ignored. Source/authority, stage, production and remote/provider limitations
-remain open. Final staged review passed: 11 intended files, no local credentials/private data, no prior test assertions removed, whitespace/identity checks passed. Implementation commit identifier will be recorded in a follow-up status checkpoint. Both original pilot ZIP hashes match and all source export hashes remained unchanged.
+remain open. Final staged review passed: 11 intended files, no local credentials/private data, no prior test assertions removed, whitespace/identity checks passed. Verified implementation commit identifier is recorded above. Both original pilot ZIP hashes match and all source export hashes remained unchanged.
 
 ## Milestone 09 reviewer and recovery workflow - 2026-10-26 (IST)
 
