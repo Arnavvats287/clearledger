@@ -9,6 +9,14 @@
 
 ## Milestone 06 evidence retrieval and verification - 2026-10-25
 
+Verified implementation checkpoint: **`2914daf3010db9db84d2d70bb606091dce9bd753`**,
+message `feat: implement milestone 06 evidence retrieval and verification`. Reviewed
+and staged exactly 35 intended files; staged whitespace and actual local-secret/
+private-data exclusions passed. All required checks passed before commit (458 full
+tests, all static/migration gates and 2 isolated restart-mode checks). This follow-up
+records the hash only; no application/schema/test changes followed verification.
+No push; stop before 07.
+
 Branch `feat/milestone-06-evidence-verification` starts at verified `ec7b420`; all prior
 history preserved. Original `prompts/06-evidence-search.md` is implemented through
 separate immutable evidence-1.0 manifests and source provenance, seven allowlisted
@@ -114,8 +122,7 @@ originals and all financial CSV columns/constraints remain unchanged. New produc
 modules separate source models/domain/repository/ingestion/read/verification/API and
 bounded runtime snapshots. Existing helper changes preserve every old lock outside
 the enforced read-only transaction and share a context only within one serialized
-case batch. No old test assertion was removed or weakened. Completion hash is
-recorded after checkpoint creation; no push.
+case batch. No old test assertion was removed or weakened. Completion hash is recorded above; no push.
 
 Remaining limits: source trust requires independently reviewed upstream key custody
 and status attestations; HMAC is not PDF-signature validation or legal authentication.
