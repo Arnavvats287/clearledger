@@ -8,6 +8,8 @@
 
 ## Milestone 04 — secure document intelligence · 2026-10-25
 
+Verified implementation checkpoint: **`b968ccb6d0af6e192a5a665f021469c7477a7e2e`**, message `feat: implement milestone 04 secure document intelligence`. Reviewed/staged exactly 35 intended files after all required checks passed; staged whitespace, actual local-secret exclusions and uploaded-data/runtime exclusions passed. No unrelated changes or push. This documentation-only follow-up records the hash; no application changes followed final verification.
+
 Branch `feat/milestone-04-document-intelligence` starts at latest verified status checkpoint `0dfaa91` (application `e28c359`), preserving history. The original 04 checklist/tests/real-import exit remain intact. AGENTS/original prompt/security/architecture now explicitly record the user's approved **separate Gemini transport exception**, while parser/extractor has no network/DB/tools/policy. No financial/security requirement was waived. Complete API/format/privacy contracts: `docs/DOCUMENTS.md`; requirement traceability: `REQUIREMENTS_AUDIT.md`.
 
 Implemented authenticated, tenant-scoped PDF/email/text/remittance-JSON ingestion; strict types/MIME/path/size/page/decompression/resource guards; exclusive content-addressed/fsynced originals with SHA-256; canonical pages/hash/parser version; immutable metadata, deduplication, operation keys and audit events. Scans/mixed empty pages require OCR; malformed/unsupported data fails closed. Repeated/concurrent uploads produce one document/event. An actual HTTP import/extraction and separate API process restart/fresh read preserve metadata/originals.
