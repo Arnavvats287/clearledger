@@ -9,6 +9,14 @@
 
 ## Milestone 08 policy and accounting simulation - 2026-10-25
 
+Verified implementation checkpoint: **`addd40941dc1709fa99563ef329021ebfe6fae4f`**,
+message `feat: implement milestone 08 policy and accounting simulator`. Reviewed/staged
+39 intended files; whitespace, local credential/private-data exclusions and preservation
+of existing test assertions passed. Required checks passed before commit: 563 tests,
+all static/dependency/migration gates and 3 isolated restart checks. Working tree was
+clean after that commit. This follow-up records verification provenance only; no
+application/schema/test changes followed the passing gate. No push; STOP before 09.
+
 Branch `feat/milestone-08-policy-ledger` starts at verified `c4cd3e3`. Original 08 prompt
 remains authoritative. Contract: `docs/ACCOUNTING_SIMULATOR.md`; traceability is in
 REQUIREMENTS_AUDIT. No new dependency, infrastructure or financial graph tool is added.
@@ -41,7 +49,7 @@ Actual commands/results (Windows uses repository-local `.venv/Scripts/uv.exe`; p
 - Final focused GST/unknown/unsigned/contradictory/date, concurrent proposal and multi-invoice tests: **7 passed in 52.57s**, `local-data/m08-final-focused.log`.
 - `uv run --frozen python local-data/m08_upgrade.py`: **PASS**, up-only 0009 -> 0010 and Alembic drift check; all records in 47 old tables unchanged (`m08-development-schema.json`, `m08-upgrade.log`). No development reset/downgrade.
 - `uv run --frozen python scripts/verify_isolated_restart.py`: **3 passed in 32.52s**, including financial journal/approval/history/balance persistence and no duplicate replay across fresh processes/connections and owned-container restarts. Log: `local-data/verification/isolated-restart-20261025T164920346659Z.log`. Only owned temporary resources restarted/removed.
-- `uv run --frozen python scripts/verify.py`: **PASS**, **563 passed in 964.09s**, no skips; every lock/dependency, Ruff lint/format, 19-module strict typing, matching bounds, PostgreSQL migration/integrity/integration gate passed. Private log: `local-data/verification/20261025T164920537343Z.log`. No application/schema/test changes followed this gate. Verified implementation hash will be recorded in a follow-up status checkpoint after staged review.
+- `uv run --frozen python scripts/verify.py`: **PASS**, **563 passed in 964.09s**, no skips; every lock/dependency, Ruff lint/format, 19-module strict typing, matching bounds, PostgreSQL migration/integrity/integration gate passed. Private log: `local-data/verification/20261025T164920537343Z.log`. No application/schema/test changes followed this gate. Verified implementation hash is recorded above after staged review.
 
 No prior checks/assertions were removed. Full-test ceiling is now 1800s (CI 35m): the
 retained 507-test baseline already took 757.81s and the new disposable-schema/accounting
