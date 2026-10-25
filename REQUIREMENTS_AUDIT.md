@@ -1,5 +1,31 @@
 # ClearLedger requirements-alignment audit
 
+## Authorized chronological adapter — 2026-10-26
+
+From `a7cb6ec`, dedicated `eval/persistent-chronological-adapter`; separate API integration,
+not Milestone 10 or completion of the independent benchmark. Only the operator-supplied
+public PROTOCOL.md/bridge.py and explicit ID clarification are implementation inputs.
+The prior snapshot report remains the baseline; no schedule/answers/generator is read.
+
+| Requirement | Implementation / verification trace |
+|---|---|
+| Protocol 1, exact source/stage binding, tied cutoffs/replay | `chronological_protocol.Stage`, `chronological_adapter.Adapter`; UTF-8/canonical manifest, exact timestamp/natural keys, distinct IDs, immutable replay and conflicting ID/time/company/nonce rejection |
+| Persistent actual API session and delta intake | Adapter retains one owned DB/Uvicorn/HTTP session; `Deltas` uses CSV1.0 validation and natural-key hashes; no header-only/repeated CSV submission; new rows only; immutable original document bytes and stage input archive |
+| Least-privilege database and frozen offline configuration | `chronological_host.initialize_owned/factory`, owned fresh database/role/session-user checks; no URL overrides/prior tables/functions/views/extra schemas; no `.env`; admin bootstrap excluded from runner; no finance adapter/provider budgets/keys/tracing |
+| Actual matching/documents/evidence/investigation observations | Reuses prior HTTP client, document/span/extraction and exact/advanced routines; scoped stale refresh, native evidence queries and persisted-claim-only deterministic investigations; no manufactured signing/intent/claims/approvals |
+| Financial non-mutation, failure, provenance, bounds | Independent SQL before/after plus old-row retention/protected empty-table checks; append-only private source/API/stage artifacts and digest; ERROR minimal predictions; failed run poisoned, no uncertain retry/resume; fixed deadlines/input/output/artifact limits |
+| Windows and restricted Docker bridge | `verify_chronological_bridge` reads only supplied public bridge; three minimal stages/tie/delta/replay; actual API, owner-role PostgreSQL, UID10001/read-only root/internal network; allowlisted image build excludes admin bootstrap/operator/data |
+| Regression and isolated persistence | `test_chronological_evaluation`:51 new protocol/property/PG/API/role/schema/negative/config/deadline/JSONL/EOF cases; full **672 passed in 1326.18s**, all prior 621 retained, all static/migration checks passed; **4 isolated restart tests passed in 47.63s**. Both actual bridge profiles passed three stages plus replay; exact logs/commands in STATUS |
+
+**Still deferred:** no approved historical application replay clock (explicitly NOT
+EVALUABLE, source availability chronology only); no independently scored benchmark run,
+full-stage coverage/accuracy, production authentication/RLS, authenticated upstream
+evidence, legal tax authority, remote CI or live Gemini accuracy. The operator must send
+all tied stages before advancing; unseen schedule completeness cannot be inferred.
+An unseen large burst may exceed the fixed 120s budget and fail, not silently relax it.
+Contract/reproduction/security details: `docs/CHRONOLOGICAL_EVALUATION.md`. No product,
+financial schema, original pilot/dataset/operator or future milestone is modified.
+
 ## Authorized post-M09 application evaluation - 2026-10-26
 
 Baseline `b0485f2`, branch `eval/post-m09-development-snapshot`; this does not complete

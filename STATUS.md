@@ -1,5 +1,129 @@
 # Build status
 
+## Persistent chronological evaluation adapter — 2026-10-26 (IST)
+
+Authorized from verified **`a7cb6ec`** (evaluation implementation `cf6bf75`), branch
+**`eval/persistent-chronological-adapter`**. This is an application integration task,
+not Milestone 10, an operator/scorer rewrite or a scored benchmark result. The original
+`docs/POST_M09_APPLICATION_EVALUATION.md` remains the baseline. Only the explicitly
+supplied public protocol and bridge plus operator ID clarification were read:
+
+- PROTOCOL.md SHA256 `a745af6a96235cc678473febf8a0925ea7b141b1e4e0d83f3d18b395916e0de6`.
+- runner_image/bridge.py SHA256 `5a0c24426c34ace5ad8541b95e9c35048e1d374e925f9ead7cd6d6eafec51958`.
+
+No complete schedule, hidden truth, scorer/generator/source dataset or other operator
+implementation was inspected, imported or modified. Both original pilots and the
+420-receipt benchmark are untouched. No external/paid calls, pushes or M10 work.
+
+### Implemented boundaries and behavior
+
+New `chronological_protocol/host/adapter` scripts reuse the existing actual HTTP client,
+document extraction/span checks and exact/advanced matching. The original one-shot
+entry point is unchanged; its host only gains an optional factory argument whose
+default retains existing behavior. No product module, dependency or migration changes.
+
+JSONL consumes current payload bytes, not any input-root filesystem. Exact original
+as_of/natural keys/company/run/request/snapshot/nonce are bound to canonical UTF-8
+manifest hashes. Distinct stage IDs at tied cutoffs are required; identical successful
+stage retries reuse saved observations without API work (a fresh nonce can rebind).
+Conflicting IDs, changed company/run, backwards time, changed tied snapshots, modified
+or removed immutable sources and invalid CSV/hash/path/wire/resource inputs fail closed.
+Failed/uncertain runs are poisoned and cannot resume. The operator, not the adapter,
+knows whether all unseen tied stages have been sent.
+
+One fresh owned PostgreSQL database, actual Uvicorn process, HTTP session and bounded
+normal-outbox workflow persist for the split. Delta plans validate all received inputs
+before writes, retain natural-key/raw-field hashes, skip header-only CSVs and send only
+new rows in dependency order. Original document bytes/pages/spans are checked through
+actual APIs. Only real persisted extraction claims enter deterministic investigations;
+unlinked document cases are not fabricated into receipt intent. Stale scoped cases are
+refreshed; actual native evidence remains unauthenticated. No source keys, verified
+UTRs, matching attestations, claims, controller approvals or finance adapter are invented.
+
+Database preflight requires an empty `clearledger_chrono_<UUIDhex>` database and its
+nonprivileged owner, no memberships, exact session/login identity, no query-option
+overrides, prior public relations/functions or extra schemas. Upgrade/check applies
+only to this owned database at existing **0011_review**. Test bootstrap admin credentials
+are outside the runner; it never creates/drops databases. Settings(_env_file=None),
+allowlisted child environment, empty source registry and disabled external providers/
+keys/tracing/budgets are checked by the frozen actual app/worker host. Finance reads
+still return **503**. The runner rejects inherited test-admin and external-key variables.
+
+Financial PASS independently verifies retained prior rows and equal SQL snapshots
+after legitimate source append versus after analysis; journals/lines/allocations/noncash
+settlements/provider reservations must stay empty. Private immutable input objects,
+natural-key/UUID maps, full API observations and stage responses preserve provenance.
+Public responses contain bounded real outcomes, hashes, lifecycle versions, API errors,
+latency and private observation digests; errors return only minimal bound predictions.
+Managed artifacts cap at 1 GiB, stages/nonces at 10,000; wire/input/response and HTTP/
+worker budgets are explicit. Storage/timeout failures never become successful results.
+
+### Actual final verification
+
+**All required local checks PASS: 672 tests (all 621 retained + 51 new), no skips,
+plus 4 existing isolated restart checks.** No executable changes followed the final
+gate. Source fingerprints, unchanged prior assertions/product/migrations/dependencies,
+staged local-credential exclusions and whitespace were independently reviewed.
+
+Commands use `.venv/Scripts/uv.exe` on Windows with workspace UV_CACHE_DIR. Verbose
+logs and fixture contents remain ignored locally:
+
+| Actual command | Result / local log |
+|---|---|
+| `uv run --frozen python scripts/verify.py` | **PASS; 672 passed in 1326.18s (22m06s), no skips.** Lock/dependencies/Ruff lint+format/21-module strict typing/matching bounds/PostgreSQL migration up-down-up/drift/integrity/API/security/concurrency/restart regressions passed. `local-data/verification/20261025T232737279989Z.log` |
+| `python -m pytest tests/test_chronological_evaluation.py -q --require-postgres` | Focused **50 passed in 40.00s** before the final schema-guard case; the full gate subsequently executed all **51** new cases. `local-data/chrono-focused-final.log` |
+| `uv run --frozen python scripts/verify_isolated_restart.py` | **4 passed in 47.63s** on its own labelled PostgreSQL container/volume; only owned resources removed. `local-data/verification/isolated-restart-20261025T230948561462Z.log` |
+| `python scripts/verify_chronological_bridge.py --bridge <supplied public bridge.py>` | **PASS** on Windows: three distinct stages (two tied) plus identical replay; four REAL_API ABSTAIN responses, actual financial PASS each, new second receipt unavailable then available, delta-only import and deterministic JSON extraction. Maximum stage **11.447961500s**. `local-data/chronological-verification/966f8274b20d43eca559edae25a9cebb/` |
+| `python scripts/build_chronological_image.py` | **PASS**, explicit application-only context, frozen dependencies. Final image `sha256:45020740d52b22b545938b643d1974ebc3c74046197e66e4d3432ec65710a1eb`, UID10001:10001. `local-data/chrono-docker-build.log` |
+| `python scripts/verify_chronological_bridge.py --bridge <supplied public bridge.py> --docker` | **PASS**, same three-stage/replay API proof inside read-only/cap-dropped/resource-bounded UID10001 runner on internal network with its own PostgreSQL16.15 container and owner role. Maximum stage **14.237796616s**. Private provenance retained, owned container/network listings empty after cleanup. `local-data/chronological-verification/a467ce0c20a846e9a04ddb2a0e2cb256/` |
+
+Docker Engine observed **29.9.2**. Both bridge profiles use PYTHONUTF8=1 and the
+**unchanged actual supplied bridge**, not a replacement fixture echo. Only minimal
+existing unit rows are used: one customer/alias/invoice, two receipts over time and one
+JSON original; no benchmark outcomes or real financial datasets are generated. Separate
+integration coverage materializes a source-backed two-paise claim and invokes the actual
+deterministic investigator without linking it into unsupported payment intent. Normal
+EOF/new-connection persistence, prior-run rejection, URL/role/membership/schema guards,
+immutable replay, missing receipt, payload/hash/path tampering, time/company/ID conflicts,
+deadline/failure poisoning and independent delta-set properties are covered.
+
+Initial diagnostics found Alembic's Config-captured stdout bypassing generic redirection;
+explicit stderr configuration fixes it, and a real JSONL subprocess regression prevents
+recurrence. The first Docker bootstrap used only an internal network, which did not
+publish its port to Windows; the trusted disposable PostgreSQL bootstrap now has a
+separate loopback network, while the adapter stays internal. That failed run and its
+owned resources were cleaned; no shared database/container was restarted or destroyed.
+Earlier intermediate verification passed **661 tests in 1285.96s**; it is **not** used
+as final evidence after the additional privilege/schema/storage/transport tests.
+
+Changed files: six new adapter/build/bootstrap/bridge-verification scripts, one optional
+factory parameter in the existing host, Dockerfile, new 51-case test module, README,
+audit, STATUS and the chronological contract. No dependency/app/schema changes, no original
+test assertions removed, no benchmark/pilot/operator/schedule changes and no push. Only
+generated owned databases were upgraded; none were development databases. Completion
+checkpoint is recorded in the documentation-only follow-up after committing this result.
+
+### Explicit remaining limitations
+
+There is **no approved historical application replay clock**: source-availability
+chronology/source-date matching are supported; wall-clock authentication, audit creation,
+age/expiry/legal/lifecycle semantics are NOT EVALUABLE historically. No timestamps are
+backdated and future/regressing cutoffs are not accepted. The independent operator must
+assess only supported capabilities and send all tied stages before advancing.
+
+The unseen full benchmark has not been executed/scored; full coverage, accuracy,
+authenticated source support, supported deduction settlement, production IdP/RLS,
+legal tax decisions, remote CI and live Gemini accuracy remain deferred. Native canonical
+pages hashes are not benchmark TXT hashes/citations. New source records are not signed
+or registered from untrusted labels. No automatic financial posting is enabled.
+Large bursts may fail the unchanged 120s policy; these small bridge checks are not an
+SLA or proof of every unseen stage. See `docs/CHRONOLOGICAL_EVALUATION.md` and the audit.
+Native Windows testing is functional, not a same-user filesystem sandbox; the restricted
+Docker profile supplies the tested runner containment. Stage timings exclude bridge/
+protocol decoding; resource caps are not measured RSS/CPU usage.
+
+## Previous verified post-M09 snapshot baseline
+
 - Repo state: **Post-M09 application evaluation completed within visible-snapshot scope; verification passed.**
 - Application baseline: **Verified `b0485f2` (M09 `5c91290`); no product or schema changes. STOP before 10.**
 - Evaluation scope: **385 visible files at operator-confirmed 2026-01-19T12:00:00+05:30; 184 receipts, not the full 420-receipt/426-stage study.**

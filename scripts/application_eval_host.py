@@ -128,7 +128,7 @@ class API:
 
 
 @contextmanager
-def application(env, password, output):
+def application(env, password, output, *, factory="clearledger.main:create_app"):
     with socket.socket() as reservation:
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
@@ -138,7 +138,7 @@ def application(env, password, output):
                 sys.executable,
                 "-m",
                 "uvicorn",
-                "clearledger.main:create_app",
+                factory,
                 "--factory",
                 "--host",
                 "127.0.0.1",

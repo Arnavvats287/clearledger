@@ -1,5 +1,12 @@
 # ClearLedger
 
+Persistent chronological evaluation (protocol 1) is a separate actual-API JSONL adapter:
+see [setup, trust boundaries, replay-clock limits and verification](docs/CHRONOLOGICAL_EVALUATION.md).
+It requires a fresh disposable app-owner PostgreSQL database; never point it at development
+data. The independently controlled bridge supplies only current payloads. No benchmark
+accuracy is claimed until the separate scorer evaluates actual predictions. The original
+[post-M09 snapshot report](docs/POST_M09_APPLICATION_EVALUATION.md) remains unchanged.
+
 Pilot v1.1 compatibility results are reported separately in [PILOT_V1_1_EVALUATION.md](docs/PILOT_V1_1_EVALUATION.md); the v1.0 report remains the frozen baseline. To evaluate the supplied successor, use `uv run --frozen python scripts/verify_pilot.py --archive local-data/pilot/clearledger_pilot_v1_1_compat.zip` with both original archives retained locally. External models remain disabled.
 
 Independent pilot evaluation: place the supplied archive in ignored `local-data/pilot/clearledger_pilot_v1.zip`, configure local TEST_DATABASE_URL with CREATEDB permission, and run `uv run --frozen python scripts/verify_pilot.py`. The harness uses disposable databases and real loopback HTTP APIs with Gemini disabled; it never edits/regenerates the package. Results, compatibility blockers and reproduction details: [PILOT_EVALUATION.md](docs/PILOT_EVALUATION.md). Detailed fixture-bearing outputs remain ignored locally.
