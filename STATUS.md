@@ -1,13 +1,20 @@
 # Build status
 
 - Repo state: **Milestone 05 implemented and locally verified.**
-- Current task: **Persistent deduction case management from `16db2df`; STOP before 06.**
+- Current task: **Milestone 05 complete from `16db2df`; STOP before 06.**
 - Focused checks: **391 full tests passed (347 retained + 44 new); all required gates PASS. Isolated restart: 2 passed.**
 - Financial boundary: **No posting, write-offs, balance mutation or tax adjudication.**
 - External integrations: **Gemini disabled; no external/paid calls or dataset changes.**
 - Deferred: **Production auth/RBAC/isolation G1, remote CI, live provider/privacy review, full Argon benchmark and ten email offsets. G2/G3 coverage preserved.**
 
 ## Milestone 05 persistent deduction case management - 2026-10-25
+
+Verified implementation checkpoint: **`3ea10e5ac87e43c62253d41aaa9fd08375a346d6`**,
+message `feat: implement milestone 05 persistent case management`. Exactly 37
+intended files were staged/reviewed; staged whitespace, actual local-secret and
+private-data exclusions passed. All required checks passed before commit (391 full
+tests plus the 2 isolated restart-mode checks). This documentation-only follow-up
+records the hash; no product/schema/test change followed verification. No push.
 
 Branch `feat/milestone-05-case-management` starts at verified `16db2df`; history
 preserved. Eighteen additive scoped tables (`0007_cases`) add cases, individual
@@ -100,8 +107,7 @@ private-data paths excluded. AST comparison retains all 139 original assertions 
 the two updated regression modules; every other existing test file is unchanged.
 New domain/service/repository/API/outbox modules, 0007 migration, case/property tests
 and documentation are the only changes. Original financial CSV contract and pilot
-baseline/dataset files are unchanged. Git completion hash is recorded below after
-checkpoint creation; no push.
+baseline/dataset files are unchanged. Git completion hash is recorded above; no push.
 
 Remaining limitations: local bearer credentials are not production authenticated
 users/RBAC/strong isolation; case writes are serialized per company. Worker must run
