@@ -100,8 +100,13 @@ Changed files: six new adapter/build/bootstrap/bridge-verification scripts, one 
 factory parameter in the existing host, Dockerfile, new 51-case test module, README,
 audit, STATUS and the chronological contract. No dependency/app/schema changes, no original
 test assertions removed, no benchmark/pilot/operator/schedule changes and no push. Only
-generated owned databases were upgraded; none were development databases. Completion
-checkpoint is recorded in the documentation-only follow-up after committing this result.
+generated owned databases were upgraded; none were development databases.
+
+Verified implementation checkpoint: **`e958ff7f8086c66e66c5fdaa768716f2ed000096`**,
+message `test: add persistent chronological evaluation adapter`. Reviewed/staged exactly
+13 intended files; all required checks above passed before commit. Working tree was
+clean after that commit. This documentation-only follow-up records its hash; executable
+source seals remain unchanged. No push; STOP before Milestone 10.
 
 ### Explicit remaining limitations
 
