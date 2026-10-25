@@ -74,3 +74,21 @@ Immutable case-local proposal bindings/invalidation overlays preserve existing
 matching proposal history. Merges retain physical source IDs and canonical redirects.
 Company locks plus CAS, compound tenant FKs, commit-required revisions and append-only
 triggers protect case writes. No case component calls Gemini or financial posting.
+
+## Milestone 06 evidence boundary
+
+`evidence_contract` defines the separate evidence-1.0 schema and typed read capabilities;
+`evidence_domain` contains source-signature/span/date/numeric checks. `evidence_models`
+and `evidence_repository` implement immutable scoped revisions/provenance and bounded
+structured/FTS selection. `evidence_ingestion` is the authenticated writer and existing
+outbox publisher, outside the tool boundary. `evidence_reader` runs in PostgreSQL READ
+ONLY transactions; `evidence_verification` checks factual predicates and contradictions.
+`evidence_runtime` bounds request-local original reuse. `evidence_api` provides typed
+read-only search/verification and privileged immutable reviewer pointers.
+
+No new database/queue/model framework or dependency. Existing matching/document row
+locks remain unchanged outside the enforced read-only scope. Case-source contexts now
+include relevant external evidence; per-claim bases filter category/invoice relevance,
+and batch reevaluation/hypothesis reads reuse one consistent context. Empty external
+contexts retain existing hashes. See [EVIDENCE.md](EVIDENCE.md) for trust, limits and
+protocol. This adds factual verification, not financial policy or claim approval.

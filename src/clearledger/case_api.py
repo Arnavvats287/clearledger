@@ -46,7 +46,7 @@ from clearledger.case_schemas import (
     WorkView,
 )
 from clearledger.case_service import claim_view, command, reconcile, view
-from clearledger.case_sources import claim_basis, proposal_current
+from clearledger.case_sources import claim_basis, current_context, proposal_current
 from clearledger.document_contract import ExtractionError
 from clearledger.document_runtime import LocalOriginals
 from clearledger.matching import owned
@@ -288,6 +288,7 @@ def hypotheses(
             )
         )
     )
+    context = current_context(session, org, case, store(request)) if rows else None
     return [
         HypothesisView(
             id=h.id,
@@ -298,7 +299,12 @@ def hypotheses(
             is_stale=h.id in invalid
             or h.basis_sha256
             != claim_basis(
-                session, org, case, owned(session, Claim, org, h.claim_id), store(request)
+                session,
+                org,
+                case,
+                owned(session, Claim, org, h.claim_id),
+                store(request),
+                context=context,
             ),
         )
         for h in rows

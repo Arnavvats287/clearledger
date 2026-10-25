@@ -33,6 +33,8 @@ Complete exactly one milestone per Codex task. `prompts/NN-*.md` contains the de
 
 - Milestone 05 uses a PostgreSQL leased outbox and deterministic UNASSESSED hypotheses. It preserves all original lifecycle states while gating adjudication/settlement outcomes on later validated capabilities; no operator label bypasses 06/08/09 prerequisites. Source checklist and test traceability are in REQUIREMENTS_AUDIT and CASES.md.
 
+- Milestone 06 implements the original evidence checklist with a separate versioned source manifest, PostgreSQL read-only tools/FTS and deterministic factual verification. Source attestations do not authorize finance; full user roles, investigation and policy stay in later milestones. Contract and limits: docs/EVIDENCE.md.
+
 ## Evaluation tripwires
 Incorrect autonomous customer resolution, duplicate cash application, over-allocation, unbalanced posting, unsupported writeoff, fabricated citation accepted, or unauthorized approval is a BLOCKER. Address before moving on.
 

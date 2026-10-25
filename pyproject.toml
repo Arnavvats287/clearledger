@@ -43,5 +43,7 @@ files = [
   "src/clearledger/extraction_provider.py", "src/clearledger/worker_security.py",
   "src/clearledger/provider_budget.py",
   "src/clearledger/case_domain.py", "src/clearledger/case_schemas.py",
+  "src/clearledger/evidence_contract.py", "src/clearledger/evidence_domain.py",
+  "src/clearledger/evidence_runtime.py",
 ]
 

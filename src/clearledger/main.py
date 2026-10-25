@@ -12,6 +12,7 @@ from clearledger.case_api import router as case_router
 from clearledger.config import Settings
 from clearledger.db import build_engine, get_session
 from clearledger.document_api import router as document_router
+from clearledger.evidence_api import router as evidence_router
 from clearledger.extraction_provider import Gateway, GeminiTransport
 from clearledger.matching_api import router as matching_router
 
@@ -61,6 +62,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(matching_router)
     app.include_router(document_router)
     app.include_router(case_router)
+    app.include_router(evidence_router)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

@@ -197,3 +197,17 @@ is visible under case `/work`; failed source events are also retained in the dat
 Exact API bodies, state/authority restrictions, retry bounds and examples are in
 [docs/CASES.md](docs/CASES.md). The optional strong CASE_READ_TOKEN is GET-only.
 Local bearer authentication does not replace the deferred production user/role system.
+
+## Evidence retrieval and verification (milestone 06)
+
+Safely run `uv run --frozen alembic upgrade head`; never reset/downgrade development.
+Ingest originals through `/documents`, then register typed manifests through
+`POST /evidence/records`. Existing financial CSV 1.0 is unchanged. Case-scoped
+`/evidence/search` and `/evidence/verify` are database-read-only; reviewer pointer
+endpoints retrieve immutable sources. Run the existing case worker for late-evidence
+version/invalidation events. Default source trust is empty: operator labels or text
+saying signed/approved cannot establish trust. Only separately provisioned upstream
+attestations can support factual predicates; nothing authorizes financial action.
+See [docs/EVIDENCE.md](docs/EVIDENCE.md) for exact contracts, privacy, source trust,
+limits and a minimal isolated application demonstration command. No dataset, real
+provider call, model investigator, tax policy or posting is introduced.

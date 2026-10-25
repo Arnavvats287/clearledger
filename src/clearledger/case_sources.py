@@ -1,5 +1,7 @@
 """Validate existing source contracts without elevating source consistency to authority."""
 
+from uuid import UUID
+
 from sqlalchemy import func, select
 
 from clearledger.advanced_matching import ALGORITHM
@@ -134,7 +136,7 @@ def current_context(session, org, case, store):
                 "source": invoice.payload_sha256,
             }
         )
-    return {
+    context = {
         "receipts": receipts,
         "documents": docs,
         "invoices": invoices,
@@ -144,26 +146,59 @@ def current_context(session, org, case, store):
         ],
         "evidence": [str(e.id) for e in group_rows(session, EvidenceLink, org, ids)],
     }
+    from clearledger.evidence_repository import case_facts
+
+    owners = {
+        UUID(c)
+        for r in receipts
+        for c in r["decision"]["customers"]
+        if r["decision"]["identity"] == "RESOLVED"
+    }
+    invoice_ids = {i["id"] for r in receipts for i in r["invoices"]}
+    invoice_ids.update(i["id"] for i in invoices)
+    facts = case_facts(session, org, owners, invoice_ids, store)
+    if facts:
+        context["external_evidence"] = facts
+    return context
 
 
-def claim_basis(session, org, case, claim, store):
+def claim_basis(session, org, case, claim, store, *, context=None):
     ids = members(session, org, case)
     evidence = [
         e for e in group_rows(session, EvidenceLink, org, ids) if e.claim_id in (None, claim.id)
     ]
     doc_ids = {claim.document_id, *[e.document_id for e in evidence]}
-    context = current_context(session, org, case, store)
-    return digest(
-        {
-            "claim": str(claim.id),
-            "version": claim.version,
-            "state": claim.state,
-            "receipts": context["receipts"],
-            "invoices": context["invoices"],
-            "documents": [d for d in context["documents"] if d["id"] in {str(i) for i in doc_ids}],
-            "evidence": [str(e.id) for e in evidence],
-        }
+    context = current_context(session, org, case, store) if context is None else context
+    basis = {
+        "claim": str(claim.id),
+        "version": claim.version,
+        "state": claim.state,
+        "receipts": context["receipts"],
+        "invoices": context["invoices"],
+        "documents": [d for d in context["documents"] if d["id"] in {str(i) for i in doc_ids}],
+        "evidence": [str(e.id) for e in evidence],
+    }
+    latest = session.scalar(
+        select(DocumentExtraction)
+        .where(
+            DocumentExtraction.organization_id == org,
+            DocumentExtraction.document_id == claim.document_id,
+        )
+        .order_by(DocumentExtraction.extraction_version.desc())
+        .limit(1)
     )
+    references = (
+        {r["value"] for r in latest.result.get("invoice_references", [])} if latest else set()
+    )
+    external = [
+        e
+        for e in context.get("external_evidence", [])
+        if claim.category in e["categories"]
+        and (e["invoice_number"] is None or not references or e["invoice_number"] in references)
+    ]
+    if external:
+        basis["external_evidence"] = external
+    return digest(basis)
 
 
 def invoice_ids(proposal):

@@ -48,3 +48,16 @@ Local synthetic data; no secrets stored in repo; `.env.example` only; ignore loc
 Milestone 04B: all uncached external attempts require durable PostgreSQL budget admission before model lookup/token count/generation. Failures/retries/restarts never refund reservations. Shared scope is company/provider/database; Gateway concurrency stays process-local. Runtime model metadata and full-request token counting must validate before generation; no fallback/escalation exists. Reused validated facts remain untrusted and subject to current privacy gates. Limits, exceptions and offline test evidence are in `docs/DOCUMENTS.md`; no live API availability, pricing or real-data privacy validation is claimed.
 
 Milestone 05 case APIs require the strong local document bearer credential; an optional distinct CASE_READ_TOKEN is GET-only. Actor labels remain provenance, not roles or financial authority. Submitted error values are omitted. Cases consume only allowlisted, source-linked persisted events; untrusted text never selects tools or events. Evidence relationships are annotations, not adjudication. Source versions/hashes, tenant/claim ownership and current context are independently checked. Worker exception content is replaced with fixed diagnostic codes. Case history has append-only database protection; financial records are never mutated. Production authenticated roles, approval authority and evidence adjudication remain open prerequisites, not satisfied by this local access boundary. See [CASES.md](CASES.md).
+
+Milestone 06 exposes only seven typed allowlisted retrieval functions. PostgreSQL READ
+ONLY, company shared locking, query/lock timeouts, bounded JSON/FTS/source work and
+request-local caches enforce the boundary. Raw SQL/URLs/tools are never caller inputs.
+Structured records require immutable originals, exact scoped pointers and numeric spans.
+A separate scoped source-key registry verifies HMAC attestations; local actor labels,
+source text/status flags and extraction confidence cannot authenticate evidence. Native
+imports/claims and unsigned manifests remain explicitly unauthenticated. This is not
+PDF PKI, production RBAC or financial authorization. Read-only factual verification
+never writes case/claim/balance/approval state; unknown/expired/conflicting/uncertain
+inputs abstain. Search returns privacy-projected excerpts/safe facts; full originals
+are privileged reviewer pointers, outside model tools. Errors do not reflect arbitrary
+field names or sensitive values. Gemini stays disabled. Details: [EVIDENCE.md](EVIDENCE.md).

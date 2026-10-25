@@ -1,11 +1,132 @@
 # Build status
 
-- Repo state: **Milestone 05 implemented and locally verified.**
-- Current task: **Milestone 05 complete from `16db2df`; STOP before 06.**
-- Focused checks: **391 full tests passed (347 retained + 44 new); all required gates PASS. Isolated restart: 2 passed.**
-- Financial boundary: **No posting, write-offs, balance mutation or tax adjudication.**
-- External integrations: **Gemini disabled; no external/paid calls or dataset changes.**
-- Deferred: **Production auth/RBAC/isolation G1, remote CI, live provider/privacy review, full Argon benchmark and ten email offsets. G2/G3 coverage preserved.**
+- Repo state: **Milestone 06 implemented and locally verified.**
+- Current task: **Milestone 06 complete from `ec7b420`; STOP before 07.**
+- Verification: **458 full tests passed (391 retained + 67 new), all gates PASS; final isolated restart 2 passed.**
+- Data safety: **Development up-only 0007 -> 0008; all records in 35 existing tables unchanged. Both pilot ZIP digests unchanged.**
+- Authority/privacy: **Read-only factual results only; no balances, claims settled/approved or journals changed. Gemini disabled; no paid/external calls or dataset construction.**
+- Deferred: **Production authenticated roles/isolation G1, reviewed upstream source/key custody/PKI, remote CI, real provider/privacy and full Argon benchmark; ten pilot email offsets remain unresolved.**
+
+## Milestone 06 evidence retrieval and verification - 2026-10-25
+
+Branch `feat/milestone-06-evidence-verification` starts at verified `ec7b420`; all prior
+history preserved. Original `prompts/06-evidence-search.md` is implemented through
+separate immutable evidence-1.0 manifests and source provenance, seven allowlisted
+read-only functions, scoped relational/FTS queries, deterministic factual verification
+and immutable reviewer/native pointers. Contract: `docs/EVIDENCE.md`; requirement-to-
+code/test mapping: `REQUIREMENTS_AUDIT.md`. Financial CSV 1.0, original documents,
+matching/proposal invariants and all claim/settlement authority gates are preserved.
+
+Architecture: additive `0008_evidence` creates evidence_records/requests/events with
+compound tenant/invoice-owner FKs, contiguous predecessors, append-only guards, audit
+projection checks and stored GIN text search. `evidence_contract/domain` define strict
+schemas/rules; repository/reader/verification separate SQL and factual orchestration;
+ingestion is a different authenticated writer using the existing outbox. Read functions
+start PostgreSQL READ ONLY transactions (actual DML rejection tested), shared company
+locks and query/lock timeouts. Existing row locks remain unchanged elsewhere.
+
+Trust: optional organization/source/key/kind-scoped HMAC registry, with separate private
+publisher secrets. No key or signing endpoint goes to a model/UI. Source status labels,
+actor names and source prose alone cannot authenticate. Even a valid origin attestation
+only verifies typed source-fact predicates: no financial authority, claim transition,
+controller approval, legal signature/contract or tax eligibility conclusion. Default
+trust is empty. Native imports/extractions remain explicitly unauthenticated. Contract
+conditions default unknown; delivery requires signed POD; receipt-date eligibility,
+inconsistent invoice basis, conflicts, multiple claim invoice references, uncertainty
+and incomplete search abstain. Every tax claim still requires tax review.
+
+Data/privacy: independent original/canonical/manifest hashes and exact source labels/
+spans, owner/date/status checks, whole bounded contradiction scan (not cherry-picked
+citations). Tool excerpts reuse privacy projection; sensitive conflicts suppress facts.
+Raw reviewer pointers remain outside the model tool allowlist. JSON size/depth/node/
+duplicate/nonfinite guards and safe errors prevent body/field/SQL leakage. Request-local
+source and original reuse is bounded and never crosses requests; case contexts and
+relevant claim bases stale immediately on source changes. Existing outbox reevaluation
+is targeted by category/source invoice references and preserves immutable history.
+
+Focused actual runs (workspace .venv uv executable, private ignored local-data logs):
+
+```text
+uv run --frozen pytest tests/test_postgres.py tests/test_matching.py tests/test_cases.py --require-postgres -q
+# 55 passed in 89.12s; existing migration/matching/case regressions.
+uv run --frozen pytest tests/test_evidence.py --require-postgres -q -x
+# 22 passed in 83.67s (first evidence integration/security iteration).
+uv run --frozen pytest tests/test_evidence.py tests/test_evidence_domain.py --require-postgres -q -x
+# 50 passed in 136.51s (expanded iteration).
+uv run --frozen pytest tests/test_evidence.py tests/test_evidence_domain.py tests/test_restart_persistence.py tests/test_postgres.py --require-postgres -q -x
+# 55 passed in 154.62s (before final relevance/uncertainty additions).
+# Later affected-component runs: 9 passed in 37.64s; 6 passed in 18.46s.
+uv run --frozen pytest tests/test_evidence.py::test_uncertain_claim_extraction_cannot_be_promoted_by_valid_clause --require-postgres -q
+# Final uncertainty regression 1 passed in 6.40s.
+```
+
+Review caught and fixed financial basis consistency, claim-specific multi-invoice
+ambiguity, unknown conditions, unsafe alternative early-pay dates and extraction
+uncertainty rather than loosening evidence admission. A new regression initially had
+a missing UUID import; fixed and rerun. Existing tests/assertions were not removed,
+skipped or weakened. No demonstration/evaluation data was generated.
+
+Interim `uv run --frozen python scripts/verify.py`: all gates PASS, **457 passed in
+432.40s**, 1 existing upstream warning; log `local-data/verification/20261025T063143565985Z.log`.
+This was followed by the explicit uncertainty fix/regression, so a final complete gate
+was rerun successfully on the actual final code (458 passed below). The test command timeout increased from
+300 to 900 seconds because the retained suite plus new integration tests measurably
+exceeds five minutes; no test/format/type/migration/bounds requirement was removed.
+
+Safe development `uv run --frozen python local-data/m06_upgrade.py`: **PASS**, 0007_cases
+-> 0008_evidence plus Alembic metadata drift check. SHA-256 row fingerprints match for
+every record in all **35 existing tables** before/after, with rollback on mismatch.
+Private helper/report: local-data/m06-development-migration.log and
+local-data/m06-development-schema.json. No shared DB reset/downgrade/restart or portable
+PostgreSQL change. Both pilot archives match their prior verified hashes; private
+proof local-data/m06-pilot-integrity.json. No hidden answers loaded or files modified.
+
+Isolated restart command `uv run --frozen python scripts/verify_isolated_restart.py`
+passes on a newly owned labelled container/volume, preserving all previous financial,
+case, audit/quota assertions plus three new evidence table fingerprints/replay. Final result: **2 passed in 12.53s**, 1 existing upstream warning; private log
+`local-data/verification/isolated-restart-20261025T064029024553Z.log`. Only that
+invocation's labelled disposable resources were restarted/removed.
+
+Final complete verification command:
+
+```text
+uv run --frozen python scripts/verify.py
+# lock/dependencies/Ruff lint/format/strict mypy (14 modules)/matching-bounds PASS
+# tests/migrations PASS: 458 passed, 1 existing upstream warning in 433.09s.
+# All 391 original tests retained plus 67 new tests; no skips.
+# local-data/verification/20261025T063953020046Z.log
+```
+
+This includes disposable upgrade/downgrade/upgrade and metadata drift checks,
+PostgreSQL integration, read-only DML rejection, source signature/status/ownership,
+correct/expired clauses and all evidence families, exact immutable pointers,
+negative privacy/injection/JSON tests, ambiguity/conflicts/missing POD, integer
+properties, source budgets, concurrent idempotency/forks, stale inputs/hypotheses,
+restart/replay and financial non-mutation. The isolated two restart-mode tests
+repeat existing tests with a real container restart; they are not two additional
+unique tests. The minimal correct-clause integration demonstration exercises actual
+FastAPI and PostgreSQL search/pointer/verification and is part of the full gate.
+No live provider, PDF PKI, production source identity or remote CI result is claimed.
+
+Review: no dependencies added, no pilot archive/evaluation report/harness changes,
+no actual source credentials, customer documents or generated financial exports staged. Raw/canonical
+originals and all financial CSV columns/constraints remain unchanged. New production
+modules separate source models/domain/repository/ingestion/read/verification/API and
+bounded runtime snapshots. Existing helper changes preserve every old lock outside
+the enforced read-only transaction and share a context only within one serialized
+case batch. No old test assertion was removed or weakened. Completion hash is
+recorded after checkpoint creation; no push.
+
+Remaining limits: source trust requires independently reviewed upstream key custody
+and status attestations; HMAC is not PDF-signature validation or legal authentication.
+Only complete typed predicates and EACH integer delivery units are supported;
+unmodelled conditions, multi-shipment/claim-invoice ambiguity and tax eligibility
+require review. Bounds fail closed (200 records, 100 originals/16 MiB per operation,
+1000 invoice IDs, 8 financial source imports, 50 returned hits); source ingestion is
+separate from eventual case outbox processing. Native imports/extractions remain
+unauthenticated external claims; production user roles/RLS/isolation G1 remain open.
+Remote CI, full Argon compatibility/benchmark and live model/privacy reviews remain
+unverified. Existing ten EML offsets are unchanged. STOP before Milestone 07.
 
 ## Milestone 05 persistent deduction case management - 2026-10-25
 

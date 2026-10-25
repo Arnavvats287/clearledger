@@ -162,3 +162,14 @@ consistent: source acknowledgement means committed ingestion, not completed case
 
 Gemini/extraction is never called by case processing. Future evidence validation,
 investigation, tax policy, RBAC/approvals, recovery and accounting remain 06–09.
+
+## Milestone 06 source integration
+
+External evidence registration now publishes a scoped source event through the existing
+outbox. Immutable source revisions and fresh integrity participate in case context and
+relevant per-claim bases. Only matching categories/source invoice references are targeted;
+unrelated claims retain their current basis. Reads reject stale contexts even before
+worker delivery. Case registration/worker operations remain distinct from the database-
+read-only evidence tools. Verifier SUPPORTED is a factual predicate, not the claim state
+SUPPORTED or permission to accept/settle; existing state gates remain. Evidence contract,
+limits and trusted-source assumptions: [EVIDENCE.md](EVIDENCE.md).

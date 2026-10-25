@@ -129,3 +129,11 @@ Migration **0005_documents** adds documents, document_extractions, document_asso
 ## Milestone 05 consumer boundary
 
 Committed upload/extraction/correlation events now publish a transactional outbox event for a separate case worker. That consumer independently verifies original bytes, source spans and extraction structure (including reparsing JSON fields), then persists untrusted claims and review metadata. It cannot invoke a model or settle money. Current source-backed LINKED associations may merge document/receipt cases; candidate/unattested associations do not. Extraction still has no case-writing privilege. The CSV contract and all original extraction/privacy gates are unchanged. [CASES.md](CASES.md) defines asynchronous completion, source staleness and immutable case history.
+
+Milestone 06 indexes existing READY originals through a separate evidence-1.0 manifest;
+CSV/remittance-extraction schemas and parse/privacy defenses are unchanged. Each numeric
+assertion and owner reference must independently match exact canonical labels/spans.
+Source authentication means a separately configured upstream signed attestation, not
+textual approval, PDF layout verification or deduction legitimacy. Model-facing tool
+excerpts are projected; immutable raw reviewer pointers remain privileged and outside
+the allowlist. No external model call is made. See [EVIDENCE.md](EVIDENCE.md).

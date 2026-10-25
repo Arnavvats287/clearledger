@@ -1,5 +1,39 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 06 evidence retrieval and verification - 2026-10-25
+
+Authorized from verified `ec7b420`, branch `feat/milestone-06-evidence-verification`.
+Original `prompts/06-evidence-search.md` is unchanged and remains authoritative.
+
+| Original requirement | Implementation / contract | Verification traceability |
+|---|---|---|
+| Contract clauses, promotions, WMS deliveries, POD and tagged tax evidence supplied externally | Strict evidence-1.0 manifests and immutable source revisions; `evidence_contract`, `evidence_models`, `evidence_ingestion`; EVIDENCE.md | Source-family integration tests, statuses/chronology, native invoice/remittance pointers; no dataset construction |
+| Typed organization/customer/case-scoped read-only allowlist, no SQL tool | Seven functions in `evidence_reader`; `evidence_api`; fresh PostgreSQL READ ONLY transaction, shared company lock and timeouts | Real PostgreSQL DML rejection, foreign company/customer/claim scope, GET-only credential querying but denied registration, unknown tool/SQL/field injection rejection |
+| PostgreSQL filtering/FTS and stable source IDs/versions/offsets/excerpts | Scoped relational indexes, stored GIN vector, bound plain-text queries, immutable reviewer/native pointers | FTS positive/negative/literal SQL probes, pointer hash/version/quote tests, provenance and original payload checks |
+| Verifier checks source ID/version/hash/span, owner/date/status/numeric relevance; four outcomes | `evidence_domain`, `evidence_verification`; separate scoped publisher HMAC attestations; exact integer predicates and complete bounded contradiction scan | Correct/expired/unapproved/unsigned clauses, forged spans/hashes/versions, missing signed POD, opposing WMS/POD, unknown conditions, wrong early-pay date, invoice basis/overflow, ambiguous invoice mapping and uncertain extraction |
+| Immutable pointer retrieval API, no arbitrary upload SQL searching | Separate privileged reviewer GETs; tool hits contain projected excerpts/safe numeric facts only | Native CSV row/remittance assertion equality, source-file corruption and stale hypotheses, PIIs/role-spoofing/prompt-instruction containment |
+
+Additional hardening: contiguous signed source revisions, same/different-key concurrent
+replay and fork conflicts, append-only request/event provenance, transactional existing
+outbox delivery/precise case invalidation, case/claim input hashes and bounded per-operation
+source/original caches. Empty external contexts preserve previous hashes. No source result
+sets a claim state or financial authority. All original 391 tests/assertions are retained;
+only the existing restart module is extended with new-table persistence/replay assertions.
+
+**Final verification: 458 passed in 433.09s (391 retained + 67 new), all lock/dependency/Ruff/14-module strict typing/bounds/PostgreSQL migration/integrity gates PASS; no skips. Isolated restart: 2 passed in 12.53s. Development 0007 -> 0008 preserved all old-table row fingerprints (35 tables).** Exact commands/private logs/checkpoint are recorded in STATUS.
+The existing restart test fingerprints the three new evidence tables across process/fresh
+connection and separately owned PostgreSQL container restart, without touching shared data.
+
+**Trust/limits are explicit, not waived:** source_authenticated means a configured upstream
+HMAC attestation, not PDF PKI, an actual legal signature, controller approval or deduction
+legitimacy. Bare operator labels/statuses/LLM confidence cannot establish it. Missing keys,
+conditions, evidence or complete search abstain; tax remains review-only. Full producer/key
+custody, production authenticated roles/RLS/isolation (G1), remote CI, real provider/privacy
+review and full Argon benchmark/ablation remain unverified. Both pilot ZIP hashes are
+unchanged; hidden answers were not read. No 07 investigation/model framework, 08 financial
+policy/posting or 09 approval workflow was implemented. Stop before 07.
+
+
 ## Milestone 05 traceability - 2026-10-25
 
 Authorized from verified `16db2df`, branch `feat/milestone-05-case-management`.

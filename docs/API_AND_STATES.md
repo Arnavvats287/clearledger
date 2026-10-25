@@ -42,3 +42,13 @@ Remittance may arrive before/after receipt. Extract invoice references / UTR / p
 ## Milestone 05 implemented contract
 
 [CASES.md](CASES.md) defines persistent cases/claims, typed transitions, source-backed merges, exact evidence relationships, local read/write authentication, expected versions/idempotency, immutable histories and leased transactional outbox delivery. Settlement/adjudication states retain the normative vocabulary above but require later validated capabilities; current APIs reject attempts to assert them. The placeholder hypothesis is UNASSESSED with no financial authority.
+
+## Milestone 06 implemented contract
+
+[EVIDENCE.md](EVIDENCE.md) defines separate immutable evidence-1.0 manifests, authenticated
+registration, database-read-only case search/verification and stable reviewer pointers.
+Verifier outcomes SUPPORTED/CONTRADICTED/INSUFFICIENT/NOT_APPLICABLE describe source facts
+only and carry no financial authority; they do not perform claim state transitions.
+All previous claim/settlement capability gates remain. Case/customer/invoice/version
+scope and exact citations are required. Both existing financial CSV and matching APIs
+remain compatible. No arbitrary SQL, model invocation, approvals or posting is exposed.

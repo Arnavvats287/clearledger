@@ -1,6 +1,9 @@
 from alembic import context
 
-from clearledger import case_models  # noqa: F401
+from clearledger import (
+    case_models,  # noqa: F401
+    evidence_models,  # noqa: F401
+)
 from clearledger.config import Settings
 from clearledger.db import build_engine
 from clearledger.models import Base

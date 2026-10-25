@@ -17,7 +17,14 @@ from clearledger.document_parse import PARSER_VERSION
 from clearledger.document_privacy import PRIVACY_VERSION, project, restore
 from clearledger.document_runtime import parse_bounded
 from clearledger.extraction_provider import decode_output
-from clearledger.matching import bank_valid, build_snapshot, digest, lock_company, owned
+from clearledger.matching import (
+    bank_valid,
+    build_snapshot,
+    digest,
+    lock_company,
+    owned,
+    read_statement,
+)
 from clearledger.models import (
     BankTransaction,
     Document,
@@ -364,20 +371,22 @@ def association_context(session, org, doc, extraction, verified_values, store):
     if verified_values and set(verified_values) != set(references):
         raise HTTPException(422, "VERIFIED_REFERENCES_MUST_EQUAL_EXTRACTED_SET")
     rows = session.execute(
-        select(Receipt, BankTransaction)
-        .join(
-            BankTransaction,
-            (Receipt.bank_transaction_id == BankTransaction.id)
-            & (Receipt.organization_id == BankTransaction.organization_id),
+        read_statement(
+            session,
+            select(Receipt, BankTransaction)
+            .join(
+                BankTransaction,
+                (Receipt.bank_transaction_id == BankTransaction.id)
+                & (Receipt.organization_id == BankTransaction.organization_id),
+            )
+            .where(
+                Receipt.organization_id == org,
+                BankTransaction.organization_id == org,
+                BankTransaction.external_transaction_id.in_(references),
+            )
+            .order_by(Receipt.id)
+            .limit(101),
         )
-        .where(
-            Receipt.organization_id == org,
-            BankTransaction.organization_id == org,
-            BankTransaction.external_transaction_id.in_(references),
-        )
-        .order_by(Receipt.id)
-        .limit(101)
-        .with_for_update(read=True)
     ).all()
     candidates = [
         {
@@ -392,13 +401,15 @@ def association_context(session, org, doc, extraction, verified_values, store):
     ]
     invoice_refs = sorted({row["value"] for row in extraction.result.get("invoice_references", [])})
     invoice_rows = session.scalars(
-        select(Invoice)
-        .where(
-            Invoice.organization_id == org,
-            Invoice.invoice_number.in_(invoice_refs),
+        read_statement(
+            session,
+            select(Invoice)
+            .where(
+                Invoice.organization_id == org,
+                Invoice.invoice_number.in_(invoice_refs),
+            )
+            .order_by(Invoice.invoice_number),
         )
-        .order_by(Invoice.invoice_number)
-        .with_for_update(read=True)
     ).all()
     unknown_invoices = sorted(set(invoice_refs) - {row.invoice_number for row in invoice_rows})
     owners = {str(row.customer_id) for row in invoice_rows}

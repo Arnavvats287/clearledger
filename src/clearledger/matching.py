@@ -41,11 +41,21 @@ def lock_company(session, organization_id):
     session.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": key})
 
 
+def read_statement(session, statement):
+    # Evidence readers run in a database-enforced READ ONLY transaction. The
+    # company shared lock provides the existing multi-query application boundary.
+    # Normal matching/document callers retain every original row lock.
+    return (
+        statement if session.info.get("evidence_readonly") else statement.with_for_update(read=True)
+    )
+
+
 def owned(session, model, organization_id, record_id):
     record = session.scalar(
-        select(model)
-        .where(model.organization_id == organization_id, model.id == record_id)
-        .with_for_update(read=True)
+        read_statement(
+            session,
+            select(model).where(model.organization_id == organization_id, model.id == record_id),
+        )
     )
     if record is None:
         raise HTTPException(404, "Record not found")
@@ -61,11 +71,25 @@ def source_valid(session, organization_id, record, kind, actual):
     ):
         return False
     try:
-        rows = parse_csv(kind, source.raw_bytes)
+        rows = source_rows(session, source, kind)
         row = next((value for number, value in rows if number == record.source_row), None)
         return row is not None and canonical(row) == record.payload_sha256 == canonical(actual)
     except (ImportFailure, ValueError):
         return False
+
+
+def source_rows(session, source, kind):
+    if not session.info.get("evidence_readonly"):
+        return parse_csv(kind, source.raw_bytes)
+    # Request-local reuse of already hash-verified immutable imports. Limit both
+    # parsing work and retained models; never substitute a cached unverified hash.
+    cache = session.info.setdefault("evidence_source_cache", {})
+    key = (source.id, source.content_sha256, kind)
+    if key not in cache:
+        if len(cache) >= 8:
+            raise HTTPException(409, "EVIDENCE_FINANCIAL_SOURCE_BUDGET")
+        cache[key] = parse_csv(kind, source.raw_bytes)
+    return cache[key]
 
 
 def bank_valid(session, organization_id, bank):
@@ -122,23 +146,26 @@ def build_snapshot(session, organization_id, receipt_id, *, advanced=False, invo
     bank = owned(session, BankTransaction, organization_id, receipt.bank_transaction_id)
     source_ok = bank_valid(session, organization_id, bank)
     evidence = session.scalars(
-        select(MatchingEvidence)
-        .where(
-            MatchingEvidence.organization_id == organization_id,
-            MatchingEvidence.receipt_id == receipt.id,
+        read_statement(
+            session,
+            select(MatchingEvidence)
+            .where(
+                MatchingEvidence.organization_id == organization_id,
+                MatchingEvidence.receipt_id == receipt.id,
+            )
+            .order_by(MatchingEvidence.id)
+            .limit(EVIDENCE_BUDGET + 1),
         )
-        .order_by(MatchingEvidence.id)
-        .limit(EVIDENCE_BUDGET + 1)
-        .with_for_update(read=True)
     ).all()
     alias = (
         session.scalar(
-            select(PayerAlias)
-            .where(
-                PayerAlias.organization_id == organization_id,
-                PayerAlias.normalized_alias == " ".join(bank.payer_name.split()).casefold(),
+            read_statement(
+                session,
+                select(PayerAlias).where(
+                    PayerAlias.organization_id == organization_id,
+                    PayerAlias.normalized_alias == " ".join(bank.payer_name.split()).casefold(),
+                ),
             )
-            .with_for_update(read=True)
         )
         if bank.payer_name
         else None
@@ -149,12 +176,13 @@ def build_snapshot(session, organization_id, receipt_id, *, advanced=False, invo
     customers = {
         row.id: row
         for row in session.scalars(
-            select(Customer)
-            .where(
-                Customer.organization_id == organization_id,
-                Customer.id.in_(customer_ids),
+            read_statement(
+                session,
+                select(Customer).where(
+                    Customer.organization_id == organization_id,
+                    Customer.id.in_(customer_ids),
+                ),
             )
-            .with_for_update(read=True)
         )
     }
     referenced_ids = {item.invoice_id for item in evidence if item.invoice_id is not None}
@@ -174,7 +202,7 @@ def build_snapshot(session, organization_id, receipt_id, *, advanced=False, invo
             Invoice.issued_date <= bank.occurred_at.astimezone(ZoneInfo("Asia/Kolkata")).date(),
         )
     invoice_rows = session.scalars(
-        query.order_by(Invoice.id).limit(invoice_budget + 1).with_for_update(read=True)
+        read_statement(session, query.order_by(Invoice.id).limit(invoice_budget + 1))
     ).all()
     invoices = {row.id: row for row in invoice_rows}
     owners, references, basis = set(), set(), []

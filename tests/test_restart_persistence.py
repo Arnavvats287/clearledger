@@ -45,6 +45,7 @@ from clearledger.case_outbox import drain
 from clearledger.config import Settings
 from clearledger.db import build_engine
 from clearledger.document_contract import ExtractionError
+from clearledger.evidence_models import EvidenceEvent, EvidenceRecord, EvidenceRequest
 from clearledger.models import (
     AuditEvent,
     BankTransaction,
@@ -252,6 +253,18 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
             )
             assert response.status_code == 200, response.text
             assert set(drain(engine, organization_id, settings, 100)) == {"DELIVERED"}
+            from test_evidence import manifest, register
+
+            evidence_env = (engine, organization_id, None, client, None)
+            evidence_body = manifest(evidence_env, trusted=False)
+            evidence_key = uuid4()
+            evidence_response = register(evidence_env, evidence_body, evidence_key)
+            assert evidence_response.status_code == 200, evidence_response.text
+            assert not evidence_response.json()["source_authenticated"]
+            assert set(drain(engine, organization_id, settings, 100)) == {"DELIVERED"}
+            evidence_models = (EvidenceRecord, EvidenceRequest, EvidenceEvent)
+            evidence_before = tenant_rows(engine, organization_id, evidence_models)
+            assert all(len(rows) == 1 for rows in evidence_before.values())
             case_models = (
                 Case,
                 CaseVersion,
@@ -310,6 +323,7 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
                 assert connection.scalar(text("SELECT pg_backend_pid()")) != first_backend
         assert tenant_rows(fresh_engine, organization_id) == before
         assert tenant_rows(fresh_engine, organization_id, case_models) == case_before
+        assert tenant_rows(fresh_engine, organization_id, evidence_models) == evidence_before
         assert len(before["customers"]) == len(before["invoices"]) == 1
         assert len(before["bank_transactions"]) == len(before["receipts"]) == 1
         assert len(before["source_imports"]) == 3
@@ -324,6 +338,11 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
             assert second_pid != first_pid
             assert client.get("/cases", headers=auth()).json() == cases_before_api
             assert all(not c["is_stale"] for c in cases_before_api)
+            replay = register(
+                (fresh_engine, organization_id, None, client, None), evidence_body, evidence_key
+            )
+            assert replay.status_code == 200 and replay.json() == evidence_response.json()
+            assert tenant_rows(fresh_engine, organization_id, evidence_models) == evidence_before
             for path, expected in before_api.items():
                 assert client.get(path).json() == expected
             for kind, row in payloads.items():

@@ -60,3 +60,11 @@ Before posting also validate: customer identity, bank transaction provenance, re
 - TDS and GST-TDS route to specialized rule evaluation and unsupported cases to `NEEDS_TAX_REVIEW`.
 
 Milestone 05 stores customer assertions and review progress separately from immutable UNASSESSED hypothesis records. Evidence annotations and matching proposal links grant no settlement authority. Claimed totals may exceed cash and remain distinct from verified settled paise (zero until an authorized later settlement capability). Source changes invalidate review inputs; current APIs cannot accept/resolve deductions or mark cash settled by operator label. See [CASES.md](CASES.md).
+
+Milestone 06 verifies bounded source-fact predicates, never settles a claim or recognizes
+cash/tax/allowances. Claim amount, invoice gross, unit quantities and price must remain
+exact integers and numerically consistent; missing source/conditions, ambiguous claim-to-
+invoice mapping, uncertain extraction, conflicting deliveries or overflow abstain.
+Tagged tax evidence always routes to tax review. A source-provider approval attestation
+is distinct from in-app maker-checker approval; factual SUPPORTED never lifts that gate.
+See [EVIDENCE.md](EVIDENCE.md).

@@ -27,6 +27,7 @@ from clearledger.case_schemas import ReevaluationPayload
 from clearledger.case_sources import (
     association_current,
     claim_basis,
+    current_context,
     extraction_facts,
     invoice_ids,
     proposal_current,
@@ -206,6 +207,12 @@ def document_event(session, org, event, settings, store):
 
 def reevaluate(session, org, event, store):
     case = root(session, org, event.case_id)
+    from clearledger.case_models import CaseVersion
+    from clearledger.evidence_runtime import EvidenceOriginals
+
+    revision = scoped(session, CaseVersion, org, case_id=case.id, case_version=case.version)
+    if revision.snapshot["context"].get("external_evidence"):
+        store = EvidenceOriginals(store.root)
     started_version = case.version
     ids = members(session, org, case)
     claims = group_rows(session, Claim, org, ids)
@@ -228,10 +235,11 @@ def reevaluate(session, org, event, store):
             invalidate=False,
             enqueue=False,
         )
+    context = current_context(session, org, case, store)
     for claim in claims:
         if claim.id not in targets:
             continue
-        basis = claim_basis(session, org, case, claim, store)
+        basis = claim_basis(session, org, case, claim, store, context=context)
         invalid = select(CaseInvalidation.hypothesis_id).where(
             CaseInvalidation.organization_id == org, CaseInvalidation.hypothesis_id.is_not(None)
         )
@@ -293,6 +301,10 @@ def reevaluate(session, org, event, store):
 
 
 def consume(session, org, event, settings, store):
+    if event.event_type == "case.external_evidence_added":
+        from clearledger.evidence_ingestion import evidence_changed
+
+        return evidence_changed(session, org, event, settings, store)
     if event.event_type == "matching.evidence_registered":
         evidence = owned(
             session, MatchingEvidence, org, UUID(event.payload["matching_evidence_id"])
