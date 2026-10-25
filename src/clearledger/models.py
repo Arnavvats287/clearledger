@@ -508,3 +508,22 @@ class DocumentEvent(ScopedRecord, Base):
     event_type: Mapped[str] = mapped_column(String(64))
     entity_id: Mapped[UUID]
     details: Mapped[dict] = mapped_column(JSONB)
+
+
+class ProviderReservation(ScopedRecord, Base):
+    """Committed independently of extraction; failed/crashed attempts retain their budget."""
+
+    __tablename__ = "provider_reservations"
+    __table_args__ = (
+        *scope_constraints("provider_reservations"),
+        Index("ix_provider_reservation_day", "organization_id", "provider", "quota_day"),
+        CheckConstraint("requests = 3", name="ck_provider_reserved_requests"),
+        CheckConstraint("input_tokens BETWEEN 1 AND 1000000", name="ck_provider_reserved_input"),
+        CheckConstraint("output_tokens BETWEEN 1 AND 4096", name="ck_provider_reserved_output"),
+        CheckConstraint("provider IN ('gemini','fake')", name="ck_provider_reservation_name"),
+    )
+    provider: Mapped[str] = mapped_column(String(16))
+    quota_day: Mapped[date] = mapped_column(Date)
+    requests: Mapped[int] = mapped_column(Integer)
+    input_tokens: Mapped[int] = mapped_column(Integer)
+    output_tokens: Mapped[int] = mapped_column(Integer)

@@ -1,6 +1,6 @@
 # ClearLedger
 
-Milestone 04 adds secure, local document intelligence. Development schema head is `0005_documents`; upgrade safely with `uv run --frozen alembic upgrade head`, never reset/downgrade development data. Set a random ≥32-character `DOCUMENT_API_TOKEN` in ignored `.env`; document routes fail closed without it. Originals live under `DOCUMENT_ROOT` (default ignored `local-data/documents`); back up that volume with PostgreSQL.
+Milestone 04 adds secure, local document intelligence. Development schema head is `0006_provider_budgets`; upgrade safely with `uv run --frozen alembic upgrade head`, never reset/downgrade development data. Set a random ≥32-character `DOCUMENT_API_TOKEN` in ignored `.env`; document routes fail closed without it. Originals live under `DOCUMENT_ROOT` (default ignored `local-data/documents`); back up that volume with PostgreSQL.
 
 Upload raw PDF/.pdf, email/.eml, UTF-8 text/.txt or versioned remittance JSON/.json to `POST /documents` with Content-Type, X-Source-Filename, X-Actor-ID, UUID Idempotency-Key and `Authorization: Bearer <local-token>`. `POST /documents/<id>/extract` accepts `{"expected_document_version":1,"allow_external":false}`. Read original/text/extractions/events with the same token; use `/correlate` to record conservative reference associations. [Document contract](docs/DOCUMENTS.md) has complete formats, schemas, curl-equivalent headers, privacy, resource limits, correlation and failure behavior. Financial CSV v1.0 is unchanged.
 
@@ -177,3 +177,5 @@ Local development system, anonymized/synthetic data, one company, INR, no real b
 ## Operating rule
 
 Before each milestone: read specs; make a limited plan. During: test driven implementation and targeted integration checks. After: publish changed files, run commands and observed outputs, unresolved risks, and update `STATUS.md`. **Do not silently continue to the next milestone.**
+
+Milestone 04B adds durable company/provider daily request/input/output token budgets, shared RPC admission and validated-result reuse across revision labels. See [document configuration](docs/DOCUMENTS.md) and `.env.example`. Gemini model ID has no assumed default: an explicitly authorized uncached request must validate the exact ID with provider metadata and count its full input before generation. No live model/pricing check or paid call was performed.

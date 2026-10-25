@@ -1,5 +1,20 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 04B cost-control follow-up — 2026-10-25
+
+Targeted hardening from verified 04 (`b968ccb6`, status `128a522`); no extraction redesign or financial/schema-contract changes. Original milestone requirements and deferred G1/G4 remain intact.
+
+| Requirement | Existing evidence / missing gap filled | Traceability |
+|---|---|---|
+| Economical configurable real model | Existing explicit ID/rates; syntax-only check extended to exact provider metadata/capability/limits and full-request token count before generation. No guessed default or fallback. Live ID/economy/entitlement/pricing remains unverified under the no-live-call instruction. | gemini_worker; SDK MockTransport + unavailable/unsupported/limit tests |
+| Deterministic first / reuse | Existing deterministic route/natural idempotency retained; validated semantic results now reused across revision/operational-limit changes, with source/semantic revalidation and immutable lineage. Failed results never reused as success. | documents.successful_cached; provider-controls cache/miss/privacy/nonmutation tests |
+| Daily requests/input/output budgets | Added independent durable PostgreSQL reservations, UTC admission day, shared advisory lock and fail-closed admission; conservative 3 RPCs + max input/output per attempt, no refund on failures/retries/rollback/restart. | provider_budget, ProviderReservation, 0006; quota/boundary/rollover/rollback/concurrent-last-slot tests |
+| Concurrency/rate scope | Existing local semaphore/RPM retained; PostgreSQL shared company/provider trailing-minute RPC admission added. Company serialization preserved. Not account-global or across deployments/companies. | real concurrent sessions; local Gateway regressions; DOCUMENTS configuration table |
+| Usage/cost/privacy/retries | Existing sanitized metrics, nullable estimates, bounded retries/no hidden SDK retries/no escalation preserved; optional integer worst-case per-attempt cost ceiling and reservation/model/count metadata added. | domain/provider-controls/security tests; no provider diagnostic/prompt logging |
+| Restart durability / offline tests | Original financial restart assertions retained and extended with immutable quota fingerprints/exhaustion after fresh API/DB connection and optional owned-container restart. All providers fake or MockTransport. | test_restart_persistence; scripts/verify_isolated_restart.py; full verify gate |
+
+Exact executed commands, counts, logs and Git checkpoint are recorded in current STATUS. Financial CSV DATA_CONTRACT v1.0 and Argon files remain unchanged. Runtime availability checks are implemented and offline-tested, **not** a claim that a particular live model is available/economical. Provider billing/FX, remote CI/Linux execution, arbitrary real-data anonymization, production authentication/isolation and Argon benchmarks remain deferred/unverified. STOP after 04B.
+
 ## Milestone 04 follow-up — 2026-10-25
 
 Original `04-documents-and-extraction.md` requirements/tests/real-import exit remain intact. The approved extension and AGENTS/SECURITY consistently allow a **separate** bounded Gemini transport; parser/extractor retain no DB/tools/policy/arbitrary network. Financial/security gates and Argon ownership are unchanged. See current STATUS for exact commands/logs/checkpoint and [DOCUMENTS](docs/DOCUMENTS.md) for the complete versioned contract.

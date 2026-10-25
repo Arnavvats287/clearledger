@@ -1,10 +1,43 @@
 # Build status
 
-- Repo state: **Milestone 04 implemented and locally verified. G2/G3 remain closed; full authentication/production isolation, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
-- Current task: **Milestone 04 complete; STOP before milestone 05.**
-- Verified checks: **273 full tests passed; lock/dependencies/lint/format/8 strict typed modules/bounds/migrations/integrity PASS. Separate isolated PostgreSQL restart: 2 passed. Development safely upgraded to 0005_documents; all pre-existing rows unchanged, no shared reset/downgrade/restart.**
+- Repo state: **Milestone 04B cost-control audit/hardening implemented and locally verified. G2/G3 remain closed; full authentication/production isolation, remote CI and Argon evaluation remain deferred/unverified (G1/G4).**
+- Current task: **Milestone 04B complete; STOP before milestone 05.**
+- Verified checks: **301 full tests passed; lock/dependencies/lint/format/9 strict typed modules/bounds/migrations/integrity PASS. Separate isolated PostgreSQL restart: 2 passed, now including quota durability. Development safely upgraded to 0006_provider_budgets; all 16 pre-existing tables' row fingerprints unchanged, no shared reset/downgrade/restart.**
 - External integrations: **Optional Gemini adapter implemented, disabled by default; no live/paid Gemini call performed.**
 - Open decisions: Provider/model/privacy/terms review and live behavior, OCR, stronger production auth/isolation, remote CI and Argon accuracy remain unverified/future. Tax adjudication stays in later approved milestones.
+
+## Milestone 04B - Gemini cost-control/configuration audit - 2026-10-25
+
+Branch `feat/milestone-04b-gemini-controls` starts at verified M04 status `128a522` (implementation `b968ccb6`). Targeted hardening preserves deterministic parsing, privacy projection, isolation, strict semantic validation, all financial invariants and all 273 regression tests. No later milestone, financial CSV contract, accounting behavior, dependency or Argon data changed. Configuration/traceability: `docs/DOCUMENTS.md`, `docs/SECURITY.md`, `REQUIREMENTS_AUDIT.md`.
+
+Audit findings and implemented changes:
+
+- Existing model syntax check extended to exact configured-ID `models.get` validation, generation capability/limits and full system/schema/content token preflight before generation. Actual SDK MockTransport tests compare counting/generation payloads under the actual worker guard. No guessed default ID, hidden retry, tools or fallback/escalation.
+- New append-only `ProviderReservation` / additive `0006_provider_budgets`: independent committed PostgreSQL admission under a company/provider lock. Each attempt reserves 3 RPCs and maximum input/output tokens; failures/retries/rollback/restarts never refund. Daily UTC admission defaults: 30 RPCs/100000 input/30000 output. Per-attempt defaults: 8192/4096 tokens. Shared trailing-minute admission: 30 RPCs. Zero shared/daily caps disable new attempts. Optional integer-paise per-attempt worst-case cost ceiling requires both reviewed rates. Workers receive no DB capability.
+- Shared limits cover cooperating instances in one database/company/provider, not Google account-global use or other deployments/companies/manual calls. Deploy consistent configuration across instances. Existing company serialization remains; Gateway concurrency 1 and 10 attempts/minute remain process-local. These are conservative admission caps, not billing guarantees or actual-wire-time quotas; pending calls can finish later.
+- Existing natural-input reuse retained. Validated nonempty semantic successes (including review-required facts without error) now reuse across revision/operational-setting changes. Source/parser/schema/privacy/model/review/output-cap identity must match. Current privacy/external gates, original integrity and source semantics rechecked; new immutable run/event records source extraction ID and zero incremental attempts/tokens/cost. Failed/invalid/blocked outputs never become successful cache entries. No tenant/document crossing.
+- Existing sanitized usage/latency/nullable estimated costs and bounded retries retained; added reservation IDs/amounts, model version/limits and preflight count. No prompt/key/private map/exception-body logging. Retry usage remains incomplete/unknown. Rates/FX are operator estimates, not provider billing facts.
+
+Actual commands/results (no live API or paid calls):
+
+```powershell
+# TEST_DATABASE_URL loaded privately from ignored .env for the focused run.
+./.venv/Scripts/python.exe -m pytest tests/test_provider_controls.py tests/test_document_domain.py tests/test_document_security.py -q --require-postgres
+# 80 passed, 1 existing Starlette/HTTPX warning, 26.08s; before final 3 cache-identity cases.
+./.venv/Scripts/uv.exe run --frozen python local-data/m04b_upgrade.py
+# 0005_documents -> 0006_provider_budgets; drift check PASS; 16 old table row fingerprints equal.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify.py
+# Lock/dependencies/Ruff lint+format/9 strict typed modules/matching bounds PASS.
+# 301 passed, 1 existing Starlette/HTTPX warning, 130.15s; no skips/failures.
+./.venv/Scripts/uv.exe run --frozen python scripts/verify_isolated_restart.py
+# 2 passed, same warning, 8.64s; owned isolated PostgreSQL restart/cleanup PASS.
+```
+
+28 new tests cover budget exhaustion/boundaries, real concurrent sessions contending for the final allowance, company isolation, rolling-minute/day rollover, optional cost ceiling, independent rollback durability, fresh API/connection restart, immutable reservation triggers, cache reuse/misses/failed outputs, deterministic bypass, retry reservations, controlled failures/privacy and preflight failure without generation/escalation. Original financial restart assertions remain and now additionally verify quota fingerprints/exhaustion after real owned-container restart. No failing assertion was weakened/skipped. Initial new test policy omitted required DATABASE_URL; corrected to an explicit unused test-only URL. Offline SDK test exposed nonempty counting contents/system-role serialization requirements; fixed with exact payload equality retained.
+
+Ignored logs: `local-data/m04b-focused.log`; `local-data/m04b-development-upgrade.log`, `local-data/m04b-development-schema.json`; `local-data/verification/20261025T003335349764Z.log`; `local-data/verification/isolated-restart-20261025T003518553151Z.log`. All destructive migration checks use UUID disposable databases. Restart touched only owned labelled test resources, cleaned afterward. No shared development/portable database reset/downgrade/restart.
+
+Remaining limitations: **No live model ID/availability/economy, entitlement/counting interoperability/pricing or paid smoke call verified**, as explicitly prohibited. Exact availability checking occurs only on a future separately authorized uncached attempt; operator must select/review the economical model/rates. Conservative reservations can exhaust budgets before actual usage; no refunds, account-global enforcement or billing reconciliation. Existing production authentication/roles/OS isolation (G1), real-data privacy/provider-terms approval, remote CI/full Linux application execution and Argon accuracy (G4) remain deferred/unverified. External AI remains disabled by default. STOP after 04B.
 
 ## Milestone 04 — secure document intelligence · 2026-10-25
 

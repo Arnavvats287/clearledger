@@ -21,16 +21,20 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from test_imports import BANK, CUSTOMER, INVOICE, csv_bytes, post
 
+from clearledger.config import Settings
 from clearledger.db import build_engine
+from clearledger.document_contract import ExtractionError
 from clearledger.models import (
     AuditEvent,
     BankTransaction,
     Customer,
     Invoice,
     Organization,
+    ProviderReservation,
     Receipt,
     SourceImport,
 )
+from clearledger.provider_budget import reserve
 
 pytestmark = pytest.mark.postgres
 RECORDS = (Customer, Invoice, BankTransaction, Receipt, SourceImport, AuditEvent)
@@ -185,6 +189,10 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
         with Session(engine) as session, session.begin():
             session.add(Organization(id=organization_id, name="Test restart"))
 
+        budget = Settings(database_url=url, llm_daily_requests=3)
+        reserve(engine, organization_id, "fake", budget)
+        quota_before = tenant_rows(engine, organization_id, (ProviderReservation,))
+
         payloads = {"customers": CUSTOMER, "invoices": INVOICE, "bank-transactions": BANK}
         keys = {kind: uuid4() for kind in payloads}
         results = {}
@@ -220,6 +228,9 @@ def test_financial_import_survives_process_restart_and_fresh_connection(
 
     fresh_engine = build_engine(url)
     try:
+        assert tenant_rows(fresh_engine, organization_id, (ProviderReservation,)) == quota_before
+        with pytest.raises(ExtractionError, match="PROVIDER_DAILY_BUDGET_EXHAUSTED"):
+            reserve(fresh_engine, organization_id, "fake", budget)
         with fresh_engine.connect() as connection:
             if container is None:
                 assert connection.scalar(text("SELECT pg_backend_pid()")) != first_backend

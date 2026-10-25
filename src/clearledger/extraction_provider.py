@@ -9,6 +9,15 @@ from typing import Any, Protocol, cast
 
 from clearledger.document_contract import ExtractionError
 
+PREFLIGHT_CODES = {
+    "MODEL_NOT_AVAILABLE",
+    "MODEL_NOT_SUPPORTED",
+    "MODEL_LIMITS_UNAVAILABLE",
+    "MODEL_OUTPUT_LIMIT",
+    "PROVIDER_INPUT_LIMIT",
+    "INVALID_TOKEN_COUNT",
+}
+
 
 @dataclass(frozen=True)
 class ProviderReply:
@@ -18,6 +27,8 @@ class ProviderReply:
     total_tokens: int | None = None
     reasoning_tokens: int | None = None
     cached_input_tokens: int | None = None
+    validated_model: dict[str, object] | None = None
+    counted_input_tokens: int | None = None
 
 
 class Transport(Protocol):
@@ -64,9 +75,18 @@ class Gateway:
         output_rate: int | None = None,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
+        max_input_tokens: int = 8192,
+        max_output_tokens: int = 4096,
     ) -> None:
         if not 1 <= requests_per_minute <= 60 or not 1 <= attempts <= 3:
             raise ValueError("Invalid provider limits")
+        if (
+            type(max_input_tokens) is not int
+            or not 1 <= max_input_tokens <= 1_000_000
+            or type(max_output_tokens) is not int
+            or not 1 <= max_output_tokens <= 4096
+        ):
+            raise ValueError("Invalid token limits")
         if any(
             rate is not None and (type(rate) is not int or not 0 <= rate <= 1_000_000_000)
             for rate in (input_rate, output_rate)
@@ -76,15 +96,22 @@ class Gateway:
         self.rpm, self.attempts = requests_per_minute, attempts
         self.input_rate, self.output_rate = input_rate, output_rate
         self.clock, self.sleep = clock, sleep
+        self.max_input_tokens, self.max_output_tokens = max_input_tokens, max_output_tokens
         self._times: deque[float] = deque()
         self._lock = threading.Lock()
         self._slot = threading.Semaphore(1)
 
-    def generate(self, pages: list[str]) -> tuple[ProviderReply, dict[str, object]]:
+    def generate(
+        self,
+        pages: list[str],
+        *,
+        before_attempt: Callable[[], dict[str, object]] | None = None,
+    ) -> tuple[ProviderReply, dict[str, object]]:
         if not self._slot.acquire(blocking=False):
             raise ExtractionError("PROVIDER_BUSY")
         started = self.clock()
         attempts_started = 0
+        reservations: list[dict[str, object]] = []
         try:
             for attempt in range(1, self.attempts + 1):
                 now = self.clock()
@@ -95,6 +122,8 @@ class Gateway:
                         raise ExtractionError("PROVIDER_RATE_LIMIT")
                     self._times.append(now)
                 try:
+                    if before_attempt is not None:
+                        reservations.append(before_attempt())
                     attempts_started += 1
                     reply = self.transport.generate(pages)
                     if len(reply.json_text.encode()) > 100_000:
@@ -110,6 +139,13 @@ class Gateway:
                             type(count) is not int or not 0 <= count <= 1_000_000
                         ):
                             raise ExtractionError("INVALID_USAGE_METADATA")
+                    if (
+                        reply.input_tokens is not None
+                        and reply.input_tokens > self.max_input_tokens
+                        or reply.output_tokens is not None
+                        and reply.output_tokens > self.max_output_tokens
+                    ):
+                        raise ExtractionError("PROVIDER_USAGE_EXCEEDS_RESERVATION")
                     cost = None
                     complete = (
                         attempt == 1
@@ -142,10 +178,15 @@ class Gateway:
                         "reasoning_tokens": reply.reasoning_tokens,
                         "cached_input_tokens": reply.cached_input_tokens,
                         "estimated_cost_paise": cost,
+                        "budget_reservations": reservations,
+                        "validated_model": reply.validated_model,
+                        "counted_input_tokens": reply.counted_input_tokens,
                     }
                 except ProviderFailure as error:
                     if not error.retryable or attempt == self.attempts:
-                        raise ExtractionError("PROVIDER_FAILED") from None
+                        raise ExtractionError(
+                            error.code if error.code in PREFLIGHT_CODES else "PROVIDER_FAILED"
+                        ) from None
                     self.sleep(0.1 * attempt)
             raise ExtractionError("PROVIDER_FAILED")
         except Exception as error:
@@ -159,6 +200,7 @@ class Gateway:
                     "output_tokens": None,
                     "estimated_cost_paise": None,
                     "usage_complete": False,
+                    "budget_reservations": reservations,
                 },
             ) from None
         finally:
@@ -166,12 +208,21 @@ class Gateway:
 
 
 class GeminiTransport:
-    def __init__(self, api_key: str, model: str, timeout_ms: int = 10_000) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        timeout_ms: int = 10_000,
+        *,
+        max_input_tokens: int = 8192,
+        max_output_tokens: int = 4096,
+    ) -> None:
         import re
 
         if not re.fullmatch(r"[A-Za-z0-9._-]{1,100}", model) or not 100 <= timeout_ms <= 30_000:
             raise ValueError("Invalid Gemini configuration")
         self._key, self.model, self.timeout_ms = api_key, model, timeout_ms
+        self.max_input_tokens, self.max_output_tokens = max_input_tokens, max_output_tokens
 
     def generate(self, pages: list[str]) -> ProviderReply:
         from clearledger.document_runtime import run_worker
@@ -184,13 +235,16 @@ class GeminiTransport:
                     "model": self.model,
                     "timeout_ms": self.timeout_ms,
                     "pages": pages,
+                    "max_input_tokens": self.max_input_tokens,
+                    "max_output_tokens": self.max_output_tokens,
                 },
                 timeout=self.timeout_ms / 1000 + 3,
             )
         except ExtractionError:
             raise ProviderFailure("TRANSPORT_TIMEOUT", retryable=True) from None
         if result.get("error"):
-            raise ProviderFailure("GEMINI_FAILURE", retryable=bool(result.get("retryable")))
+            code = result["error"] if result["error"] in PREFLIGHT_CODES else "GEMINI_FAILURE"
+            raise ProviderFailure(code, retryable=bool(result.get("retryable")))
         return ProviderReply(
             str(result["json_text"]),
             result.get("input_tokens"),
@@ -198,6 +252,8 @@ class GeminiTransport:
             result.get("total_tokens"),
             result.get("reasoning_tokens"),
             result.get("cached_input_tokens"),
+            result.get("validated_model"),
+            result.get("counted_input_tokens"),
         )
 
 

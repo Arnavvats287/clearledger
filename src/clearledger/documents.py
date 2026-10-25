@@ -28,7 +28,50 @@ from clearledger.models import (
     Invoice,
     Receipt,
 )
+from clearledger.provider_budget import reserve
 from clearledger.remittance_parser import deterministic
+
+
+def semantic_cache_key(inputs):
+    # Operational limits/prices/revision labels do not alter already validated source facts.
+    keys = (
+        "document_sha256",
+        "canonical_sha256",
+        "document_version",
+        "parser_version",
+        "schema_version",
+        "privacy_version",
+        "provider",
+        "model",
+        "review_reference_sha256",
+    )
+    return digest(
+        {
+            **{key: inputs[key] for key in keys},
+            "max_output_tokens": inputs.get("max_output_tokens", 4096),
+        }
+    )
+
+
+def successful_cached(session, org, doc, inputs):
+    key = semantic_cache_key(inputs)
+    rows = session.scalars(
+        select(DocumentExtraction)
+        .where(
+            DocumentExtraction.organization_id == org,
+            DocumentExtraction.document_id == doc.id,
+            DocumentExtraction.error_code.is_(None),
+            DocumentExtraction.status.in_(["SUCCEEDED", "NEEDS_REVIEW"]),
+            DocumentExtraction.route == "LLM",
+        )
+        .order_by(DocumentExtraction.extraction_version.desc())
+    )
+    for row in rows:
+        if row.result and semantic_cache_key(row.inputs) == key:
+            facts = Extraction.model_validate(row.result)
+            validate_semantics(facts, doc.pages)
+            return row, facts
+    return None
 
 
 def operation(session, org, key, fingerprint, kind, document_id=None):
@@ -147,6 +190,13 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
         "rpm": settings.llm_requests_per_minute,
         "input_rate": settings.llm_input_paise_per_million_tokens,
         "output_rate": settings.llm_output_paise_per_million_tokens,
+        "max_input_tokens": settings.llm_max_input_tokens,
+        "max_output_tokens": settings.llm_max_output_tokens,
+        "daily_requests": settings.llm_daily_requests,
+        "daily_input_tokens": settings.llm_daily_input_tokens,
+        "daily_output_tokens": settings.llm_daily_output_tokens,
+        "shared_rpm": settings.llm_shared_requests_per_minute,
+        "max_cost_paise": settings.llm_max_cost_paise_per_attempt,
     }
     input_hash = digest(inputs)
     if prior:
@@ -199,16 +249,35 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
                         raise ExtractionError("EXTERNAL_AI_DISABLED_OR_UNAPPROVED")
                     route, reason = "LLM", "SEMANTIC_EXTRACTION_REQUIRED"
                     projected = project(doc.pages)
-                    reply, usage = gateway.generate(projected.pages)
-                    metrics.update(usage)
+                    cached = successful_cached(session, org, doc, inputs)
+                    if cached is not None:
+                        previous, extracted = cached
+                        metrics.update(
+                            cache_hit=True,
+                            cached_from_extraction_id=str(previous.id),
+                            attempts=0,
+                            input_tokens=0,
+                            output_tokens=0,
+                            total_tokens=0,
+                            usage_complete=True,
+                            estimated_cost_paise=0,
+                        )
+                        reason = "VALIDATED_RESULT_REUSED"
+                    else:
+                        reply, usage = gateway.generate(
+                            projected.pages,
+                            before_attempt=lambda: reserve(
+                                session.get_bind(), org, settings.extraction_provider, settings
+                            ),
+                        )
+                        metrics.update(usage)
+                        extracted = Extraction.model_validate(decode_output(reply.json_text))
+                        extracted = restore(extracted, projected.pages, doc.pages)
+                        validate_semantics(extracted, doc.pages)
                     counts = {}
                     for mask in projected.masks:
                         counts[mask.kind] = counts.get(mask.kind, 0) + 1
                     metrics["redaction_counts"] = counts
-                    extracted = Extraction.model_validate(decode_output(reply.json_text))
-                    extracted = restore(extracted, projected.pages, doc.pages)
-                    validate_semantics(extracted, doc.pages)
-                    route, reason = "LLM", "SEMANTIC_EXTRACTION_REQUIRED"
                 if extracted is not None:
                     result = extracted.model_dump(mode="json")
                     # Parsing/source consistency never implies authenticity or legitimacy.
@@ -218,7 +287,16 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
             error_code = str(error)
             status = (
                 "BLOCKED"
-                if error_code.startswith(("EXTERNAL_", "PRIVACY_", "DOCUMENT_", "ORIGINAL_"))
+                if error_code.startswith(
+                    (
+                        "EXTERNAL_",
+                        "PRIVACY_",
+                        "DOCUMENT_",
+                        "ORIGINAL_",
+                        "PROVIDER_DAILY_",
+                        "PROVIDER_SHARED_",
+                    )
+                )
                 else "FAILED"
             )
             reason = "CONTROLLED_EXTRACTION_FAILURE"

@@ -43,12 +43,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ):
         app.state.extraction_gateway = Gateway(
             GeminiTransport(
-                config.gemini_api_key.get_secret_value(), config.gemini_model, config.llm_timeout_ms
+                config.gemini_api_key.get_secret_value(),
+                config.gemini_model,
+                config.llm_timeout_ms,
+                max_input_tokens=config.llm_max_input_tokens,
+                max_output_tokens=config.llm_max_output_tokens,
             ),
             attempts=config.llm_attempts,
             requests_per_minute=config.llm_requests_per_minute,
             input_rate=config.llm_input_paise_per_million_tokens,
             output_rate=config.llm_output_paise_per_million_tokens,
+            max_input_tokens=config.llm_max_input_tokens,
+            max_output_tokens=config.llm_max_output_tokens,
         )
     app.include_router(router)
     app.include_router(matching_router)

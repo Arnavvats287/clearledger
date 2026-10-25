@@ -69,8 +69,16 @@ answer={"invoice_references":[],"utr_references":[],"payer_hint":None,"claims":[
         "uncertainty":"unknown","unparsed_fields":[]}
 def handle(request):
     assert request.url.host == "generativelanguage.googleapis.com"
+    if request.method == "GET":
+        calls.append(("get",str(request.url)))
+        return httpx.Response(200,json={"name":"models/unit-model","version":"unit",
+            "inputTokenLimit":8192,"outputTokenLimit":4096,
+            "supportedGenerationMethods":["generateContent"]})
     payload=json.loads(request.content)
-    calls.append(payload)
+    if request.url.path.endswith(":countTokens"):
+        calls.append(("count",payload))
+        return httpx.Response(200,json={"totalTokens":100})
+    calls.append(("generate",payload))
     return httpx.Response(200,json={"candidates":[{"content":{"parts":[
         {"text":json.dumps(answer)}],"role":"model"},"finishReason":"STOP"}],
         "usageMetadata":{"promptTokenCount":1,"candidatesTokenCount":2,"totalTokenCount":3}})
@@ -88,10 +96,13 @@ sys.stdout=out
 main()
 sys.stdout=stdout
 result=json.loads(out.getvalue())
-assert json.loads(result.get("json_text","null")) == answer,result
+assert json.loads(result.get("json_text","null")) == answer,(result,calls)
 assert result["total_tokens"] == 3
-assert len(calls)==1
-assert calls[0]["generationConfig"]["responseMimeType"] == "application/json"
+assert [call[0] for call in calls]==["get","count","generate"]
+assert calls[2][1]["generationConfig"]["responseMimeType"] == "application/json"
+counted=calls[1][1]["generateContentRequest"]
+assert counted.pop("model")=="models/unit-model"
+assert counted==calls[2][1], (counted,calls[2][1])
 print("official SDK and real guard: offline PASS")
 """,
         encoding="utf-8",

@@ -275,7 +275,14 @@ def test_gemini_transport_worker_receives_only_explicit_configuration(monkeypatc
         ["sanitized"]
     )
     assert result.output_tokens == 2
-    assert set(calls[0][1]) == {"key", "model", "timeout_ms", "pages"}
+    assert set(calls[0][1]) == {
+        "key",
+        "model",
+        "timeout_ms",
+        "pages",
+        "max_input_tokens",
+        "max_output_tokens",
+    }
     assert calls[0][1]["pages"] == ["sanitized"]
     with pytest.raises(ValueError):
         GeminiTransport("unused", "https://untrusted.example")
@@ -399,6 +406,22 @@ def test_official_sdk_request_is_structured_no_tools_and_no_hidden_retries(monke
 
         def __exit__(self, *args):
             pass
+
+        def get(self, **kwargs):
+            assert kwargs == {"model": "configured-model"}
+            return SimpleNamespace(
+                name="models/configured-model",
+                version="unit",
+                supported_actions=["generateContent"],
+                input_token_limit=8192,
+                output_token_limit=4096,
+            )
+
+        def count_tokens(self, **kwargs):
+            assert kwargs["config"].http_options.extra_body["generateContentRequest"][
+                "systemInstruction"
+            ]["parts"][0]["text"]
+            return SimpleNamespace(total_tokens=100)
 
         def generate_content(self, **kwargs):
             calls.append(kwargs)

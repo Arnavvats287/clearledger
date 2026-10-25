@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     llm_timeout_ms: int = Field(default=10000, ge=100, le=30000)
     llm_attempts: int = Field(default=2, ge=1, le=3)
     llm_requests_per_minute: int = Field(default=10, ge=1, le=60)
+    llm_shared_requests_per_minute: int = Field(default=30, ge=0, le=180)
+    llm_daily_requests: int = Field(default=30, ge=0, le=10000)
+    llm_daily_input_tokens: int = Field(default=100000, ge=0, le=100000000)
+    llm_daily_output_tokens: int = Field(default=30000, ge=0, le=100000000)
+    llm_max_input_tokens: int = Field(default=8192, ge=1, le=1000000)
+    llm_max_output_tokens: int = Field(default=4096, ge=1, le=4096)
+    llm_max_cost_paise_per_attempt: int | None = Field(default=None, ge=0)
     llm_input_paise_per_million_tokens: int | None = Field(default=None, ge=0)
     llm_output_paise_per_million_tokens: int | None = Field(default=None, ge=0)
 
