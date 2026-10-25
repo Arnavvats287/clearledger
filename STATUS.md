@@ -2,12 +2,21 @@
 
 - Repo state: **Milestone 09 implemented and locally verified.**
 - Current task: **Milestone 09 from `1839916` (M08 `addd409`); STOP before 10.**
-- Focused verification: **610 tests passed (563 retained + 47 new), all gates PASS; 4 final isolated restart checks passed.**
+- Verification: **610 tests passed (563 retained + 47 new), all gates PASS; 4 final isolated restart checks passed.**
 - Development data: **Up-only 0010 -> 0011, all 59 old-table fingerprints unchanged.**
 - Authority/privacy: **Local demo roles are operational-only; finance and closure still require trusted verified identity. Gemini disabled.**
 - Deferred: **Production SSO/RLS/shared deployment G1, publisher PKI/key custody, real tax/provider/privacy, remote CI and full Argon evaluation remain unverified.**
 
 ## Milestone 09 reviewer and recovery workflow - 2026-10-26 (IST)
+
+Verified implementation checkpoint: **`5c91290af44586c27e287303cadd78f9288407c3`**,
+message `feat: implement milestone 09 review and recovery workflow`. Reviewed/staged
+41 intended files; credential/private-data exclusions, whitespace and existing-test
+preservation checks passed. All required checks passed before commit: 610 tests, all
+static/dependency/matching/migration/integrity gates and 4 isolated restart checks.
+Working tree was clean after the implementation commit. This follow-up records its
+hash only; no application/schema/test changes followed the passing final gate.
+No push; STOP before Milestone 10.
 
 Branch `feat/milestone-09-review-recovery` starts at verified `1839916`. Original
 `prompts/09-approvals-recovery.md` is the checklist. Exact contract and reproduction:
@@ -60,7 +69,7 @@ Actual commands/results (repository-local `.venv/Scripts/uv.exe` on Windows):
 - Initial expanded security run: 7 passed, 1 test-setup failure (foreign-tenant outbox was not drained). Fixed the fixture setup; all assertions retained and the entire 38-test group then passed.
 - `uv run --frozen python scripts/verify_isolated_restart.py`: final **4 passed in 50.39s**, private `local-data/verification/isolated-restart-20261025T185423682839Z.log` (initial pre-hardening run: 4 passed in 49.69s). Only invocation-owned labelled temporary PostgreSQL resources restarted/removed; shared development untouched.
 - `uv run --frozen python local-data/m09_upgrade.py`: **PASS**, development up-only 0010 -> 0011, Alembic drift check, identical fingerprints for every old table (59). Private `local-data/m09-development-schema.json`, `local-data/m09-upgrade.log`. No reset/downgrade of development.
-- `uv run --frozen python scripts/verify.py`: final run **PASS**, **610 passed in 1172.29s (19m32s)**, no skips; private `local-data/verification/20261025T185406644687Z.log`; lock/dependency/Ruff lint/format, 21-module strict typing and matching bounds passed. All PostgreSQL tests/migrations/integrity/concurrency checks passed. No application, schema or test changes followed this gate; source fingerprints matched. The implementation hash will be recorded after the staged checkpoint.
+- `uv run --frozen python scripts/verify.py`: final run **PASS**, **610 passed in 1172.29s (19m32s)**, no skips; private `local-data/verification/20261025T185406644687Z.log`; lock/dependency/Ruff lint/format, 21-module strict typing and matching bounds passed. All PostgreSQL tests/migrations/integrity/concurrency checks passed. No application, schema or test changes followed this gate; source fingerprints matched. The verified implementation hash is recorded above.
 
 The first full gate (`20261025T181111321151Z.log`) was deliberately interrupted before
 completion when review found that legacy routes could bypass the new role profile; it
