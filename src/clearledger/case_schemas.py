@@ -67,7 +67,7 @@ class CaseView(BaseModel):
     unknown_amount_count: int
     requires_human_review: Literal[True] = True
     financial_authority: Literal[False] = False
-    verified_settled_paise: Literal[0] = 0
+    verified_settled_paise: Annotated[int, Field(strict=True, ge=0, le=2**63 - 1)] = 0
 
 
 class ClaimView(BaseModel):

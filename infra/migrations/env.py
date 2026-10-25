@@ -3,6 +3,7 @@ from alembic import context
 from clearledger import (
     case_models,  # noqa: F401
     evidence_models,  # noqa: F401
+    finance_models,  # noqa: F401
     investigation_models,  # noqa: F401
 )
 from clearledger.config import Settings

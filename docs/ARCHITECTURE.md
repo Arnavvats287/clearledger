@@ -114,3 +114,17 @@ isolated Gemini worker supports a fixed optional investigation schema; external
 execution and LangSmith telemetry stay disabled. LangGraph is required by the original
 07 prompt; its locked dependencies introduce no extra service. See
 [INVESTIGATIONS.md](INVESTIGATIONS.md). No policy/posting or approval capability is added.
+
+## Milestone 08 accounting boundary
+
+`finance_contract/domain` define exact money, policies, journals and state transitions;
+`finance_identity` is a trusted identity port, denied by default. `finance_models` and
+additive 0010 persist scoped policies/reviews/approvals/ledger/allocations/history.
+`finance_repository/validation` separate snapshots and read-only evidence/rule checks;
+`finance_service` owns proposal/review/CAS; `finance_posting` locks/rechecks/commits
+atomic simulation. `finance_lifecycle/invalidation` derive proven settlement metadata
+and conservative invalidations. `finance_api` is separate from document-token access.
+Case contexts add posted T1 ownership only when it exists; unposted hashes are retained.
+Claim settled counters derive from ledger records, not hypotheses. No graph receives
+finance tools/credentials; no new dependency/service/queue is introduced. Contract:
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).

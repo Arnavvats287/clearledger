@@ -1,5 +1,10 @@
 # ClearLedger data contract — version 1.0
 
+M08 adds a **separate** finance-1.0 simulation API in
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md). CSV schemas, identity rules, paise
+representation and ordering are unchanged. Imported labels grant no financial authority;
+no dataset is generated, modified or seeded.
+
 Milestone 04 adds a **separate** authenticated document interface and versioned remittance JSON/extraction contract in [DOCUMENTS.md](DOCUMENTS.md). PDF/email/text/JSON bytes go to `/documents`, never the financial CSV importer. No CSV columns, amounts, IDs, natural keys, order or version changed. Argon can supply documents against that separate contract; no Argon data is generated, modified or assumed integrated. Extracted references/claims are untrusted facts, not approved financial data or direct table-import instructions.
 
 Milestone 03 retains **all four CSV schemas, import ordering and version 1.0 unchanged**. Its additive proposal/evidence API is specified in [MATCHING.md](MATCHING.md#advanced-matching--milestone-03--advanced-mitm-v1). Argon need not modify existing CSVs. To exercise explicitly instructed multi-invoice partials, Argon may optionally put `{"allocations_paise":{"<invoice_number>":<positive_integer_paise>}}` in the original bank `memo` CSV field (normal CSV JSON quoting, total memo ≤2000 characters). Matching requires separate source-backed INVOICE_REFERENCE attestations for every exact key and an explicit structured-mode API request. This optional memo convention is not a new required CSV column, automated trust, a separate dataset import or a change to monetary semantics. Document/remittance-file ingestion remains milestone 04; no Argon files are modified/generated here.

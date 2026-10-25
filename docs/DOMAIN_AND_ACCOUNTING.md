@@ -68,3 +68,13 @@ invoice mapping, uncertain extraction, conflicting deliveries or overflow abstai
 Tagged tax evidence always routes to tax review. A source-provider approval attestation
 is distinct from in-app maker-checker approval; factual SUPPORTED never lifts that gate.
 See [EVIDENCE.md](EVIDENCE.md).
+
+Milestone 08 implements conditional simulation in
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md). Bank recognition occurs once at the
+first authorized recognition/application, not raw unauthenticated CSV intake. Journal B
+consumes only applied cash and separately supported/approved noncash treatment; unknown
+variances remain AR. Account balances are net simulated movements, not fabricated opening
+GL balances. Services and deferred DB guards enforce conservation and exact paise.
+Only exact reviewed synthetic tax stipulations are supported, with no universal rule.
+Proof-backed private settlement transitions do not loosen public label-based case gates.
+Operational closure/recovery remains M09; verified finance authority is denied by default.

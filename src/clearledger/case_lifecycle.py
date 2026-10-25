@@ -28,7 +28,13 @@ def record(session, org, case, actor, kind, store, details=None, changed_claims=
         for s in context["receipts"]
         if s["decision"]["identity"] == "RESOLVED" and len(s["decision"]["customers"]) == 1
     }
-    all_known = all(s["decision"]["identity"] == "RESOLVED" for s in context["receipts"])
+    owners.update(
+        s["posted_customer_id"] for s in context["receipts"] if s.get("posted_customer_id")
+    )
+    all_known = all(
+        s.get("posted_customer_id") or s["decision"]["identity"] == "RESOLVED"
+        for s in context["receipts"]
+    )
     case.customer_id = UUID(next(iter(owners))) if len(owners) == 1 and all_known else None
     case.context_sha256 = digest(context)
     event = publish(
@@ -61,7 +67,7 @@ def record(session, org, case, actor, kind, store, details=None, changed_claims=
                 "context_sha256": case.context_sha256,
                 "claimed_total_paise": total,
                 "unknown_amount_count": unknown,
-                "verified_settled_paise": 0,
+                "verified_settled_paise": settled_claims(session, org, {c.id for c in claims}),
                 "financial_authority": False,
                 "requires_human_review": True,
             },
@@ -85,6 +91,24 @@ def record(session, org, case, actor, kind, store, details=None, changed_claims=
         )
     session.flush()
     return event
+
+
+def settled_claims(session, org, claim_ids):
+    from sqlalchemy import func, select
+
+    from clearledger.finance_models import NoncashSettlement
+
+    total = int(
+        session.scalar(
+            select(func.coalesce(func.sum(NoncashSettlement.amount_paise), 0)).where(
+                NoncashSettlement.organization_id == org, NoncashSettlement.claim_id.in_(claim_ids)
+            )
+        )
+    )
+
+    if total > 2**63 - 1:
+        raise CaseError("CASE_SETTLEMENT_TOTAL_OVERFLOW")
+    return total
 
 
 def schedule(session, org, case, event, affected):
@@ -138,6 +162,9 @@ def revise(
         case.state = "INVESTIGATING"
     event = record(session, org, case, actor, kind, store, details, changed.values())
     if invalidate:
+        from clearledger.finance_invalidation import case_changed
+
+        case_changed(session, org, ids, event)
         from clearledger.investigation_service import invalidate as invalidate_investigations
 
         invalidate_investigations(session, org, case, affected, event)

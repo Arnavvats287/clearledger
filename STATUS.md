@@ -1,11 +1,62 @@
 # Build status
 
-- Repo state: **Milestone 07 implemented and locally verified.**
-- Current task: **Milestone 07 from `e9b970b`; STOP before 08.**
-- Verification: **507 tests passed (458 retained + 49 new), all gates PASS; final isolated restart 2 passed.**
-- Data safety: **Development up-only 0008 -> 0009; all records in 38 existing tables unchanged. Both pilot ZIP digests unchanged.**
-- Authority/privacy: **Hypotheses/review metadata only; no balances, claims settled/approved or journals changed. Gemini disabled; no paid/external calls or dataset construction.**
+- Repo state: **Milestone 08 implemented and locally verified.**
+- Current task: **Milestone 08 from `c4cd3e3`; STOP before 09.**
+- Verification: **563 tests passed (507 retained + 56 new), all gates PASS; 3 isolated restart checks passed.**
+- Data safety: **Development up-only 0009 -> 0010; all old-table fingerprints unchanged (47 tables). Both pilot ZIP digests unchanged.**
+- Authority/privacy: **Conditional simulated finance only; default identity unavailable denies access. Gemini disabled; no paid/external calls or dataset construction.**
 - Deferred: **Production authenticated roles/isolation G1, reviewed upstream source/key custody/PKI, remote CI, real provider/privacy and full Argon benchmark; ten pilot email offsets remain unresolved.**
+
+## Milestone 08 policy and accounting simulation - 2026-10-25
+
+Branch `feat/milestone-08-policy-ledger` starts at verified `c4cd3e3`. Original 08 prompt
+remains authoritative. Contract: `docs/ACCOUNTING_SIMULATOR.md`; traceability is in
+REQUIREMENTS_AUDIT. No new dependency, infrastructure or financial graph tool is added.
+
+Implemented versioned chart/policy, exact synthetic tax scope, independent source/rule
+validation, trusted identity port with default denial, source-review/proposal/submission/
+review APIs, maker-checker and separate service posting permission. Immutable histories,
+CAS, role revocation/expiry, fresh snapshots and atomic idempotent posting protect money.
+First authorized recognition/application books the full bank receipt once; journal B
+applies actual cash plus separately approved supported noncash treatment. Unsupported
+deductions stay in AR/review. Balance alone never substitutes for evidence/authority.
+
+Additive 0010 adds 12 scoped tables, immutable/state/history and deferred integrity guards.
+Receipt/invoice/account movements reconcile with ledger. Source-only legacy rows are
+unchanged and must conserve their baseline before first posting. Case settled amounts
+derive from noncash settlements, posted T1 ownership survives stale matching without
+hiding conflicts, and case/policy changes invalidate active financial proposals. Public
+actor-label case gates remain closed. Closure/recovery/user provisioning remains M09.
+
+CASE-204 reads the unchanged original fixture: cash 11,650,000 paise, approved synthetic
+tax 100,000, unsupported damage 250,000 and invoice 12,000,000. Two exact journals clear
+11,750,000 AR, leaving 250,000 open; tax resolves only with actual settlement proof,
+damage awaits customer evidence, receipt is fully applied, case PARTIALLY_SETTLED.
+Income-tax/GST-TDS use separate accounts; no universal rate/legal eligibility is inferred.
+
+Actual commands/results (Windows uses repository-local `.venv/Scripts/uv.exe`; private logs ignored):
+
+- `uv run --frozen pytest tests/test_finance.py --require-postgres`: core **21 passed in 133.24s**, `local-data/m08-focused.log`.
+- `uv run --frozen pytest tests/test_finance.py tests/test_finance_domain.py tests/test_finance_restart.py -x -q --require-postgres`: **49 passed in 198.38s**, `local-data/m08-finance-all.log`.
+- Final focused GST/unknown/unsigned/contradictory/date, concurrent proposal and multi-invoice tests: **7 passed in 52.57s**, `local-data/m08-final-focused.log`.
+- `uv run --frozen python local-data/m08_upgrade.py`: **PASS**, up-only 0009 -> 0010 and Alembic drift check; all records in 47 old tables unchanged (`m08-development-schema.json`, `m08-upgrade.log`). No development reset/downgrade.
+- `uv run --frozen python scripts/verify_isolated_restart.py`: **3 passed in 32.52s**, including financial journal/approval/history/balance persistence and no duplicate replay across fresh processes/connections and owned-container restarts. Log: `local-data/verification/isolated-restart-20261025T164920346659Z.log`. Only owned temporary resources restarted/removed.
+- `uv run --frozen python scripts/verify.py`: **PASS**, **563 passed in 964.09s**, no skips; every lock/dependency, Ruff lint/format, 19-module strict typing, matching bounds, PostgreSQL migration/integrity/integration gate passed. Private log: `local-data/verification/20261025T164920537343Z.log`. No application/schema/test changes followed this gate. Verified implementation hash will be recorded in a follow-up status checkpoint after staged review.
+
+No prior checks/assertions were removed. Full-test ceiling is now 1800s (CI 35m): the
+retained 507-test baseline already took 757.81s and the new disposable-schema/accounting
+tests add substantial time. Product search/approval/security limits are unchanged.
+Initial aggregate Decimal serialization and polymorphic trigger-field failures were
+fixed in code. Isolated-fixture diagnostics stayed private; public errors stay redacted.
+
+Production finance identity is intentionally unavailable by default. No bearer token,
+X-Actor-ID, source text, fixture flag or AI finding grants authority. Positive tests use
+an explicit tests-only identity adapter, not SSO. G1 identity/RBAC/RLS, source PKI/key
+custody/live-bank provenance, real tax/legal rules, live Gemini/privacy, remote CI and
+Argon benchmark/ablation remain unverified. No negative/reversal or zero-cash-only
+follow-up, ERP integration, GST credit note, reviewer correspondence or case closure.
+Both pilot ZIP hashes match the prior checkpoint; hidden answers were not used.
+No dataset work or push; stop before 09.
 
 ## Milestone 07 Director–Investigator workflow - 2026-10-25
 

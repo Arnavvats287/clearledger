@@ -1,5 +1,33 @@
 # ClearLedger requirements-alignment audit
 
+## Milestone 08 accounting traceability - 2026-10-25
+
+Authorized from `c4cd3e3`, branch `feat/milestone-08-policy-ledger`. Original
+`prompts/08-policy-ledger.md` is unchanged. Contract: `docs/ACCOUNTING_SIMULATOR.md`.
+
+| Original requirement | Implementation | Verification |
+|---|---|---|
+| Versioned chart/approval policy; conditional reviewed tax support or review | `finance_contract/models/service/validation` | Exact fixture IDs/amount/date/evidence binding, unknown/unsigned/opposing/date tax abstention, distinct income-tax/GST accounts; no universal rate |
+| Bank once, cash/noncash journal application, no damage writeoff | `finance_domain`, `finance_posting` | Unchanged CASE-204 oracle debits/credits and AR 250,000; repeated partial applications book bank once; multi-invoice and independently verified allowance |
+| Source/rule/version proposals; balance insufficient | `finance_repository/validation`, immutable snapshots | Strict fractional/bool/overflow/account checks, wrong tenant/missing source, stale balances/policy/evidence/original/approval, matching-intent/source review |
+| Required authorization/review/maker-checker gates | `finance_identity/service/api`; unavailable default adapter | Local token/actor spoof and self approval denied, human/service/permission boundary, revocation/expiry/CAS; fixture identities are not SSO |
+| Atomic, concurrent, idempotent PostgreSQL posting | 0010 scoped FKs, unique keys, immutable/deferred guards; locks in posting | Real same/different-key concurrent requests, replay, failure rollback, conservation, history and DB tamper rejection |
+| Audit evidence/status/persistence | `finance_lifecycle/invalidation`, finance audit/commands | PARTIALLY_SETTLED, proof-backed tax resolution, unsupported damage waiting/open; fresh processes/connections/owned PostgreSQL restart without duplicate effects |
+
+Final full gate: **563 passed in 964.09s (507 retained + 56 new), no skips**; all
+static/migration/integrity/performance gates passed. Isolated restart: **3 passed in
+32.52s**. Finance-focused 49 tests plus 7 final targeted checks also passed.
+Existing static/migration/performance checks are retained; bounded test/CI timeouts were
+extended for suite growth, not product limits. Up-only migration preserved every old
+table fingerprint (47 tables). Both pilot ZIP hashes are unchanged. Exact logs/results/
+checkpoint are in STATUS; no completion is claimed until the final gate passes.
+
+G1 production identity/RBAC/RLS remains **unresolved**: finance defaults denied without
+a trusted adapter; fixture identities prove controls, not real users. Broader review/
+identity provisioning/correspondence/recovery/closure stays M09. Real tax rules, publisher
+PKI/key custody/live-bank validation, live Gemini/privacy, remote CI and full Argon
+benchmark/ablation remain unverified. No dataset, paid call, Redis, MCP or later milestone.
+
 ## Milestone 07 Director–Investigator traceability - 2026-10-25
 
 Authorized from verified `e9b970b`, branch `feat/milestone-07-directed-investigation`.

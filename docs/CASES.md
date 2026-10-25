@@ -1,5 +1,13 @@
 # Persistent deduction cases — contract v1.0
 
+M08 extension: `verified_settled_paise` now derives from committed noncash settlements,
+bounded to signed-bigint paise; without settlements it remains zero. Historical M05
+snapshots below remain unchanged. Independently approved posting can advance private
+proof-backed claim states and PARTIALLY_SETTLED; public actor-label gates remain closed.
+Posted allocations supply T1 customer provenance when old matching versions become stale;
+conflicts abstain. Case/source changes invalidate active finance proposals. Closure and
+recovery remain M09. Contract: [ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).
+
 Milestone 05 adds durable **review metadata**, not deduction adjudication, approvals,
 cash application or posting. Financial CSV DATA_CONTRACT v1.0 and existing matching
 and document interfaces are unchanged. All money remains integer paise. A customer

@@ -1,5 +1,11 @@
 # Director–Investigator contract v1
 
+M08 adds a separate gated simulator, never a graph posting node. Findings still grant
+no financial/legal authority; finance independently verifies evidence, rules, current
+trusted identities and maker-checker approval. Stale/unsupported referenced findings are
+rejected. Tools and external-AI defaults are unchanged. See
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).
+
 Milestone 07 implements the original `prompts/07-directed-investigation.md`.
 Algorithm: `director-investigator-v1`. This is investigation metadata and factual
 hypotheses, never claim acceptance, tax adjudication, settlement or posting.

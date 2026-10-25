@@ -59,7 +59,8 @@ def main():
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=900 if name == "tests/migrations" else 300,
+                # Retain the entire growing suite, including disposable schemas/restarts.
+                timeout=1800 if name == "tests/migrations" else 300,
             )
             output = result.stdout + result.stderr
             for secret in redactions:

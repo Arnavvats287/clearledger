@@ -79,3 +79,13 @@ remain false by default. All retrieved originals, including external evidence, m
 approved synthetic data before any opted-in model request. No paid call was authorized
 or made. Production authenticated roles/RLS and upstream PKI/key custody remain open.
 See [INVESTIGATIONS.md](INVESTIGATIONS.md) for bounds and recovery limitations.
+
+Milestone 08 finance defaults to 503 until a trusted verified-identity adapter exists.
+Document tokens, X-Actor-ID, signed source facts and AI findings grant no finance role.
+Human source/policy review, different-subject maker-checker and a separately entitled
+posting service are mandatory. Current grants/expiry/policy/source versions, original
+hashes and deterministic predicates are rechecked before atomic simulation; balance
+alone is insufficient. Immutable/deferred DB guards independently enforce ledger and
+balance consistency. Test identities do not establish production SSO/RBAC/RLS or legal
+tax authority. No external AI is enabled. Boundaries, adapter obligations and open G1:
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).

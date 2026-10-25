@@ -71,6 +71,35 @@ def current_context(session, org, case, store):
     receipts = []
     for link in group_rows(session, CaseReceipt, org, ids, limit=100):
         _, _, snapshot = build_snapshot(session, org, link.receipt_id)
+        from clearledger.finance_models import CashAllocation
+
+        posted = list(
+            session.scalars(
+                select(CashAllocation)
+                .where(
+                    CashAllocation.organization_id == org,
+                    CashAllocation.receipt_id == link.receipt_id,
+                )
+                .order_by(CashAllocation.id)
+                .limit(1001)
+            )
+        )
+        if len(posted) > 1000:
+            raise CaseError("CASE_ANALYSIS_LIMIT")
+        if posted:
+            owners = {str(a.customer_id) for a in posted}
+            if len(owners) != 1:
+                raise CaseError("POSTED_RECEIPT_CUSTOMER_CONFLICT")
+            snapshot["posted_customer_id"] = next(iter(owners))
+            snapshot["posted_allocations"] = [
+                {
+                    "id": str(a.id),
+                    "journal_id": str(a.journal_id),
+                    "invoice_id": str(a.invoice_id),
+                    "amount_paise": a.amount_paise,
+                }
+                for a in posted
+            ]
         receipts.append(snapshot)
     docs = []
     for link in group_rows(session, CaseDocument, org, ids, limit=100):

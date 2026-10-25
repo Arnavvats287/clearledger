@@ -19,3 +19,12 @@ This is a simulated finance product and NOT a legal/tax opinion. Indian law, tra
 
 ## Scope decision
 Milestone 08 must demonstrate correct **conditional processing and abstention**, not a complete Indian tax engine. Never silently use universal 2% TDS or blanket `base_value * rate` assumptions.
+
+Implemented M08 rules bind exact fixture IDs/amount/dates/recognition policy/evidence;
+reviewer, verification date and version come from immutable authenticated policy review.
+Rates, thresholds and source_url are explicitly null for this stipulation mechanism.
+Fixture flag/source signature alone is insufficient: source/rule checks and separate
+maker-checker approval remain mandatory. Unknown/nonfixture/excess/contradictory tax
+stays NEEDS_TAX_REVIEW. Income-tax/GST-TDS accounts remain distinct; GST credit notes
+and output reversals are unsupported. No legal compliance is claimed. Exact registry:
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md).

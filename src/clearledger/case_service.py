@@ -16,7 +16,7 @@ from clearledger.case_events import (
     matching_proposed,
     receipt_accepted,
 )
-from clearledger.case_lifecycle import revise
+from clearledger.case_lifecycle import revise, settled_claims
 from clearledger.case_models import (
     Case,
     CaseCommand,
@@ -74,6 +74,9 @@ def view(session, org, case, store, requested=None):
         invoice_ids=sorted({r.invoice_id for r in group_rows(session, CaseInvoice, org, ids)}),
         claimed_total_paise=total,
         unknown_amount_count=unknown,
+        verified_settled_paise=settled_claims(
+            session, org, {c.id for c in group_rows(session, Claim, org, ids)}
+        ),
     )
 
 

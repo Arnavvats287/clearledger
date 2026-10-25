@@ -63,3 +63,13 @@ requiring human review and carrying no financial authority. The Investigator has
 read-only capabilities through a trusted scoped broker. Optional external extraction
 is disabled; it does not expose a general model/tool invocation endpoint. Existing
 claim transitions, financial CSV/matching contracts and approval/posting gates remain.
+
+## Milestone 08 implemented contract
+
+[ACCOUNTING_SIMULATOR.md](ACCOUNTING_SIMULATOR.md) specifies verified-source/policy APIs,
+`/cases/{id}/journal-proposals`, version/hash-bound submission/review/simulate-post, and
+ledger/balance/audit reads. Existing matching proposal bindings remain separate. Financial
+identity defaults unavailable; local tokens/actor labels cannot grant permission.
+Normative journal states, maker-checker, fresh evidence/policy/approval and DB conservation
+are enforced. Proven posting can advance settlement metadata to PARTIALLY_SETTLED;
+closure/recovery and broader reviewer workflow remain M09. Unknown claims remain review.

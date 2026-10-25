@@ -227,3 +227,15 @@ Run `uv run --frozen python scripts/verify.py` for the complete gate and
 `uv run --frozen python scripts/verify_isolated_restart.py` for an owned disposable
 container restart. Development migration is up-only (`alembic upgrade head`); never
 reset or downgrade an existing database. CSV 1.0 and both pilot datasets are unchanged.
+
+## Accounting simulator (milestone 08)
+
+[docs/ACCOUNTING_SIMULATOR.md](docs/ACCOUNTING_SIMULATOR.md) defines versioned policies,
+source reviews, proposals, maker-checker approval and atomic simulated posting. Finance
+denies by default until a trusted identity adapter is supplied; document tokens and actor
+labels do not authorize it. No finance-token/demo-login bypass is included. Isolated tests
+use a test-only identity host and the unchanged CASE-204 oracle for two journals and
+INR 2,500 remaining AR. The restart runner also checks financial ledger persistence/replay.
+No development reset/downgrade/seeding, external AI, real tax determination or ERP posting
+is enabled. Production identity/G1, live provider/source PKI and remote/Argon evaluation
+remain unverified. Full review/correspondence/recovery/closure remains milestone 09.

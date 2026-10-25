@@ -79,18 +79,22 @@ def tenant_rows(engine, organization_id, models=RECORDS):
 
 
 @contextmanager
-def running_api(database_url, organization_id):
+def running_api(
+    database_url, organization_id, *, factory="clearledger.main:create_app", pythonpath=None
+):
     with socket.socket() as reservation:
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
     env = {**os.environ, "DATABASE_URL": database_url, "ORGANIZATION_ID": str(organization_id)}
+    if pythonpath is not None:
+        env["PYTHONPATH"] = str(pythonpath) + os.pathsep + env.get("PYTHONPATH", "")
     with TemporaryFile(mode="w+", encoding="utf-8") as output:
         process = subprocess.Popen(
             [
                 sys.executable,
                 "-m",
                 "uvicorn",
-                "clearledger.main:create_app",
+                factory,
                 "--factory",
                 "--host",
                 "127.0.0.1",
