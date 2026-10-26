@@ -2,6 +2,8 @@
 
 ## Authorized Gemini unblocking — reduced budget verified, account quotas pending
 
+Verified preflight checkpoint: `050cca848eb7c87f083d491cd44fea83993f1524`.
+
 2026-10-26 (IST). Actual metadata-only Google SDK call succeeded for configured key:
 models/gemini-3.1-flash-lite, generateContent support, input1048576/output65536 limits.
 Logging suppressed, retry1, timeout10s, normal TLS/trust_env=false; no key emitted.
