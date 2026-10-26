@@ -10,6 +10,7 @@ IMPORTS = ("customers", "payer-aliases", "invoices", "bank-transactions")
 GROUPS = {
     "alias_verifications",
     "contracts",
+    "late_evidence",
     "pods",
     "promotions",
     "remittances",

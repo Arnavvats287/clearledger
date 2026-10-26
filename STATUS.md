@@ -1,5 +1,42 @@
 # Build status
 
+## Narrow late-evidence category compatibility fix — 2026-10-26 (IST)
+
+User confirmed that the original application-visible input contract supplies
+`app_visible/evidence_corpus/late_evidence/<file>`. The shared GROUPS constant in
+`scripts/application_eval_inputs.py` omitted this category, causing protocol
+INPUT_ALLOWLIST_OR_HASH rejection before ingestion. Added precisely that member;
+no other validator, resource limit, chronology, provenance, financial or provider
+behavior changed. No private benchmark files, schedule or hidden answers accessed.
+
+Actual checks:
+- `.venv/Scripts/python.exe -m pytest tests/test_late_evidence_paths.py
+  tests/test_chronological_startup.py
+  tests/test_chronological_evaluation.py::test_forbidden_inputs
+  tests/test_chronological_evaluation.py::test_protocol_tamper -q --tb=short`:
+  **40 passed in 1.44s**, including19 new tests for shared snapshot/protocol category
+  acceptance, unknown/unsafe paths and malformed/mismatched SHA-256 rejection.
+- Ruff check and formatting check on both changed Python files: PASS;
+  `git diff --check`: PASS.
+- `.venv/Scripts/python.exe scripts/build_chronological_image.py`: PASS, including
+  exact `/app/.venv/bin/python -X utf8 -I -B /app/scripts/chronological_adapter.py`
+  startup and isolated transitive-import preflight.
+- `.venv/Scripts/python.exe scripts/verify_chronological_bridge.py --bridge
+  '<user-provided public runner_image/bridge.py>' --docker`: PASS, one restricted
+  Docker invocation with disposable PostgreSQL;4 responses/3 distinct stages,
+  identical replay, financial non-mutation PASS, Gemini DISABLED; maximum stage
+  13.079451918s. Uses existing application fixtures, not benchmark data or accuracy.
+
+Image `clearledger-chronological:local`:
+`sha256:d2d0b2d122afb80abb31fb48c774ea539d9410b020433b27b36cb53d60681cb2`.
+Local logs: `local-data/late-evidence-{targeted,build,bridge}.log`, bridge detail
+`local-data/chronological-verification/926b651a28af4b3783e9cb84283bb723/`.
+Full regression and restart gates deliberately not repeated per the narrow task;
+no persistence/lifecycle code changed. Actual benchmark resumption remains external
+and unverified. The missing-category rejection is demonstrated; no claim is made
+that all independent evaluation failures are resolved. Local checkpoint recorded
+in the follow-up status entry; no push.
+
 ## Static/synthetic protocol line142 investigation — 2026-10-26 (IST)
 
 Application checkpoint remains `5cc695b` / verified status `24fb7e5`. No application

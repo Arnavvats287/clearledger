@@ -1,5 +1,16 @@
 # Persistent chronological application adapter — protocol 1
 
+## Approved late-evidence input category
+
+The operator-confirmed application-visible contract includes
+`app_visible/evidence_corpus/late_evidence/<file>`. The shared `GROUPS` allowlist now
+includes precisely `late_evidence`, for both snapshot and chronological ingestion.
+This contract clarification comes from the user; no private benchmark files or
+schedule were inspected. Existing depth, filename, extension, traversal, byte-size
+and SHA-256 validation remain unchanged. Category membership is not source
+authentication or financial authority; documents still undergo normal ingestion
+and evidence checks. Unknown categories remain rejected.
+
 ## Consolidated evidence/case observation handling
 
 Synthetic actual-API reproduction demonstrates **HTTP409 EVIDENCE_FINANCIAL_SOURCE_BUDGET**:
