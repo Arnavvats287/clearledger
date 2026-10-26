@@ -2,6 +2,8 @@
 
 ## Authorized live Gemini smoke — blocked preflight, 2026-10-26 (IST)
 
+Verified preflight/report checkpoint: `53d56b34e3e3ea9aa7a40443b02485c5c24eb213`.
+
 User explicitly authorized only the existing eight synthetic fixtures, extraction
 only, estimated100-paise maximum. No Gemini API request was made: no model lookup,
 token count or generation. Paid API spend0. Public Google documentation/pricing and
