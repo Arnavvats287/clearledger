@@ -2,6 +2,8 @@
 
 ## Portfolio readiness — complete accountant review workflow proved first
 
+Verified implementation checkpoint: `936d74501493f3cbdfac6d72cfb30d6cc649bf90`.
+
 2026-10-26 (IST). Followed the priority correction: before README replacement,
 proved ONE continuous same-company/database API workflow independently:
 **1 passed in8.70s**, `local-data/portfolio-accountant-proof.log`. Invoice1101 paise
