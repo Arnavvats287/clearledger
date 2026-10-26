@@ -19,6 +19,7 @@ OPERATOR_ARGV = [
 MODULES = (
     "chronological_adapter",
     "chronological_protocol",
+    "chronological_diagnostics",
     "chronological_host",
     "application_eval_contract",
     "application_eval_host",

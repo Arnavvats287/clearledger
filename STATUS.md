@@ -1,5 +1,82 @@
 # Build status
 
+## Narrow chronological failure/provenance investigation — 2026-10-26 (IST)
+
+Branch `fix/chronological-failure-diagnostics` from `93f7071`. **Stage 41's specific
+RuntimeError remains UNKNOWN.** Only application adapter/host/worker code and synthetic
+application-owned fixtures were used; no private operator evaluation artifacts, schedule,
+ground truth, original datasets or scorer were accessed. The one restricted bridge check
+uses only the previously supplied public bridge and minimal unit inputs, not a benchmark.
+
+Proven handling weaknesses: error artifacts used a different path from successful stages;
+failure writes shared a potentially exhausted budget; and later errors discarded an
+already written normal observation hash. Synthetic tests reproduce these independently
+of the private incident. They do not establish which, if any, caused the operator rejection.
+
+The adapter now retains partial real API observations at the normal stage path, verifies
+stored bytes before advertising a digest, preserves existing raw snapshots on later
+failure, reserves up to 64 MiB within the unchanged 1 GiB ceiling, and reports genuine
+unavailable storage without inventing hashes. Errors remain ERROR with poisoned sessions,
+minimal predictions and FAIL/NOT_EVALUABLE financial status. Original successful artifacts
+are never overwritten or relabeled. Private raw responses remain confidential artifacts.
+
+Structured diagnostics report controlled component, safe exception type, fixed recognized
+code and repository-relative application source file/function/line. No exception messages,
+locals, source lines, private filenames, transaction IDs/values, query strings, raw stderr
+or credentials enter diagnostics. Worker failures carry safe source metadata; failed
+outbox guards expose only fixed state/error-code summaries. Transport failures remain
+explicitly failed attempts, not made-up HTTP successes. Accounting/domain code, database
+schema, case rules and Gemini settings are unchanged. No paid calls or authority grants.
+
+Targeted checks: **68 passed in 48.08s** (13 new failure cases plus 55 existing chronological
+cases), including a real API RuntimeError after a successful stage, canonical partial
+provenance/hash, storage exhaustion/unavailability, post-save failures, immutable prior
+history, privacy, worker diagnostics and transport failure. Additional final unit check:
+**12 passed in 1.32s** with the PostgreSQL case intentionally excluded from that focused
+unit-only command (already executed in the 68-case run). No original assertion weakened.
+
+Build/exact isolated startup and transitive-import preflight PASS. New image:
+**`sha256:6f81d3f2a3e6e7bb97b0344e72307c271acb9397e5f3b649731bf30fbcd56f76`**.
+The diagnostic helper is explicitly included in the nine-module allowlist/preflight.
+One restricted Docker bridge check PASS: three stages plus replay, financial PASS,
+Gemini disabled, maximum stage 12.662360067s; private run
+`local-data/chronological-verification/32009b484a3b4c0db723564524691228/`.
+
+### Final verification and checkpoint
+
+- Targeted `python -m pytest tests/test_chronological_failures.py
+  tests/test_chronological_evaluation.py tests/test_chronological_startup.py -q
+  --require-postgres`: **68 passed in 48.08s**. Final unit-only follow-up: **12 passed
+  in 1.32s**, one PostgreSQL case deliberately not selected (covered by targeted/full runs).
+  Logs: `local-data/chrono-failures-focused.log`, `chrono-failures-units.log`.
+- `python scripts/build_chronological_image.py`: **PASS**, automatic exact
+  `/app/.venv/bin/python -X utf8 -I -B /app/scripts/chronological_adapter.py` EOF preflight
+  and no-network/read-only transitive-import/flag/origin checks. All nine allowlisted
+  helpers validated. Log: `local-data/chrono-failures-build.log`.
+- One `python scripts/verify_chronological_bridge.py --bridge <previously supplied public
+  bridge.py> --docker`: **PASS**, three minimal stages plus replay, all financial
+  non-mutation checks PASS and Gemini disabled; max stage **12.662360067s**. Private run:
+  `local-data/chronological-verification/32009b484a3b4c0db723564524691228/`.
+- Exactly one `uv run --frozen python scripts/verify.py`: **ALL PASS; 689 passed in
+  1415.62s (23m35s), no skips**, retaining all original 676 plus 13 new failure tests.
+  Lock/dependencies/Ruff lint+format/strict typing/matching bounds/PostgreSQL migration
+  roundtrips/drift/integrity/API/security/concurrency and existing restart regressions
+  passed. Log: `local-data/verification/20261026T031144663441Z.log`.
+
+Per the user's proportional-verification instruction, no repeated full gates or isolated
+PostgreSQL restart checks were run. No database/business-lifecycle behavior, schema,
+accounting rules, Gemini settings or original test assertions changed. Only private
+failure artifacts/diagnostics and harness cleanup/reporting changed. Detailed logs stay
+local. No paid calls, development reset/downgrade, dataset/operator/schedule modifications,
+private benchmark access or remote push occurred.
+
+Reviewed eight intended files: adapter/host, new diagnostics helper and 13-case test
+module, explicit build/preflight allowlist additions, chronological contract and STATUS.
+Source seals, staged credential checks and whitespace/scope review passed; no executable
+changes followed final verification. Completion hash is recorded by the documentation
+follow-up. The underlying stage-41 cause and independent-operator acceptance remain
+unverified: synthetic reproductions establish handling defects, not private incident facts.
+
 ## Narrow isolated-mode Docker startup fix — 2026-10-26 (IST)
 
 Branch `fix/chronological-isolated-imports`, from verified status `1b4d78b` (adapter

@@ -1,5 +1,55 @@
 # Persistent chronological application adapter — protocol 1
 
+## Failure diagnostics and retainable partial provenance
+
+The operator reported RuntimeError after 40 sealed stages, followed by
+RETAINABLE_RAW_API_PROVENANCE_REQUIRED. **The specific stage-41 cause is unknown**;
+no private evaluation files, schedule or answers were inspected. Application-owned
+fixtures reproduce handling defects, not the private incident's cause:
+
+- Errors previously wrote `<request_id>.failure.json` outside the normal stage directory.
+- Failure writes shared the exhausted normal storage budget and could return no raw hash.
+- An exception after `observations.json` was written discarded that already retained hash.
+
+Failures now use the normal `<request_id>/observations.json` path. It contains actual
+partial API observations and `complete:false` when work failed before the normal snapshot.
+An already written normal snapshot remains immutable and is reused if later response
+processing fails. The hash is advertised only after reading and verifying the retained
+bytes. `failure.json` contains safe diagnostic metadata; `response.json` records ERROR
+where writable. Existing successful stages are never overwritten/reused for conflicting
+requests. Status stays ERROR, the run stays poisoned and financial checks stay FAIL or
+NOT_EVALUABLE. No failed/unknown response becomes a successful observation.
+
+The existing 1 GiB managed-artifact ceiling is unchanged: up to 64 MiB (one sixteenth)
+is reserved **inside** it for failure evidence, leaving 960 MiB for normal artifacts.
+Genuine disk/permission failures or partial observations exceeding available reserve
+still yield raw_provenance=UNAVAILABLE and **no invented hash**. The operator may rightly
+reject unretainable failures; this patch does not bypass its validator or prove its
+private retention policy accepts any particular failure.
+
+Diagnostics in stderr and api_observations identify a controlled component, exception
+type, fixed code where recognized, and trusted repository-relative source file/function/
+line. They exclude exception messages, locals, source lines, absolute paths, request
+bodies, credentials and raw identifiers. Recent HTTP diagnostics use route templates;
+transport failures are recorded as failed attempts with unknown status, never fabricated
+responses. Raw API response bodies remain solely in private provenance under existing
+custody rules. Worker failures emit validated content-free child diagnostics; retry/dead
+outbox guards expose only state counts and fixed allowlisted error codes, not DB values.
+
+| Possible RuntimeError family | Diagnostic component/source boundary |
+|---|---|
+| Storage budget, changed archive, provenance/response size | stage_archive, persist_observations, persist_response; Adapter.save/stage |
+| CSV/HTTP read/login/pagination failures | csv_import or current read component; API.request/get/collection |
+| Original/pages/span integrity, offline extraction, unverified linking | documents; application_eval_runtime.documents |
+| Matching API errors or changed idempotent result | matching; matching helper/stage guard |
+| Worker nonzero exit, retry/dead event, drain budget | worker_after_documents/matching or investigation_worker; drain_owned; safe child source/error code when available |
+| Stale refresh, evidence or investigation API failure | case_refresh/evidence_query/investigation_start/read |
+| Financial mutation/authority failure or duplicate natural receipt | financial_verification/read_financial_records; stage guards |
+
+These are hypotheses for the unseen incident, not findings about its inputs. Reproduce
+handling with `pytest tests/test_chronological_failures.py --require-postgres` using only
+minimal application-owned fixtures. Final verification and image identity are in STATUS.
+
 ## Isolated Docker startup compatibility
 
 The operator invocation is exactly:

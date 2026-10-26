@@ -6,12 +6,14 @@ import secrets
 import subprocess
 import sys
 import time
+from collections import Counter
 from contextlib import redirect_stdout
 from uuid import UUID, uuid5
 
 from alembic import command
 from alembic.config import Config
 from application_eval_host import API, ROOT, application, environment
+from chronological_diagnostics import WorkerFailure, diagnostic, worker_diagnostic
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
@@ -167,7 +169,22 @@ class BoundedAPI(API):
         kwargs["timeout"] = min(20, self.remaining())
         # Also bound first login/token renewal (the reused API client authenticates internally).
         self.client.timeout = kwargs["timeout"]
-        response = super().request(method, path, key=key, **kwargs)
+        started = time.perf_counter_ns()
+        try:
+            response = super().request(method, path, key=key, **kwargs)
+        except Exception as error:
+            from chronological_diagnostics import route
+
+            self.observations.append(
+                {
+                    "method": method,
+                    "route": route(path),
+                    "status": None,
+                    "elapsed_ns": time.perf_counter_ns() - started,
+                    "failure": diagnostic(error, "api_request"),
+                }
+            )
+            raise
         # Private provenance, never log authorization headers or login responses.
         try:
             body = response.json()
@@ -186,17 +203,43 @@ def drain_owned(engine, org, env, api):
     for _ in range(50):
         api.remaining()
         with engine.connect() as connection:
-            states = list(
-                connection.scalars(
-                    select(OutboxEvent.status).where(
+            pending = list(
+                connection.execute(
+                    select(OutboxEvent.status, OutboxEvent.last_error_code).where(
                         OutboxEvent.organization_id == org, OutboxEvent.status != "DELIVERED"
                     )
                 )
             )
+        states = [row[0] for row in pending]
         if not states:
             return count
         if any(state != "PENDING" for state in states):
-            raise RuntimeError("OUTBOX_RETRY_OR_FAILURE_DISCARD_RUN")
+            allowed_codes = {
+                "CASE_ANALYSIS_LIMIT",
+                "CASE_MEMBERSHIP_LIMIT",
+                "CASE_GRAPH_LIMIT",
+                "DOCUMENT_INTEGRITY_FAILURE",
+                "ORIGINAL_NOT_FOUND",
+                "CASE_EVENT_FAILED",
+            }
+            raise WorkerFailure(
+                "OUTBOX_RETRY_OR_FAILURE_DISCARD_RUN",
+                {
+                    "states": dict(
+                        Counter(
+                            s if s in {"PENDING", "LEASED", "RETRY", "DEAD"} else "UNKNOWN"
+                            for s in states
+                        )
+                    ),
+                    "error_codes": sorted(
+                        {
+                            row[1] if row[1] in allowed_codes else "UNKNOWN"
+                            for row in pending
+                            if row[1] is not None
+                        }
+                    ),
+                },
+            )
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/chronological_host.py")],
             cwd=ROOT,
@@ -207,7 +250,13 @@ def drain_owned(engine, org, env, api):
             timeout=min(30, api.remaining()),
         )
         if result.returncode:
-            raise RuntimeError("BOUNDED_WORKER_FAILED")
+            details = None
+            if len(result.stderr) <= 16384:
+                try:
+                    details = worker_diagnostic(json.loads(result.stderr).get("worker_error"))
+                except (ValueError, AttributeError, TypeError):
+                    pass
+            raise WorkerFailure("BOUNDED_WORKER_FAILED", details)
         value = json.loads(result.stdout)
         count += value.get("DELIVERED", 0)
     raise RuntimeError("OUTBOX_DRAIN_BUDGET")
@@ -224,13 +273,28 @@ __all__ = [
 ]
 
 
-if __name__ == "__main__":
+def worker_main():
     # Worker RPC is a dedicated, bounded child. No .env fallback.
     from clearledger.db import build_engine
 
-    settings = frozen_settings()
-    engine = build_engine(settings.database_url)
+    engine = None
+    status = 0
     try:
+        settings = frozen_settings()
+        engine = build_engine(settings.database_url)
         print(json.dumps(drain(engine, settings.organization_id, settings, 100)))
+    except Exception as error:
+        print(json.dumps({"worker_error": diagnostic(error, "worker")}), file=sys.stderr)
+        status = 1
     finally:
-        engine.dispose()
+        if engine is not None:
+            try:
+                engine.dispose()
+            except Exception as error:
+                print(json.dumps({"worker_error": diagnostic(error, "worker")}), file=sys.stderr)
+                status = 1
+    return status
+
+
+if __name__ == "__main__":
+    raise SystemExit(worker_main())

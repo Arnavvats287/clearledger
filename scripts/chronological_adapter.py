@@ -11,6 +11,7 @@ from application_eval_contract import latency_summary, snapshot_predictions
 from application_eval_host import fingerprint, rows
 from application_eval_inputs import sha
 from application_eval_runtime import documents, matching
+from chronological_diagnostics import diagnostic, route
 from chronological_host import (
     BoundedAPI,
     application,
@@ -26,6 +27,7 @@ from clearledger.models import ProviderReservation
 PROTECTED = (LedgerJournal, LedgerLine, CashAllocation, NoncashSettlement, ProviderReservation)
 MAX_ARTIFACT_BYTES = 1024 * 1024 * 1024
 MAX_STAGES = 10000
+FAILURE_RESERVE_BYTES = 64 * 1024 * 1024
 
 
 class Adapter:
@@ -40,18 +42,23 @@ class Adapter:
         self.poisoned = False
         self.engine = None
         self.artifact_bytes = 0
+        self.component = "binding"
 
-    def save(self, path, raw):
-        if self.artifact_bytes + len(raw) > MAX_ARTIFACT_BYTES:
+    def save(self, path, raw, *, emergency=False):
+        reserve = min(FAILURE_RESERVE_BYTES, MAX_ARTIFACT_BYTES // 16)
+        limit = MAX_ARTIFACT_BYTES if emergency else MAX_ARTIFACT_BYTES - reserve
+        if self.artifact_bytes + len(raw) > limit:
             raise RuntimeError("PRIVATE_PROVENANCE_STORAGE_BUDGET")
         with path.open("xb") as stream:
             stream.write(raw)
         self.artifact_bytes += len(raw)
 
     def close(self):
-        self.stack.close()
-        if self.engine is not None:
-            self.engine.dispose()
+        try:
+            self.stack.close()
+        finally:
+            if self.engine is not None:
+                self.engine.dispose()
 
     def start(self, stage):
         self.output.mkdir(parents=True, exist_ok=False)
@@ -67,6 +74,9 @@ class Adapter:
     def stage(self, stage):
         started = time.perf_counter_ns()
         analysis_started = False
+        stage_dir = None
+        retained_raw = None
+        self.component = "binding"
         response = stage.envelope()
         request_id, snapshot_id = (stage.request[k] for k in ("request_id", "snapshot_id"))
         binding = (stage.message["run_id"], stage.message["company"], stage.request["split"])
@@ -96,10 +106,19 @@ class Adapter:
             manifest_hash = sha(canonical(stage.manifest))
             if stage.cutoff == self.cutoff and manifest_hash != self.manifest_hash:
                 raise ValueError("TIED_CUTOFF_INPUTS_CHANGED")
+            self.component = "delta_validation"
             plan = self.deltas.plan(stage)  # Validate ALL changes before any writes.
             if self.binding is None:
+                self.component = "initialize"
                 self.start(stage)
                 self.binding = binding
+            self.component = "stage_archive"
+            directory = self.output / request_id
+            directory.mkdir(exist_ok=False)
+            stage_dir = directory  # Only this invocation may write into its owned stage.
+            self.api.observations.clear()
+            analysis_started = True
+            calls_start = len(self.api.calls)
             objects = self.output / "input-objects"
             objects.mkdir(exist_ok=True)
             for raw in stage.bytes.values():
@@ -112,11 +131,10 @@ class Adapter:
             self.api.deadline = time.monotonic() + max(
                 1, 105 - (time.perf_counter_ns() - started) / 1_000_000_000
             )
-            self.api.observations.clear()
-            analysis_started = True
-            calls_start = len(self.api.calls)
+            self.component = "financial_snapshot_before_import"
             old = rows(self.engine)
             imported = []
+            self.component = "csv_import"
             for kind, (raw, count) in plan[0].items():
                 result = self.api.request(
                     "POST",
@@ -131,13 +149,13 @@ class Adapter:
                 if result.status_code != 200:
                     raise RuntimeError("CSV_API_ERROR")
                 imported.append({"kind": kind, "new_rows": count, "result": result.json()})
+            self.component = "financial_snapshot_after_import"
             before = rows(self.engine)
             for table, records in old.items():
                 current = {r["id"]: r for r in before[table]}
                 if any(current.get(r["id"]) != r for r in records):
                     raise RuntimeError("PREVIOUS_FINANCIAL_RECORD_CHANGED")
-            stage_dir = self.output / request_id
-            stage_dir.mkdir(exist_ok=False)
+            self.component = "documents"
             source = SimpleNamespace(files=plan[1], read=plan[1].__getitem__)
             with redirect_stdout(sys.stderr):
                 observed_docs = documents(self.api, source, stage_dir)
@@ -148,7 +166,9 @@ class Adapter:
                     or (doc.get("correlation") and doc["correlation"]["status_code"] != 200)
                 ):
                     raise RuntimeError("DOCUMENT_API_ERROR")
+            self.component = "worker_after_documents"
             drain_owned(self.engine, self.org, self.env, self.api)
+            self.component = "read_financial_records"
             data = {
                 kind: self.api.collection("/" + kind)
                 for kind in ("customers", "invoices", "bank-transactions", "receipts")
@@ -163,6 +183,7 @@ class Adapter:
             if len(requested) > 1:
                 raise RuntimeError("DUPLICATE_RECEIPT_NATURAL_KEY")
             data["receipts"] = requested
+            self.component = "matching"
             observed_matches = matching(self.api, data)
             if any(
                 v.get("outcome") == "API_FAILURE"
@@ -170,8 +191,11 @@ class Adapter:
                 for v in modes.values()
             ):
                 raise RuntimeError("MATCHING_API_ERROR")
+            self.component = "worker_after_matching"
             drain_owned(self.engine, self.org, self.env, self.api)
+            self.component = "cases"
             cases, evidence, investigations = self.case_observations(requested, observed_docs)
+            self.component = "financial_verification"
             finance_status = self.api.request("GET", "/finance/journals").status_code
             after = rows(self.engine)
             if (
@@ -208,8 +232,11 @@ class Adapter:
                     for kind, values in plan[2].items()
                 },
             }
+            self.component = "persist_observations"
             raw = canonical(observations)
             self.save(stage_dir / "observations.json", raw)
+            retained_raw = raw
+            self.component = "project_response"
             response.update(
                 raw_observation_sha256=sha(raw),
                 capabilities={
@@ -263,6 +290,7 @@ class Adapter:
             }
             if len(canonical(response)) + 1 > MAX_RESPONSE:
                 raise RuntimeError("RESPONSE_LIMIT")
+            self.component = "persist_response"
             self.save(stage_dir / "response.json", canonical(response))
             self.requests[request_id] = (stage.digest, response)
             self.snapshots[snapshot_id] = request_id
@@ -277,11 +305,22 @@ class Adapter:
                 failed_check if failed_check == "FAIL" else ("NOT_EVALUABLE")
             )
             response["elapsed_ns"] = time.perf_counter_ns() - started
+            failure_diagnostic = diagnostic(exc, self.component)
             response["api_observations"] = {
-                "error": type(exc).__name__,
+                "error": failure_diagnostic["exception_type"],
+                "diagnostic": failure_diagnostic,
+                "artifact_storage": {
+                    "used_bytes": self.artifact_bytes,
+                    "limit_bytes": MAX_ARTIFACT_BYTES,
+                    "failure_reserve_bytes": min(FAILURE_RESERVE_BYTES, MAX_ARTIFACT_BYTES // 16),
+                },
                 "disposition": "DISCARD_DATABASE_NO_RESUME",
                 "recent_http": [
-                    {k: call[k] for k in ("method", "path", "status")}
+                    {
+                        "method": call["method"],
+                        "route": route(call["path"]),
+                        "status": call["status"],
+                    }
                     for call in (self.api.calls[calls_start:][-8:] if analysis_started else [])
                 ],
             }
@@ -289,17 +328,50 @@ class Adapter:
                 failure = canonical(
                     {
                         "request": stage.request,
-                        "manifest": stage.manifest,
-                        "response": response,
+                        "source_manifest": stage.manifest,
+                        "failure": failure_diagnostic,
+                        "complete": False,
+                        "financial_mutation_check": response["financial_mutation_check"],
                         "calls": self.api.observations if analysis_started else [],
                     }
                 )
                 try:
-                    self.save(self.output / (request_id + ".failure.json"), failure)
-                    response["raw_observation_sha256"] = sha(failure)
-                except (OSError, RuntimeError):
-                    print("Private failure provenance unavailable", file=sys.stderr)
-            print("Chronological stage failed: " + type(exc).__name__, file=sys.stderr, flush=True)
+                    if stage_dir is None:
+                        directory = self.output / request_id
+                        directory.mkdir(exist_ok=False)
+                        stage_dir = directory
+                    if retained_raw is None:
+                        self.save(stage_dir / "observations.json", failure, emergency=True)
+                        retained_raw = failure
+                    stored = (stage_dir / "observations.json").read_bytes()
+                    if stored != retained_raw:
+                        raise OSError("Retained observation integrity failure")
+                    response["raw_observation_sha256"] = sha(stored)
+                    response["api_observations"]["raw_provenance"] = "RETAINED"
+                    try:
+                        self.save(
+                            stage_dir / "failure.json",
+                            canonical(failure_diagnostic),
+                            emergency=True,
+                        )
+                        self.save(stage_dir / "response.json", canonical(response), emergency=True)
+                    except (OSError, RuntimeError):
+                        # The already verified raw observations are still retained.
+                        pass
+                except (OSError, RuntimeError) as retention_error:
+                    response["api_observations"]["raw_provenance"] = "UNAVAILABLE"
+                    failure_diagnostic["retention_failure"] = diagnostic(
+                        retention_error, "failure_provenance"
+                    )
+            else:
+                response["api_observations"]["raw_provenance"] = "UNAVAILABLE"
+            print(
+                canonical(
+                    {"event": "chronological_stage_failed", "diagnostic": failure_diagnostic}
+                ).decode("utf-8"),
+                file=sys.stderr,
+                flush=True,
+            )
             return response
 
     def case_observations(self, receipts, documents):
@@ -313,6 +385,7 @@ class Adapter:
                 continue
             identifier = case["id"]
             if case["is_stale"]:
+                self.component = "case_refresh"
                 refreshed = self.api.request(
                     "POST",
                     f"/cases/{identifier}/refresh",
@@ -325,6 +398,7 @@ class Adapter:
                 case = self.api.get(f"/review/cases/{identifier}")
             cases.append(case)
             if case["customer_id"] is not None:
+                self.component = "evidence_query"
                 query = self.api.request(
                     "POST",
                     f"/cases/{identifier}/evidence/search",
@@ -339,9 +413,11 @@ class Adapter:
                 if query.status_code != 200:
                     raise RuntimeError("EVIDENCE_API_ERROR")
                 evidence.append(query.json())
+            self.component = "claim_read"
             claims = self.api.collection(f"/review/cases/{identifier}/claims")
             for start in range(0, len(claims), 10):
                 current = self.api.get(f"/review/cases/{identifier}")
+                self.component = "investigation_start"
                 run = self.api.request(
                     "POST",
                     f"/cases/{identifier}/investigations",
@@ -354,7 +430,9 @@ class Adapter:
                 )
                 if run.status_code != 200:
                     raise RuntimeError("INVESTIGATION_API_ERROR")
+                self.component = "investigation_worker"
                 drain_owned(self.engine, self.org, self.env, self.api)
+                self.component = "investigation_read"
                 investigations.append(
                     {
                         "run": self.api.get(f"/investigations/{run.json()['id']}"),
@@ -391,6 +469,7 @@ def main():
             "local-data/chronological-evaluations/" + __import__("uuid").uuid4().hex,
         ),
     )
+    exit_code = 0
     try:
         while True:
             line = sys.stdin.buffer.readline(MAX_WIRE + 1)
@@ -403,11 +482,31 @@ def main():
             sys.stdout.write(canonical(response).decode("utf-8") + "\n")
             sys.stdout.flush()
     except Exception as exc:
-        print("Protocol rejected: " + type(exc).__name__, file=sys.stderr)
-        return 2
+        print(
+            canonical(
+                {
+                    "event": "chronological_protocol_failed",
+                    "diagnostic": diagnostic(exc, "protocol"),
+                }
+            ).decode(),
+            file=sys.stderr,
+        )
+        exit_code = 2
     finally:
-        adapter.close()
-    return 0
+        try:
+            adapter.close()
+        except Exception as exc:
+            print(
+                canonical(
+                    {
+                        "event": "chronological_shutdown_failed",
+                        "diagnostic": diagnostic(exc, "shutdown"),
+                    }
+                ).decode(),
+                file=sys.stderr,
+            )
+            exit_code = 2
+    return exit_code
 
 
 if __name__ == "__main__":

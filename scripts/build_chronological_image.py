@@ -11,6 +11,7 @@ SCRIPTS = (
     "chronological_adapter.py",
     "chronological_host.py",
     "chronological_protocol.py",
+    "chronological_diagnostics.py",
     "application_eval_host.py",
     "application_eval_runtime.py",
     "application_eval_inputs.py",
