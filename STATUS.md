@@ -1,5 +1,34 @@
 # Build status
 
+## Controlled Gemini campaign — preflight blocked, 2026-10-27 (IST)
+
+User authorized cumulative300 paise, prior51 reserved, at most10 new generations
+including retries at17 each (maximum cumulative221). Current account quota remains
+unverified: earlier AI Studio15 RPM/250000 TPM/500 RPD usage0 predates subsequent
+calls and cannot establish current shared usage. Requested fresh same-project tier/
+limits/remaining usage, never a key/project identifier. No Gemini generation, model
+lookup or token-count request executed.51 reserved remains unchanged;249 unreserved.
+Public official model pricing reviewed (USD0.25/1.50 per million text tokens, free-tier
+input/output listed free); fresh FX and live model checks deferred until quota gate.
+Campaign stages NOT EXECUTED. No driver/framework or financial/backend change.
+Detailed blocker/approved budget arithmetic: docs/LIVE_GEMINI_EVALUATION.md.
+
+Actual targeted command: `.venv/Scripts/python.exe -m pytest
+tests/test_live_gemini_runner.py
+tests/test_live_gemini_preflight.py::test_reduced_profile_reserves_less_than_one_rupee_for_five_attempts
+tests/test_live_gemini_preflight.py::test_approved_prose_has_exact_reviewed_privacy_projection
+-q --tb=short --basetemp=local-data/pytest-campaign-preflight-20261027a`:
+**8 passed in2.21s**. Initial default-temp run6 passed/2 sandbox temp-directory
+errors; fresh workspace-local basetemp resolved it without test changes. Log:
+`local-data/gemini-campaign-preflight-checks.log`. Ruff check and format --check on
+scripts/live_gemini_smoke.py, src/clearledger/gemini_worker.py and
+src/clearledger/provider_diagnostics.py passed (3 files formatted).
+Installed SDK explicit attempts1 and application attempts1 reviewed; no hidden retries
+enabled. Settings inspection confirmed extraction disabled and both external AI flags
+false. Existing key/project/model/billing unchanged. No private inputs, benchmark,
+full regression suite, Docker rebuild or financial operation. Documentation-only
+checkpoint follows; campaign remains blocked rather than claimed complete. No push.
+
 ## Final authorized Gemini compatibility verification — 2026-10-27 (IST)
 
 Inspected installed google-genai2.33.0 APIError: numeric `.code` and structured

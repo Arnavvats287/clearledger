@@ -1,5 +1,50 @@
 # Live Gemini extraction evaluation
 
+## Controlled diagnostic campaign — preflight blocked, 2026-10-27 (IST)
+
+New explicit authorization raises the cumulative conservative ceiling to300 paise,
+with51 previously reserved. At most10 additional generation attempts, including all
+retries, may reserve at most17 each: maximum new170, cumulative221, leaving at least79
+if all10 run. **No additional attempt or Gemini metadata/token request was executed.**
+The existing51-paise reservation remains unchanged;249 paise are unreserved under
+the new ceiling. Authorization alone is not a measurement of current account quota.
+
+Public [official pricing](https://ai.google.dev/gemini-api/docs/pricing) was reviewed:
+gemini-3.1-flash-lite standard text USD0.25 input/1.50 output per million, free-tier
+input/output shown free. Existing conservative INR110/USD plus20% contingency gives
+3300/19800 paise per million and ceil17 for2048 input/512 output tokens, including
+thinking in the output cap. A fresh FX check and actual key/model lookup remain
+pending; neither pricing availability nor a prior successful lookup proves account
+tier or remaining quota. No billing/key/project/model setting was changed.
+
+**Blocking gate:** current project-specific remaining requests are not established.
+The earlier operator confirmation15 RPM/250000 input TPM/500 RPD with usage0 predates
+subsequent calls and does not establish current shared usage. Google's
+[rate-limit documentation](https://ai.google.dev/gemini-api/docs/rate-limits) directs
+active-limit checks to AI Studio; limits apply per project and RPD resets at Pacific
+midnight. No account-usage dashboard or quota credential is available to this runner.
+Requested fresh safe fields only: same-project Free tier, RPM, input TPM, RPD and
+remaining daily requests/today's usage. Never requested key or project identifiers.
+Until confirmed, the campaign is stopped before provider calls, not a provider failure.
+
+Offline review verified installed SDK2.33's explicit HttpRetryOptions(attempts=1)
+and the existing application's LLM_ATTEMPTS=1 prevent hidden transport/gateway retries.
+Any resumed matrix needs a single sequential caller, an explicit shared attempt ledger,
+pre-call reservation/counting, bounded503/429 backoff and no unchanged400 retry.
+No campaign driver or new testing framework was introduced while its prerequisite
+is blocked. Matrix stages1–6, model access, live token usage/cost and correctness are
+**NOT EXECUTED / NOT EVALUATED**; the previous503 result remains historical.
+
+Approved PROSE privacy projection and unchanged token reservation passed targeted
+offline tests together with six runner refusal/sanitized metadata-error cases:
+**8 passed in2.21s**. The initial sandbox default-temp run had6 passes/2 temporary-
+directory errors; rerunning with a fresh workspace-local basetemp fixed infrastructure
+only, without changing assertions. Log: `local-data/gemini-campaign-preflight-checks.log`.
+Ruff lint/format on the existing runner, transport worker and diagnostics passed.
+Persistent settings verified: extraction_provider=disabled, external_ai_enabled=false,
+investigation_external_enabled=false. No financial/benchmark/customer-data operation,
+full suite, Docker build or external AI call occurred in this preflight-only task.
+
 ## Final authorized compatibility attempt — 2026-10-27 (IST)
 
 **FAILED: CONTENT_GENERATION / HTTP_API / HTTP503 / provider status UNAVAILABLE.**
