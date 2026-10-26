@@ -1,5 +1,47 @@
 # Build status
 
+## One authorized diagnostic Gemini retry — 2026-10-26 (IST)
+
+Executed exactly one additionally authorized attempt on the existing synthetic
+PROSE fixture using the updated isolated worker diagnostics. No automatic retry,
+additional document, financial/billing operation, external investigation or benchmark
+access. New maximum reservation17 paise, within the remaining83. Preflight rechecked
+official pricing (unchanged USD0.25/1.50 per million), actual ECB FX2026-10-26
+INR/USD95.18546657132642116553450125, exact key/model availability and the already
+approved exact privacy projection. Used operator-confirmed15 RPM/250000 TPM/500 RPD
+and conservative remaining496 (at most four prior-attempt HTTP operations deducted).
+Quota source/limits are disclosed in `docs/LIVE_GEMINI_EVALUATION.md`, not claimed
+as a fresh dashboard query or independent observation of unrelated project activity.
+
+Actual command: `.venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py
+--authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 496`.
+**FAILED: CONTENT_GENERATION / HTTP_API / provider HTTP400.** Code order shows worker
+model lookup and token-count checks passed; exact generation rejection reason unknown
+(provider bodies deliberately not retained). No retrospective attribution of the
+earlier generic23.62-second failure. Outer API200 is a FAILED result envelope.
+Latency3.407971500s (internal3381ms), attempts1, result{}, no references/amounts/citations.
+Accuracy, hallucinations, citation quality NOT EVALUABLE. Token usage and actual
+estimated spend UNKNOWN/null; conservatively consume17 paise. Total reservations34,
+remaining66 paise of original100. No refund assumption and no further call authorized.
+
+Actual records unchanged by extraction; financial fingerprint PASS, human review true,
+financial authority false. Fresh disposable PostgreSQL upgraded to head/checked and
+cleaned. In-memory settings/key/gateway cleared; persistent .env external extraction
+and investigation enablement reverified disabled. No key/prompt/body/URL diagnostics
+emitted, no key committed. No source changes or financial semantics modified.
+
+Private log:`local-data/live-gemini-diagnostic-retry.log`; real sanitized observations:
+`local-data/live-gemini/69d7bf1eb98b489c957b31b4ce34dafc/observations.json`. Process exit1
+correctly denotes failure, not a verification failure concealed as success.
+Targeted pytest: `tests/test_live_gemini_runner.py`,
+`tests/test_live_gemini_preflight.py::test_reduced_profile_reserves_less_than_one_rupee_for_five_attempts`,
+`tests/test_live_gemini_preflight.py::test_approved_prose_has_exact_reviewed_privacy_projection`:
+**6 passed in1.74s**, log `local-data/gemini-retry-preflight-checks.log`.
+Ruff lint/format on runner/gemini_worker/extraction_provider/provider_diagnostics and
+Git whitespace checks PASS. No full suite, Docker rebuild, restart or independent
+evaluation run. `docs/LIVE_GEMINI_EVALUATION.md` updated with precise result and limits;
+local checkpoint recorded in follow-up status commit, no push.
+
 ## Offline Gemini phase diagnostics — 2026-10-26 (IST)
 
 Verified implementation checkpoint: `9099b9b2d2f4b29ecf87aad444cfeb5911b1c3a5`.

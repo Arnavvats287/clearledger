@@ -1,5 +1,71 @@
 # Live Gemini extraction evaluation
 
+## Exactly one authorized diagnostic retry — 2026-10-26 (IST)
+
+**FAILED at CONTENT_GENERATION; HTTP_API; provider HTTP400. No further attempt.**
+This is an actual isolated Gemini SDK-path result, not a mocked diagnostic. The
+generation request was rejected; no valid extraction was returned. The exact
+rejected field/reason is unknown because response bodies/messages are not retained.
+This establishes this retry's failure boundary, not the cause of the original
+23.62-second failure, whose historical evidence remains insufficient.
+
+Preflight passed again: exact model metadata accessible to the configured key;
+official standard text prices unchanged (USD0.25 input/1.50 output per million,
+including thinking); ECB2026-10-26 INR/USD95.18546657132642116553450125. Same
+conservative110 conversion plus20% contingency,2048/512 token caps and17-paise
+maximum new reservation. Used the user's confirmed15 RPM/250000 input TPM/500 RPD
+Free-tier limits, subtracting at most four prior-attempt HTTP operations from the
+previously reported0/500 usage:remaining-rpd496. This is a conservative bound from
+operator-supplied quotas/known application activity, not a new dashboard observation
+or a guarantee against unrelated project traffic. At most four HTTP operations in
+this invocation (standalone metadata plus worker get/count/generate) fit the limits.
+No billing change. Same existing approved PROSE/privacy projection only; no real data.
+
+Actual command, executed once:
+
+```powershell
+.venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py --authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 496
+```
+
+| Requested measurement | Actual result |
+|---|---|
+| Extraction status | FAILED; PROVIDER_FAILED; one attempt |
+| Invoice reference / deduction amount | None returned |
+| Citation validity / unsupported claims | NOT EVALUABLE; no output, not a zero-hallucination claim |
+| Diagnostic phase | CONTENT_GENERATION |
+| Exception category / provider HTTP status | HTTP_API /400 |
+| Outer application HTTP status | 200 failure-result envelope; not model success |
+| End-to-end extraction latency | 3.407971500 seconds |
+| Recorded internal latency | 3381 ms |
+| Input/output/total usage and actual estimated cost | UNKNOWN/null; usage_complete=false |
+| New conservative reservation consumed | 17 paise; no refund assumed |
+| Cumulative conservative reservation / remaining budget | 34 /66 paise of original100 |
+| Human review / financial authority | Required /false |
+| Financial state / database cleanup | Fingerprint unchanged /disposable DB cleaned |
+
+Code order plus the phase diagnostic establishes that worker model lookup and
+token-count validation completed before generation was attempted. The precise
+token count was not retained on failure; no exact token usage is invented. No
+extra call was made to retrieve a provider body, investigate a rejected field,
+retry or send another document. No assertion that the schema, quota, authentication
+or a particular generation parameter caused HTTP400 is supported by retained data.
+Payment totals remain unsupported by the extraction schema. Across the two live
+attempts there are0 valid returned extractions; this measures pipeline availability,
+not model extraction accuracy.
+
+Private sanitized observation:
+`local-data/live-gemini/69d7bf1eb98b489c957b31b4ce34dafc/observations.json`;
+log:`local-data/live-gemini-diagnostic-retry.log`. Runner exited1 as expected on
+failed extraction. In-memory enablement/key/gateway cleared; persistent extraction
+and external-investigation settings rechecked disabled. No financial operations,
+billing enablement, external investigations, customer communication, benchmark or
+sealed-evaluation changes. This authorization is consumed; no further call implied.
+
+Targeted preflight: six offline launcher/budget/privacy checks passed in1.74s;
+Ruff lint/format on runner and diagnostic transport modules passed. No source code
+change, full regression, Docker rebuild or additional provider call. Reports/status
+only committed; checkpoint in STATUS.md. Earlier history below is preserved.
+
 ## Offline failure-diagnostic hardening — 2026-10-26 (IST)
 
 No external calls were made in this follow-up: no metadata, token counting,
