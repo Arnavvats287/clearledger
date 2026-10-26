@@ -45,7 +45,8 @@ Log local-data/gemini35-verification-final.log. Ruff check and format --check on
 13/22/25/34/35 passed as the diagnosis/contract evolved; no failed assertion removed.
 Existing negative span/page/amount/authority cases retained; added outside-claim and
 zero-page cases. No claim that the live whole-fixture expectation passed.
-Verified local checkpoint recorded in a follow-up status commit.
+Verified implementation/result checkpoint: `fba9635e20b3d046613a689797c41d60bcbe5f98`.
+Recorded in this follow-up status commit; no push.
 No full suite, restart, Docker, new milestone or push. This checkpoint records actual
 partial AI success plus remaining quality failure, not production readiness.
 
