@@ -73,8 +73,12 @@ private benchmark access or remote push occurred.
 Reviewed eight intended files: adapter/host, new diagnostics helper and 13-case test
 module, explicit build/preflight allowlist additions, chronological contract and STATUS.
 Source seals, staged credential checks and whitespace/scope review passed; no executable
-changes followed final verification. Completion hash is recorded by the documentation
-follow-up. The underlying stage-41 cause and independent-operator acceptance remain
+changes followed final verification. Verified implementation checkpoint:
+**`c0e170dcbc22c9d1279f47bb9ca91ce7f2900712`**, message
+`fix: retain chronological failure provenance and safe diagnostics`. All eight intended
+files were reviewed and required checks passed before commit; working tree was clean.
+This documentation-only follow-up records its hash. No push. The underlying stage-41
+cause and independent-operator acceptance remain
 unverified: synthetic reproductions establish handling defects, not private incident facts.
 
 ## Narrow isolated-mode Docker startup fix — 2026-10-26 (IST)
