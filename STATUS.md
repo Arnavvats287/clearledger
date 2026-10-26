@@ -1,5 +1,44 @@
 # Build status
 
+## Expanded Gemini diagnostics — sustained provider-path failure, 2026-10-27 (IST)
+
+User reconfirmed Free-tier project15 RPM/250000 input TPM/500 RPD, observed peaks
+1/163/3 (not exact remaining), authorized20 new generations and500 cumulative paise.
+Previous51 reserved; max17/new attempt. Public Google standard text pricing rechecked
+USD0.25/1.50 per million incl thinking, free tier listed free. ECB2026-10-26 FX
+INR/USD95.18546657132642116553450125 passed buffer110 plus20% contingency. Same
+key/model lookup and complete-request token count13 passed. Privacy: only `Reply
+with exactly OK.` and fixed text-only system instruction transmitted; no PROSE,
+customer data, finance policy, database credentials or tools. Billing/key unchanged.
+
+Executed once: `.venv/Scripts/python.exe -X utf8 scripts/diagnose_gemini.py
+--authorized-live --stage 1`. Three counted generations: CONTENT_GENERATION/HTTP_API
+503 UNAVAILABLE (7.965648400s),503 UNAVAILABLE (1.480382300s),504 DEADLINE_EXCEEDED
+(14.535045100s). SDK attempts1, one caller, all SDK starts spaced5.1s, bounded2/4s
+transient backoff; no hidden retries/unchanged400. **STOPPED: sustained minimal plain-
+text provider-path failure.** No JSON/schema constraints involved; no proof old400
+fixed or global Google outage. Underlying service/account cause UNKNOWN. No more calls.
+New success0/3; usage/actual cost UNKNOWN.17 each reserved, new51/cumulative102,
+remaining398 of500. Stages2–6/additional fixtures NOT EXECUTED; no application or
+database/finance mutation, claim/citation/persistence accuracy NOT EVALUABLE. Frozen
+baseline untouched. Full report: docs/LIVE_GEMINI_EVALUATION.md. README updated.
+
+Added only date-bound operator-stepped scripts/diagnose_gemini.py and offline tests.
+Ledger and all observations ignored local-data; no raw error body/message persisted.
+Repeated outage, successful stage, rejected400 or uncertain prior attempt fails closed.
+No product/backend/internal schema changes. Existing actual-API runner not invoked.
+Before live13 tests passed2.36s. Final command `.venv/Scripts/python.exe -m pytest
+tests/test_gemini_campaign.py tests/test_live_gemini_runner.py
+tests/test_live_gemini_preflight.py::test_reduced_profile_reserves_less_than_one_rupee_for_five_attempts
+tests/test_live_gemini_preflight.py::test_approved_prose_has_exact_reviewed_privacy_projection
+-q --tb=short --basetemp=local-data/pytest-campaign-20261027d`:13 passed2.52s.
+Initial offline4 failures/9 passes exposed Windows lock unlink while open; fixed
+close-before-unlink and reran successfully before live. Final log:
+local-data/gemini-campaign-offline-final.log. Ruff lint/format passed. No full suite,
+Docker, restart or benchmark. Settings confirmed extraction disabled, external AI
+false and external investigation false; .env untouched. Local checkpoint follows;
+not a successful end-to-end AI claim, and no push.
+
 ## Controlled Gemini campaign — preflight blocked, 2026-10-27 (IST)
 
 User authorized cumulative300 paise, prior51 reserved, at most10 new generations

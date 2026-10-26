@@ -1,5 +1,86 @@
 # Live Gemini extraction evaluation
 
+## Expanded campaign — sustained minimal-generation failure, 2026-10-27 (IST)
+
+This supersedes the earlier quota-blocked campaign below. Operator reconfirmed the
+same Free-tier project:15 RPM (observed peak1),250000 input TPM (peak163),500 RPD
+(displayed peak3). This is explicitly a peak view, **not497 guaranteed remaining**.
+Authorization increased to500 paise cumulative and20 NEW generations including
+retries. Prior conservative reservations51; each new reservation17. Even all20 would
+reserve391 cumulative, below500; billing/account/key/model changes remain prohibited.
+
+Official [pricing](https://ai.google.dev/gemini-api/docs/pricing) rechecked before calls:
+standard text USD0.25 input/1.50 output per million including thinking; free-tier
+input/output listed free. ECB latest2026-10-26 INR/USD95.18546657132642116553450125
+passed the freshness/INR110 buffer gate. Conservative rates3300/19800 paise per
+million include20% contingency. Input cap2048/output512 reserves ceil16.896=17 paise.
+Same-key lookup confirmed exact gemini-3.1-flash-lite with generateContent and
+adequate limits. No model switch, key rotation, billing enablement or project change.
+
+Only the literal `Reply with exactly OK.` and system instruction `Return only the
+requested text.` left the machine for generation. No remittance/customer document,
+database URL, finance policy, private mapping or tool was sent. The unchanged approved
+PROSE projection was independently checked offline but was **not transmitted**, since
+stage1 never passed. Client tools=[] and automatic_function_calling disabled. SDK
+HttpRetryOptions(attempts=1); one sequential caller; each generation reserved before
+network, including transient retries. All model/count/generation operations spaced
+by at least5.1 seconds (under12 starts/minute), with extra bounded2/4-second backoff.
+Even conservatively charging input for metadata/count operations stays below250000
+TPM. Project-wide concurrent use remains outside the local script's control; errors
+are authoritative backpressure, not permission to exhaust the Free-tier allowance.
+
+Actual command (once): `.venv/Scripts/python.exe -X utf8 scripts/diagnose_gemini.py
+--authorized-live --stage 1`. Lookup and complete-request token count passed (13
+tokens). No raw provider error message/body/URL is stored. Results:
+
+| New attempt | Stage | Outcome | Safe phase/category | Provider latency | Reserved |
+|---|---|---|---|---|---|
+|1|Minimal plain text|HTTP503 / UNAVAILABLE|CONTENT_GENERATION / HTTP_API|7.965648400s|17 paise|
+|2|Same, bounded transient retry|HTTP503 / UNAVAILABLE|CONTENT_GENERATION / HTTP_API|1.480382300s|17 paise|
+|3|Same, bounded transient retry|HTTP504 / DEADLINE_EXCEEDED|CONTENT_GENERATION / HTTP_API|14.535045100s|17 paise|
+
+**Stopped on sustained provider-path failure; no more live calls.** Generation success
+0/3 new attempts. This is reproducible with a13-token prompt without JSON MIME/schema
+constraints; it establishes unavailability/timeouts on this key/model path, **not a
+proven global Google outage or a specific cause of the old HTTP400**. Exact provider
+service/account reason UNKNOWN; error bodies are intentionally excluded. No unchanged
+HTTP400 was retried. All three operations returned explicit safe provider errors;
+there is no inferred successful output.
+
+Stages2–6 (free-form, JSON MIME, minimal schema, full provider schema, actual-API
+persistence) **NOT EXECUTED**, since stage1 does not support advancing. Invoice/claim
+accuracy, citations, unsupported fields and human-review persistence NOT EVALUABLE
+for this campaign. No extraction fact was created or finance endpoint invoked; no
+database was created or modified. Financial controls were untouched, rather than
+claiming a fingerprint test for an API path never reached. Live extraction accuracy
+remains unestablished. Additional prose fixtures were not attempted.
+
+Provider-reported generation usage and actual estimated spend **UNKNOWN**, not zero;
+preflight count13 is not billable usage. New conservative reservations51, cumulative
+102 paise, unreserved398 of500. Three of20 new attempts consumed; no authorization
+to continue around the sustained-failure stop is implied. Six real generation
+attempts have now failed across all historical tasks. Frozen benchmark untouched.
+
+Minimal date-bound diagnostic script reuses installed SDK/privacy/schema/diagnostic
+helpers; stages are operator-stepped and prior-stage-gated, not autonomous agents.
+Its local single-caller ledger reserves uncertain attempts without refund; rerunning
+an established three-failure outage, successful stage or unchanged400 is refused
+before key access. The existing actual-API smoke runner remains unchanged and was
+not invoked; its old one-attempt budget must not be mistaken for this campaign ledger.
+No new application capability, production transport or generalized framework added.
+
+Ignored local records: `local-data/gemini-campaign-20261027/ledger.json`,
+`local-data/gemini-campaign-stage1.log`; successful synthetic model text would remain
+local, never provider error bodies. Before live:13 offline checks passed in2.36s.
+Final focused run:13 passed in2.52s, including repeat-outage/400/success refusal,
+SDK retry count1, canary non-leakage, MIME-only then schema-only variation, exact
+approved projection and budget arithmetic. First implementation test run caught a
+Windows open-lock unlink error (4 failures/9 passes); close-before-unlink fixed it,
+then all tests passed **before live calls**. No assertion relaxed. Final log:
+`local-data/gemini-campaign-offline-final.log`. Ruff lint/format passed; no full suite,
+Docker rebuild or benchmark. Persistent extraction/external-investigation switches
+verified disabled; no .env edits. No live-call retry after the three failures.
+
 ## Controlled diagnostic campaign — preflight blocked, 2026-10-27 (IST)
 
 New explicit authorization raises the cumulative conservative ceiling to300 paise,
