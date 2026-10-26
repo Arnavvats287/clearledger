@@ -2,6 +2,8 @@
 
 ## Offline Gemini phase diagnostics — 2026-10-26 (IST)
 
+Verified implementation checkpoint: `9099b9b2d2f4b29ecf87aad444cfeb5911b1c3a5`.
+
 **No external API/metadata/generation/pricing/FX request in this task.** Existing
 23.62s PROVIDER_FAILED evidence still does not establish the failing phase, provider
 HTTP status or whether generation was reached. No historical result was rewritten
