@@ -1,5 +1,13 @@
 # Director–Investigator contract v1
 
+Correlation confirmation now triggers the existing affected-claim scheduler. In a
+known correlated scope, UNCERTAIN_EXTRACTION may retrieve independent read-only
+evidence and retain rechecked citations; the verifier and consistency layer still
+require insufficient/review while uncertainty remains. Source revisions invalidate
+stale associations/findings; a fresh verified association can supersede historic
+stale links without deleting history. [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md)
+defines the new nonfinancial task/decision boundary. No external model is enabled.
+
 ## Optional first investigation from validated extraction (2026-10-27)
 
 Validated document extraction already atomically publishes document/outbox events;

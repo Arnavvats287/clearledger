@@ -53,6 +53,8 @@ from clearledger.remittance_parser import structured
 
 
 def view(session, org, case, store, requested=None):
+    from clearledger.correlation_sources import accepted_invoices
+
     case = root(session, org, case.id)
     ids = members(session, org, case)
     current = digest(current_context(session, org, case, store))
@@ -71,7 +73,10 @@ def view(session, org, case, store, requested=None):
         attention_codes=case.attention_codes,
         receipt_ids=[r.receipt_id for r in group_rows(session, CaseReceipt, org, ids)],
         document_ids=[r.document_id for r in group_rows(session, CaseDocument, org, ids)],
-        invoice_ids=sorted({r.invoice_id for r in group_rows(session, CaseInvoice, org, ids)}),
+        invoice_ids=sorted(
+            {r.invoice_id for r in group_rows(session, CaseInvoice, org, ids)}
+            | accepted_invoices(session, org, ids)
+        ),
         claimed_total_paise=total,
         unknown_amount_count=unknown,
         verified_settled_paise=settled_claims(

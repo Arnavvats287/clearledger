@@ -1,5 +1,9 @@
 # API contracts and state machines (target, evolve via migrations)
 
+Post-M09 correlation review adds immutable pending/source-snapshot tasks and terminal
+CONFIRM/REJECT decisions through existing review roles. No financial state transition
+is inferred. Task/API/currentness and frontend integration: [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md).
+
 Milestone 04's separate authenticated `/documents` ingestion/read/extract/span/correlation APIs and strict versioned schema are defined in [DOCUMENTS.md](DOCUMENTS.md). Document parse states are READY/NEEDS_OCR/PARSE_FAILED; immutable extraction runs are SUCCEEDED/NEEDS_REVIEW/FAILED/BLOCKED; immutable associations are LINKED/CANDIDATES/UNRESOLVED/SEARCH_INCOMPLETE with computed staleness. These extraction/association metadata operations never mutate financial balances, approvals or posting. Milestone 05 consumes their committed events separately into versioned case/claim review metadata. "Linked" confirms only the locally attested reference association; schema success never grants authenticity or financial authority. Existing financial CSV and matching APIs are unchanged.
 
 Milestone 02's implemented verification, matching and stale-snapshot endpoints are specified in [MATCHING.md](MATCHING.md). They create proposals only; exact matching does not enable the later allocation/posting transitions below.

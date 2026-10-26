@@ -114,6 +114,7 @@ def deliver(engine, org, identifier, token, settings):
                 return "SUPERSEDED"
             event = owned(session, DomainEvent, org, row.event_id)
             if scoped(session, EventConsumption, org, event_id=event.id, consumer=CONSUMER) is None:
+                session.info["source_correlation_settings"] = settings
                 result = consume(
                     session, org, event, settings, LocalOriginals(settings.document_root)
                 )

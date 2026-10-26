@@ -58,6 +58,16 @@ def proposal_current(session, org, proposal, settings):
 
 
 def association_current(session, org, association, store):
+    if association.inputs.get("algorithm") == "source-correlation-v1":
+        from clearledger.correlation_sources import context
+
+        settings = session.info.get("source_correlation_settings")
+        if settings is None:
+            return False
+        extraction = owned(session, DocumentExtraction, org, association.extraction_id)
+        return (
+            digest(context(session, org, extraction, settings, store)) == association.input_sha256
+        )
     doc = owned(session, Document, org, association.document_id)
     extraction = owned(session, DocumentExtraction, org, association.extraction_id)
     inputs, _, _, _ = association_context(
@@ -153,6 +163,8 @@ def current_context(session, org, case, store):
             }
         )
     invoices = []
+    from clearledger.correlation_sources import accepted_invoices
+
     for link in group_rows(session, CaseInvoice, org, ids):
         invoice = owned(session, Invoice, org, link.invoice_id)
         invoices.append(
@@ -165,6 +177,21 @@ def current_context(session, org, case, store):
                 "source": invoice.payload_sha256,
             }
         )
+    # Preserve legacy context ordering/hashes when there are no new correlation links.
+    existing_ids = {i["id"] for i in invoices}
+    for invoice_id in sorted(accepted_invoices(session, org, ids)):
+        if str(invoice_id) not in existing_ids:
+            invoice = owned(session, Invoice, org, invoice_id)
+            invoices.append(
+                {
+                    "id": str(invoice.id),
+                    "customer": str(invoice.customer_id),
+                    "version": invoice.version,
+                    "open_paise": invoice.open_amount_paise,
+                    "status": invoice.status,
+                    "source": invoice.payload_sha256,
+                }
+            )
     context = {
         "receipts": receipts,
         "documents": docs,

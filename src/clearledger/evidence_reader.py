@@ -65,6 +65,7 @@ def masked(text_value):
 
 class EvidenceReader:
     def __init__(self, session, org, settings):
+        session.info["source_correlation_settings"] = settings
         if (
             not session.info.get("evidence_readonly")
             or session.scalar(text("SHOW transaction_read_only")) != "on"

@@ -1,5 +1,11 @@
 # Persistent deduction cases — contract v1.0
 
+Source-backed correlation tasks and controller decisions now bridge document and
+receipt cases using existing monotonic merges and reevaluation, without manual claim
+recreation or fabricated matching proposals. Independent source verification is
+required even for a controller. New default-off option, scoped immutable provenance,
+frontend APIs and unsupported cases: [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md).
+
 Post-M09 extraction automation is an opt-in scheduling extension, not a case-state
 or finance change. Existing committed extraction events already create source-linked
 claims, including validated NEEDS_REVIEW facts. CASE_AUTO_INVESTIGATE_EXTRACTIONS

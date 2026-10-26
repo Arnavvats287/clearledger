@@ -1,5 +1,88 @@
 # Build status
 
+## Source-backed automatic exception investigation — 2026-10-27 (IST)
+
+Offline follow-up from c7422da. Zero Gemini calls;229-paise remaining authorization
+unchanged. No benchmark, pilot, hidden-answer, financial-rule or credential changes.
+Default-off CASE_AUTO_CORRELATE_EXTRACTIONS extends the existing validated extraction
+-> transactional outbox -> case/ClaimSource path. Bounded independent authenticated
+remittance proofs validate originals/canonical spans, versions, chronology, UTR,
+bank import provenance, resolved receipt customer and eligible invoice/receipt state.
+No source proof is manufactured from model fields, names or local operator labels.
+
+Immutable source-snapshot tasks give precise missing/conflicting/ambiguous/incomplete
+review actions. Controller CONFIRM/REJECT uses the existing trusted ReviewIdentity
+boundary, current grants and company lock, expected case/context/task versions and
+request idempotency. Manual proposers cannot confirm their own task. Absent proof
+cannot be overridden by controller status; local demo authority remains nonfinancial.
+One accepted association links existing receipt/invoice/document cases without
+fabricating a matching proposal or duplicating claims. Existing LangGraph scheduling
+runs/refreshed on merge and relevant source changes. Uncertain extractions can retrieve
+independently rechecked citations but retain insufficient-evidence/human-review status.
+Stale trust/source/input snapshots invalidate associations and findings. Unchanged
+source/retry/outbox events do not duplicate tasks, decisions or investigations.
+
+Additive migration0012_correlation creates two tenant-scoped immutable tables with
+unique snapshot/decision/request keys, extraction-document composite FK and deferred
+case/association/role guards. Tested disposable roundtrip retains imported finances;
+no shared development database upgrade, downgrade, reset or restart was performed.
+Apply `uv run --frozen alembic upgrade head` before enabling this workflow there.
+Strict JSON refresh uses `{}`; shared evidence request parser remains unchanged.
+
+Verification (offline, disposable PostgreSQL only):
+- Broad affected regression command: `.venv/Scripts/python.exe -m pytest
+  tests/test_correlation_workflow.py tests/test_extraction_automation.py
+  tests/test_cases.py tests/test_evidence.py tests/test_investigations.py
+  tests/test_review.py tests/test_review_security.py tests/test_review_access.py
+  tests/test_portfolio_demo.py tests/test_finance.py --require-postgres -q --tb=short
+  --basetemp=local-data/pytest-correlation-20261027d`:205 passed,1 failed in1158.83s.
+  Failure was the new refresh test sending no JSON to strict EvidenceRoute; fixed
+  typed RefreshInput and test request `{}` without relaxing the request parser.
+  All193 pre-existing affected regression tests passed in this run. Three new
+  correlation cases were added after that run collected its initial13 new cases.
+- Final new API suite on current implementation: `pytest
+  tests/test_correlation_workflow.py --require-postgres -q --tb=short
+  --basetemp=local-data/pytest-correlation-final-20261027f`:15 passed,1 failed
+  in115.10s. All source-budget, migration, concurrency and safety checks passed.
+  Newly added exact-count assertion incorrectly assumed canonical-case listing
+  includes pre-merge runs. Corrected it to assert canonical current run, original
+  run addressable/stale, and exact database total of2 immutable histories. Final
+  targeted same test:1 passed in10.63s (`pytest
+  tests/test_correlation_workflow.py::test_manual_correlation_proposer_cannot_confirm_own_task
+  --require-postgres -q --tb=short
+  --basetemp=local-data/pytest-correlation-history-20261027g`). No assertion on
+  duplicate counts was removed; all16 new cases are verified,209 distinct affected
+  tests across these runs. An earlier new-suite16/16 pass preceded that extra
+  history assertion. A direct rerun initially failed setup because shell lacked
+  TEST_DATABASE_URL; reran with ignored local connection loaded privately, never logged.
+- `.venv/Scripts/python.exe -m mypy`:22 source files, no issues.
+- Ruff check src/new test/new migration PASS; format --check all23 changed Python
+  files PASS after one blank-line/test-literal format correction. Git whitespace PASS.
+- Alembic upgrade/downgrade/upgrade/check exercised in the new disposable migration
+  test, with financial records preserved; shared DB never downgraded or touched.
+- Full verification, isolated restart and Docker rebuild were not run/requested for
+  this targeted task. No new live-model accuracy claimed; fake validated extraction
+  and original deterministic LangGraph prove this integration only.
+
+Detailed ignored logs: local-data/correlation-regressions.log,
+correlation-final-current-verified.log, correlation-history-final.log. Preliminary
+focused failures also exposed missing uncertain-extraction citations; fixed scoped
+read-only retrieval/verified pointer retention while keeping unknowns and abstention.
+Test NameErrors during expansion were fixed, not skipped. No existing tests changed.
+Local implementation/status checkpoint identifiers are recorded in a follow-up entry.
+Contracts and frontend endpoints: docs/CORRELATION_REVIEW.md. New API tests cover
+complete and uncertain investigations with source facts/citations/trace, missing,
+conflicting, ambiguous and rejected proof, late/revised evidence, idempotency,
+real concurrent sessions, proposer/checker, cross-tenant and token denials, immutable
+history, search budgets, legacy correlation bypass and financial non-mutation.
+
+Remaining scope: one document/receipt/invoice proof; multi-UTR/multi-invoice/settled
+or unauthenticated relationships remain review. Production identity/key custody (G1),
+real customer validation, semantic-v5 live model accuracy and general benchmark
+performance remain unverified. Existing immutable case merges are not reversed;
+new evidence supersedes proof/history rather than deleting records. External AI
+and both automation defaults remain false. No new framework/service/dependency.
+
 ## Reason-code semantics and first-investigation bridge — 2026-10-27 (IST)
 
 Offline task only: **zero Gemini calls**, no key/config/billing/project changes.

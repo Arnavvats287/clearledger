@@ -35,6 +35,7 @@ DB = Annotated[Session, Depends(get_session)]
 
 
 def company_scope(request: Request, session: DB) -> UUID:
+    session.info["source_correlation_settings"] = request.app.state.settings
     organization_id = request.app.state.settings.organization_id
     if (
         organization_id is None

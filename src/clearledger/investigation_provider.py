@@ -38,7 +38,9 @@ class DeterministicInvestigator:
 
     def generate(self, request):
         remaining = [t for t in request.objective.tools if t not in request.searched_tools]
-        if remaining and not request.objective.unknowns:
+        # A scoped correlated case may collect independent evidence despite extraction
+        # uncertainty. Consistency still prohibits a supported finding while it remains.
+        if remaining and not (set(request.objective.unknowns) - {"UNCERTAIN_EXTRACTION"}):
             return InvestigatorReply(action="SEARCH", tool=remaining[0])
         return InvestigatorReply(
             action="HYPOTHESIS",

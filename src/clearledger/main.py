@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from clearledger.api import router
 from clearledger.case_api import router as case_router
 from clearledger.config import Settings
+from clearledger.correlation_api import router as correlation_router
 from clearledger.db import build_engine, get_session
 from clearledger.document_api import router as document_router
 from clearledger.evidence_api import router as evidence_router
@@ -73,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(finance_router)
     app.include_router(investigation_router)
     app.include_router(review_router)
+    app.include_router(correlation_router)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:

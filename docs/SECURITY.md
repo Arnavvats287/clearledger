@@ -1,5 +1,13 @@
 # Security model and threat-driven tests
 
+Correlation review requires an independently authenticated, current remittance
+manifest and exact source-backed UTR/bank/customer/invoice agreement, then a controller
+decision. A local actor, model output or reviewer label cannot supply missing proof.
+Review tasks/decisions are scoped and immutable; stale or conflicting inputs cannot
+be confirmed. Legacy local-UTR attestation cannot bypass a task. Existing maker-checker
+finance controls remain independent. No task/approval tool is given to an agent.
+Full contract/limits/trust and local-demo caveats: [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md).
+
 Prose reason codes require exact source-label evidence, never a status/category
 guess. Projection-v2 preserves the recognized bounded code and field separator as
 an essential identifier; sensitive overlap still fails closed. Explicit codes are

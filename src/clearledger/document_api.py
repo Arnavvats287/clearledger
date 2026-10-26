@@ -20,13 +20,12 @@ from clearledger.document_contract import (
 )
 from clearledger.document_runtime import LocalOriginals
 from clearledger.documents import (
-    association_context,
     correlate,
     extract_document,
     ingest_document,
     integrity,
 )
-from clearledger.matching import digest, owned
+from clearledger.matching import owned
 from clearledger.matching_api import Actor, Key
 from clearledger.matching_schemas import Version
 from clearledger.models import Document, DocumentAssociation, DocumentEvent, DocumentExtraction
@@ -332,7 +331,9 @@ def associations(
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
-    doc = owned(session, Document, org, document_id)
+    owned(session, Document, org, document_id)
+    from clearledger.case_sources import association_current
+
     rows = session.scalars(
         select(DocumentAssociation)
         .where(
@@ -345,12 +346,8 @@ def associations(
     ).all()
     result = []
     for row in rows:
-        extraction = owned(session, DocumentExtraction, org, row.extraction_id)
         try:
-            current, _, _, _ = association_context(
-                session, org, doc, extraction, row.inputs["verified_utr_values"], storage(request)
-            )
-            stale = digest(current) != row.input_sha256
+            stale = not association_current(session, org, row, storage(request))
         except ExtractionError:
             stale = True
         view = AssociationView.model_validate(row)

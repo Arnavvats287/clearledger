@@ -43,6 +43,7 @@ def configuration(settings, provider):
 
 
 def snapshot(session, org, case, body, settings, provider):
+    session.info["source_correlation_settings"] = settings
     store = EvidenceOriginals(settings.document_root)
     context = current_context(session, org, case, store)
     if (
@@ -62,6 +63,15 @@ def snapshot(session, org, case, body, settings, provider):
         if claim.state == "RESOLVED":
             raise CaseError("CLAIM_ALREADY_RESOLVED")
         unknowns, numbers = [], set()
+        linked = [
+            a
+            for d in context["documents"]
+            if d["id"] == str(claim.document_id)
+            for a in d["associations"]
+            if a["status"] == "LINKED"
+        ]
+        if linked and not any(a["current"] for a in linked):
+            unknowns.append("STALE_INPUTS")
         if case.customer_id is None:
             unknowns.append("UNKNOWN_CUSTOMER")
         if claim.amount_paise is None:
@@ -204,6 +214,7 @@ def start(session, org, case_id, body, key, actor, settings, provider=None):
 
 
 def current(session, org, run, settings):
+    session.info["source_correlation_settings"] = settings
     case = root(session, org, run.case_id)
     if case.id != run.case_id or case.version not in {
         run.source_case_version,

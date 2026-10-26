@@ -36,6 +36,7 @@ class Runtime:
     @contextmanager
     def transaction(self):
         with Session(self.engine) as session, session.begin():
+            session.info["source_correlation_settings"] = self.settings
             session.execute(text("SET LOCAL statement_timeout = '3000ms'"))
             session.execute(text("SET LOCAL lock_timeout = '2000ms'"))
             lock_company(session, self.org)

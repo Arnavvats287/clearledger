@@ -72,6 +72,11 @@ class Broker:
             )
             # Include independently discovered contradictory/required records too.
             identifiers = {i for finding in result.findings for i in finding.record_ids}
+            if "UNCERTAIN_EXTRACTION" in objective.unknowns:
+                # The verifier deliberately abstains before predicates in this case.
+                # Retain scoped, independently rechecked source pointers for human
+                # review without removing uncertainty or granting factual support.
+                identifiers.update(p.record_id for p in proposal.citations)
             if len(identifiers) > 20:
                 raise CaseError("TOOL_LIMIT")
             visible = []

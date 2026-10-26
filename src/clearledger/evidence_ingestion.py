@@ -159,6 +159,27 @@ def register(session, org, body, actor, key, settings):
         )
     )
     if inserted:
+        correlation_notified = set()
+        if settings.case_auto_correlate_extractions and row.kind == "REMITTANCE":
+            from clearledger.case_models import CaseDocument
+
+            for link in session.scalars(
+                select(CaseDocument).where(
+                    CaseDocument.organization_id == org, CaseDocument.document_id == row.document_id
+                )
+            ):
+                case = root(session, org, link.case_id)
+                correlation_notified.add(case.id)
+                publish(
+                    session,
+                    org,
+                    "case.correlation_source_changed",
+                    "case_id",
+                    case.id,
+                    actor,
+                    {"record_id": str(row.id)},
+                    key={"correlation_source": str(row.id), "case": str(case.id)},
+                )
         # A company-scoped bounded source notification. Case processing owns
         # version/invalidation effects; registration never settles or changes claims.
         cases = list(
@@ -176,6 +197,8 @@ def register(session, org, body, actor, key, settings):
         if len(cases) > 200:
             raise CaseError("EVIDENCE_CASE_NOTIFICATION_LIMIT")
         for case in cases:
+            if case.id in correlation_notified:
+                continue  # One source notification/effect, not two for the same record/case.
             if body.invoice_id is not None:
                 snapshot = session.scalar(
                     select(CaseVersion).where(

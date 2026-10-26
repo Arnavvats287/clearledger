@@ -1,5 +1,18 @@
 # ClearLedger requirements-alignment audit
 
+## Source-backed exception correlation — 2026-10-27
+
+Current authenticated remittance -> bounded exact receipt/customer/invoice proof:
+correlation_sources.context reuses existing source signatures, original/span/date,
+bank import and identity validation. correlation_service owns immutable tasks and
+versioned controller decisions; new migration0012 enforces scoped/append-only history.
+Legacy document correlation cannot bypass a review task. Existing case merge,
+source/claim provenance, outbox and selective LangGraph reruns are reused; no finance
+approval, mutation, source fabrication or new agent framework. Typed APIs/limits and
+frontend contract: docs/CORRELATION_REVIEW.md. Integration/security/migration trace:
+tests/test_correlation_workflow.py. G1 production identity/authentication, real source
+key custody, live Gemini v5 accuracy and general benchmark claims remain unverified.
+
 ## Offline semantic/automation follow-up — 2026-10-27
 
 Reason-code traceability: document_contract.validate_semantics requires exact prose

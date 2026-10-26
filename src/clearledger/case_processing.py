@@ -44,7 +44,7 @@ from clearledger.models import (
 )
 
 
-def parsed_claims(session, org, extraction, actor, store):
+def parsed_claims(session, org, extraction, actor, store, settings=None):
     doc, facts = extraction_facts(session, org, extraction, store)
     link = scoped(session, CaseDocument, org, document_id=doc.id)
     if facts is None and link is None:
@@ -113,6 +113,10 @@ def parsed_claims(session, org, extraction, actor, store):
         affected=affected,
         changed_claims=changed,
     )
+    if settings is not None and settings.case_auto_correlate_extractions and facts and facts.claims:
+        from clearledger.correlation_service import refresh
+
+        refresh(session, org, case, doc.id, settings, store)
     return case
 
 
@@ -166,7 +170,7 @@ def document_event(session, org, event, settings, store):
         extraction = owned(session, DocumentExtraction, org, event.entity_id)
         if extraction.document_id != doc.id:
             raise ValueError("Source extraction mismatch")
-        return parsed_claims(session, org, extraction, event.actor_id, store)
+        return parsed_claims(session, org, extraction, event.actor_id, store, settings)
     if event.event_type == "document.correlated":
         association = owned(session, DocumentAssociation, org, event.entity_id)
         if association.document_id != doc.id:
@@ -309,13 +313,41 @@ def reevaluate(session, org, event, store, settings=None):
             event.id,
             include_extracted=(
                 settings.case_auto_investigate_extractions
-                and cause.event_type == "case.remittance_observed"
+                and cause.event_type
+                in {"case.remittance_observed", "case.sources_merged", "case.correlation_confirmed"}
             ),
         )
     return case
 
 
 def consume(session, org, event, settings, store):
+    if event.event_type == "case.correlation_source_changed":
+        from clearledger.correlation_service import refresh
+        from clearledger.evidence_models import EvidenceRecord
+
+        case = root(session, org, event.case_id)
+        source = owned(session, EvidenceRecord, org, UUID(event.payload["record_id"]))
+        refresh(session, org, case, source.document_id, settings, store)
+        current = current_context(session, org, case, store)
+        if digest(current) == case.context_sha256 and any(
+            row["id"] == str(source.id) for row in current.get("external_evidence", [])
+        ):
+            return case  # A confirmation/merge already incorporated this exact source revision.
+        affected = {
+            c.id
+            for c in group_rows(session, Claim, org, members(session, org, case))
+            if c.document_id == source.document_id
+        }
+        revise(
+            session,
+            org,
+            case,
+            event.actor_id,
+            "case.correlation_evidence_observed",
+            store,
+            affected=affected,
+        )
+        return case
     if event.event_type == "case.external_evidence_added":
         from clearledger.evidence_ingestion import evidence_changed
 
@@ -338,11 +370,20 @@ def consume(session, org, event, settings, store):
             store,
             details={"matching_evidence_id": str(evidence.id)},
         )
+        if settings.case_auto_correlate_extractions:
+            from clearledger.correlation_service import refresh_pending
+
+            refresh_pending(session, org, settings, store, evidence.receipt_id)
         return case
     if event.event_type == "receipt.accepted":
-        return ensure_receipt_case(
+        case = ensure_receipt_case(
             session, org, owned(session, Receipt, org, event.receipt_id), event.actor_id, store
         )
+        if settings.case_auto_correlate_extractions:
+            from clearledger.correlation_service import refresh_pending
+
+            refresh_pending(session, org, settings, store, event.receipt_id)
+        return case
     if event.event_type == "document.changed":
         return document_event(
             session,

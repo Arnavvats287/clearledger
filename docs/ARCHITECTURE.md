@@ -1,5 +1,12 @@
 # Architecture and runtime boundaries
 
+`correlation_contract/models/sources/service/api` add the source-proof review boundary
+using existing PostgreSQL/outbox/reviewer/merge/investigation services. Two additive
+tables retain tasks/decisions; no new framework or worker. Trusted settings are passed
+in server-side session context to recheck signed proof; absent configuration makes a
+new association stale. Source callbacks deduplicate notifications and refresh only
+affected document claims. Contract: [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md).
+
 The opt-in first-investigation bridge reuses case_processing.reevaluate and
 investigation_service.schedule_affected inside the existing outbox transaction.
 Source-backed extraction -> case/ClaimSource creation was already implemented;

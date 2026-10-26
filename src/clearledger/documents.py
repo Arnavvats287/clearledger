@@ -489,6 +489,17 @@ def association_context(session, org, doc, extraction, verified_values, store):
 
 def correlate(session, org, doc_id, key, actor, body, store):
     lock_company(session, org)
+    from clearledger.correlation_models import CorrelationTask
+
+    if (
+        session.scalar(
+            select(CorrelationTask.id)
+            .where(CorrelationTask.organization_id == org, CorrelationTask.document_id == doc_id)
+            .limit(1)
+        )
+        is not None
+    ):
+        raise HTTPException(409, "CORRELATION_REVIEW_REQUIRED")
     doc = owned(session, Document, org, doc_id)
     extraction = owned(session, DocumentExtraction, org, body.extraction_id)
     if extraction.document_id != doc.id:
