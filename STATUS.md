@@ -63,8 +63,9 @@ restart or Docker run claimed. Persistent external AI/extraction/automatic flag 
 verified disabled; .env untouched, .env.example contains default false only.
 
 Contracts/architecture/requirements traceability updated. Financial/identity/approval
-authority unchanged, no posting/customer communication. Verified checkpoint recorded
-in a follow-up status commit; no push and no later milestone started.
+authority unchanged, no posting/customer communication. Verified implementation
+checkpoint: `6b7867f16f8a42e4d2efc6f4c409044d4a404072`. Recorded in this follow-up
+status commit; no push and no later milestone started.
 
 ## Gemini3.5 live integration — accepted core facts, reason-code error (2026-10-27)
 
