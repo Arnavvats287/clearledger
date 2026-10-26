@@ -1,5 +1,54 @@
 # Build status
 
+## Gemini3.5 live integration — accepted core facts, reason-code error (2026-10-27)
+
+Existing Free-tier key/model gemini-3.5-flash-lite verified; operator confirmed own
+15 RPM/250000 input TPM/500 RPD, displayed0. Official standard USD0.30/2.50 per million
+incl thinking checked. ECB2026-10-26 FX95.18546657132642116553450125; INR110+20% buffer,
+rates3960/33000 paise/million;13 plain/26 remittance reservation. Real SDK canonical
+Google/v1beta,30s timeout,attempts1,trust_env=false. No billing/key/project changes.
+
+Seven actual new generations, all provider responses, no HTTP errors/retries:
+plain OK1.391s(13/1 tokens); unstructured PROSE I-1/damage101 in1.055s(178/35);
+five actual-API results: FAILED schema6.220s(215/149), FAILED schema3.530s(215/149),
+FAILED INVALID_SPAN3.593s(240/294), FAILED AMOUNT_OUTSIDE_CLAIM3.732s(699/296),
+NEEDS_REVIEW3.733s(761/316). Final source spans and persistence verified; financial
+fingerprint unchanged, human review true, financial authority false. BUT reason_code
+misclassified source word disputed; no code was provided. Whole-fixture assertion
+remains false/runner exit1. Core invoice/amount correct, not a perfect live pass.
+Five real app attempts: one accepted/four safely rejected; whole-fixture0/5.
+
+Proven defects/gaps: prompt unspecified page base, omitted exact containment rules,
+model miscounted offsets. Clarified one-based pages/zero-based exclusive Unicode
+positions; added at most512 token-boundary hints computed solely from projected text;
+spelled out existing claim/amount/reason/reference constraints. No post-hoc repair,
+source validation, internal schema, accounting or authority change. Provider contract
+v4/cache identity updated; original inputs/history never rewritten. Source-backed
+word-as-code error remains an explicit model-quality limitation. No further live calls.
+
+New reservations169, prior102 -> cumulative271/500, remaining229 paise. Usage complete
+2321 input/1240 output/3561 total; conservative usage estimates53 paise sum of per-call
+ceilings, not observed billing. All disposable databases/head checks cleaned; no
+existing development data touched. Details/commands/paths: docs/LIVE_GEMINI_EVALUATION.md.
+Original benchmark/pilots/private inputs unchanged. External flags disabled/.env unchanged.
+
+Reused scripts/diagnose_gemini.py and live_gemini_smoke.py with explicit model-specific
+quota/budget/timeout, safe schema diagnostics, span/history API assertions; no framework
+or dependency. Focused mock-HTTP/PostgreSQL tests cover invalid pages/containment/spans,
+amounts, privacy, authority, replay, schema-version scope and campaign-stop refusal.
+Final command: `.venv/Scripts/python.exe -m pytest tests/test_gemini_campaign.py
+tests/test_live_gemini_runner.py tests/test_gemini_request_contract.py
+tests/test_gemini_schema.py --require-postgres -q --tb=short
+--basetemp=local-data/pytest-gemini35-20261027h`: **36 passed in31.02s**.
+Log local-data/gemini35-verification-final.log. Ruff check and format --check on all
+7 changed Python files passed. Git whitespace checks passed. Earlier focused runs
+13/22/25/34/35 passed as the diagnosis/contract evolved; no failed assertion removed.
+Existing negative span/page/amount/authority cases retained; added outside-claim and
+zero-page cases. No claim that the live whole-fixture expectation passed.
+Verified local checkpoint recorded in a follow-up status commit.
+No full suite, restart, Docker, new milestone or push. This checkpoint records actual
+partial AI success plus remaining quality failure, not production readiness.
+
 ## Expanded Gemini diagnostics — sustained provider-path failure, 2026-10-27 (IST)
 
 User reconfirmed Free-tier project15 RPM/250000 input TPM/500 RPD, observed peaks

@@ -117,3 +117,106 @@ def test_matrix_changes_only_mime_then_schema(monkeypatch):
     assert config4 == {**config3, "response_json_schema": diagnose_gemini.SIMPLE_SCHEMA}
     assert diagnose_gemini.request(5)[1]["response_json_schema"]
     assert sys.modules["diagnose_gemini"]
+
+
+def test_alternative_has_own_prices_timeout_and_fails_before_key_without_quota(monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    import diagnose_gemini as module
+
+    class ReviewedDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 10, 27)
+
+    monkeypatch.setattr(module, "date", ReviewedDate)
+
+    for stage, reservation in [(1, 13), (2, 26), (5, 26)]:
+        input_rate, output_rate, output, timeout, previous, attempts = module.profile(
+            "gemini-3.5-flash-lite", stage
+        )
+        assert (input_rate, output_rate, timeout, previous, attempts) == (
+            3960,
+            33000,
+            30000,
+            102,
+            17,
+        )
+        assert (2048 * input_rate + output * output_rate + 999999) // 1000000 == reservation
+    monkeypatch.setattr(
+        module.sys,
+        "argv",
+        ["campaign", "--authorized-live", "--stage", "1", "--model", "gemini-3.5-flash-lite"],
+    )
+
+    def prohibited(*args, **kwargs):
+        pytest.fail("No credential access or network before model-specific quota gate")
+
+    monkeypatch.setattr(module, "dotenv_values", prohibited)
+    monkeypatch.setattr(module.httpx, "Client", prohibited)
+    with pytest.raises(SystemExit, match="MODEL_SPECIFIC_QUOTA_CONFIRMATION_REQUIRED"):
+        module.main()
+
+
+def test_prompt_distinguishes_page_number_from_character_offset():
+    from clearledger.gemini_schema import PROVIDER_SCHEMA_VERSION
+    from clearledger.gemini_worker import SYSTEM_INSTRUCTION
+
+    assert "first supplied page is page 1" in SYSTEM_INSTRUCTION
+    assert "zero-based Unicode positions; end is exclusive" in SYSTEM_INSTRUCTION
+    assert "inside description on the same page" in SYSTEM_INSTRUCTION
+    assert PROVIDER_SCHEMA_VERSION == "gemini-remittance-shape-v4"
+
+
+def test_token_boundaries_are_exact_unicode_slices_of_projected_pages():
+    from clearledger.document_privacy import project
+    from clearledger.gemini_schema import remittance_contents
+
+    pages = project(["Invoice I-1: damage INR 1.01; review required."]).pages
+    body = json.loads(remittance_contents(pages))
+    assert body["untrusted_pages"] == pages
+    assert body["source_token_boundaries"]
+    for page, start, end, quote in body["source_token_boundaries"]:
+        assert pages[page - 1][start:end] == quote
+    assert [1, 8, 11, "I-1"] in body["source_token_boundaries"]
+    assert "review" not in json.dumps(body)
+    assert (
+        len(json.loads(remittance_contents(["Invoice I-1 " * 600]))["source_token_boundaries"])
+        == 512
+    )
+
+
+def test_stopped_alternative_campaign_refuses_before_credential_access(monkeypatch, tmp_path):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    import diagnose_gemini as module
+
+    class ReviewedDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 10, 27)
+
+    monkeypatch.setattr(module, "date", ReviewedDate)
+    monkeypatch.setattr(module, "STORE", tmp_path)
+    store = tmp_path / "alternative-35"
+    store.mkdir()
+    (store / "ledger.json").write_text(json.dumps({"campaign_stopped": "DONE", "attempts": []}))
+    monkeypatch.setattr(
+        module.sys,
+        "argv",
+        [
+            "campaign",
+            "--authorized-live",
+            "--stage",
+            "1",
+            "--model",
+            "gemini-3.5-flash-lite",
+            "--confirmed-rpm",
+            "15",
+            "--confirmed-tpm",
+            "250000",
+            "--confirmed-rpd",
+            "500",
+        ],
+    )
+    monkeypatch.setattr(module, "dotenv_values", lambda *_: pytest.fail("Credential access"))
+    with pytest.raises(SystemExit, match="CAMPAIGN_STOPPED"):
+        module.main()

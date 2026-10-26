@@ -40,6 +40,17 @@ import pytest
             "--remaining-rpd",
             "3",
         ],
+        [
+            "--authorized-live",
+            "--confirmed-rpm",
+            "15",
+            "--confirmed-tpm",
+            "250000",
+            "--remaining-rpd",
+            "490",
+            "--model",
+            "gemini-3.5-flash-lite",
+        ],
     ],
 )
 def test_no_authorization_or_insufficient_quota_never_reads_key_or_calls_provider(
@@ -151,3 +162,17 @@ def test_metadata_failure_reports_only_safe_provider_status(
     }
     assert report["cases"] == [] and report["external_settings_disabled"]
     assert canary not in json.dumps(report) + capsys.readouterr().out
+
+
+def test_schema_diagnostics_exclude_values_messages_unknown_paths(monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
+    from live_gemini_smoke import schema_diagnostics
+    from test_document_domain import minimal_model_result
+
+    body = minimal_model_result("Invoice I-1")
+    body["claims"] = "PRIVATE-CLAIM-URL-KEY"
+    body["PRIVATE-EXTRA-KEY"] = "PRIVATE-EXTRA-VALUE"
+    actual = schema_diagnostics(json.dumps(body))
+    assert {"code": "list_type", "path": ["claims"]} in actual
+    assert {"code": "extra_forbidden", "path": ["UNKNOWN"]} in actual
+    assert "PRIVATE" not in json.dumps(actual)

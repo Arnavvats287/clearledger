@@ -1,5 +1,143 @@
 # Live Gemini extraction evaluation
 
+## Gemini3.5 alternative — live validated facts, one semantic quality error (2026-10-27)
+
+**Real Gemini3.5 generation works.** The final actual-API run persisted invoice I-1
+and a damage claim101 paise with independently verified source spans, human review
+required and financial state unchanged. It also misclassified the source word
+“disputed” as a reason code: the whole-fixture expectation FAILED. This is a real
+partial success, not perfect extraction, general accuracy or production readiness.
+No further live calls after the measured result; the earlier3.1 outage remains distinct.
+
+### Preflight and controls
+
+Operator confirmed same existing Free-tier key/project, model-specific15 RPM,
+250000 input TPM,500 RPD with displayed usage0 for each. These are dashboard evidence,
+not an API-enforced real-time remaining counter. Exact model lookup confirmed
+models/gemini-3.5-flash-lite, generateContent,1048576/65536 token limits, served version
+3.5-flash-lite-07-2026. No key, project, billing or account upgrade/change.
+
+Official [model documentation](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite)
+and [standard pricing](https://ai.google.dev/gemini-api/docs/pricing) checked:
+USD0.30 input/2.50 output per million including thinking; Free tier listed free.
+ECB2026-10-26 INR/USD95.18546657132642116553450125 passed freshness and INR110 buffer.
+20% contingency gives3960/33000 paise/million. Reserve13 paise for2048 input/128 output
+plain probe;26 for2048/512 remittance. The old17-paise3.1 estimate was not reused.
+
+Real SDK2.33 client resolved canonical Google Developer API endpoint, v1beta,
+trust_env=false,30-second timeout, HttpRetryOptions(attempts=1). Single caller;
+metadata/count/generation operations paced below15 RPM/250000 TPM; no real transient
+retry was needed. All7 generations explicitly reserved/counted. Application attempts
+also used the unchanged PostgreSQL three-operation admission and gateway attempts1.
+Remaining-RPD CLI bounds490/480/470/460/450 were deliberately conservative deductions
+from operator evidence/known calls, not new dashboard readings. Shared outside usage
+cannot be enforced by the local runner. No model escalation/fallback or hidden retry.
+
+Plain probe sent only the approved fixed OK request. Subsequent requests used only
+original approved PROSE through the unchanged privacy projection. For v3/v4, at most
+512 exact Unicode token-boundary hints were computed from **projected text only**;
+no private mask map, customer data, database URL, policy or financial tool was sent.
+Hints are source positions, not extracted answers/attestations. Original document
+bytes and strict host schema/source/amount/containment/tenant checks were unchanged.
+
+### Every new generation attempt
+
+Provider returned a generation response on7/7 attempts; no503/429/400 in this model
+campaign. Successful HTTP generation is distinct from application acceptance.
+
+|Attempt|Request|Measured result|Latency seconds|Input/output tokens|Reservation paise|
+|---|---|---|---|---|---|
+|1|Plain text,128 output cap|Exact OK|1.391038800|13/1|13|
+|2|Projected PROSE, no JSON constraint|I-1 and101 paise; fenced JSON, no spans|1.054750000|178/35|26|
+|3|Actual API, original v1 prompt|FAILED / SCHEMA_VALIDATION|6.220169300 API|215/149|26|
+|4|Actual API, safe schema diagnostics|FAILED; page values below1|3.530060400 API|215/149|26|
+|5|Actual API, v2 explicit page numbering|FAILED / SOURCE_VALIDATION / INVALID_SPAN|3.593125800 API|240/294|26|
+|6|Actual API, v3 exact position hints|FAILED / SOURCE_VALIDATION / AMOUNT_OUTSIDE_CLAIM|3.731650700 API|699/296|26|
+|7|Actual API, v4 complete containment instructions|NEEDS_REVIEW; persisted core facts; reason-code false positive|3.732660400 API|761/316|26|
+
+First two latencies measure provider generation; actual-API latencies include
+worker lookup/count/generation/validation overhead. Final internal latency3704ms.
+All reported totals reconcile; campaign totals2321 input/1240 output/3561 total tokens.
+No separate reasoning count reported. No raw provider error body/message/key/URL was
+logged. Actual API outer HTTP200 is an envelope, not automatic acceptance of facts.
+
+The original prompt conflated zero-based offsets with unspecified page numbering;
+safe diagnostics established below-minimum page values (not an inferredHTTP400).
+Explicit one-based pages fixed that schema failure. Position hints then passed exact
+spans; the complete-claim clause requirement fixed the measured containment failure.
+Provider contract is now gemini-remittance-shape-v4; versioned cache identity prevents
+silent reuse under changed inputs. No model output was repaired or validation relaxed.
+The independent actual API rejected all four invalid attempts before accepting facts.
+
+### Final actual application evidence and limitations
+
+The real flow: fresh disposable PostgreSQL/head migration check -> actual customer/
+invoice/bank/receipt import setup -> approved immutable PROSE upload -> canonical-text
+API -> deterministic extraction abstention -> Gemini isolated worker -> unchanged
+strict schema/restore/semantic verification -> extraction-history API/verify-span API.
+
+- Invoice reference I-1, page1/start8/end11, exact quote I-1: correct.
+- Damage101 paise, amount quote INR1.01, page1/start38/end46: correct.
+- Description page1/start31/end55, exact quote “damage INR 1.01 disputed”;
+  exact quote and all actual offsets were verified
+  by the application, not invented for this report.
+- No invented payer, UTR or extra deduction. The9.00 payment was not a deduction;
+  payment-total extraction remains outside the schema.
+- **Incorrect optional classification:** reason_code=disputed. The word is in the
+  source and its citation is valid, but no explicit code was supplied. No invented
+  wording, yet one unsupported semantic classification. No silent dropping/correction.
+- Requires human review=true, financial_authority=false, source authenticity UNVERIFIED.
+  Source spans verified and facts persisted through the extraction-history API.
+  Financial fingerprint unchanged. Every disposable application database cleaned;
+  no finance/posting/approval/customer-message endpoint was invoked.
+
+Among the one accepted final result: invoice1/1, amount1/1; all emitted source pointers
+validated. Optional reason-code error1. Across five actual API attempts, one accepted
+and four safely rejected. Whole-fixture correctness0/5: the accepted result still
+fails the no-reason-code expectation. Those selected, adaptively debugged development
+calls are **not a benchmark/general accuracy estimate**. No additional fixtures or
+sealed evaluation were run. More semantic accuracy work/reproducibility across prose
+is needed; the successful core path is now demonstrated with a real model.
+
+New conservative reservations169 paise; previous102 -> **271 cumulative,229 remain**
+of500. Usage-based conservative per-call ceilings sum53 paise (not reservations or
+an observed bill). Official paid-price equivalent USD0.0037963 for known usage;
+Free-tier billing was not enabled and no account invoice was independently inspected.
+No zero-bill claim or refund of reservations. Live-call objective stopped with
+validated core facts plus the recorded quality error; no further call implied.
+
+### Reproduction and verification
+
+Existing scripts reused, no framework/dependency/frontend/financial-schema change.
+Diagnostic commands: scripts/diagnose_gemini.py --authorized-live --stage 1 then --stage 2,
+each with --model gemini-3.5-flash-lite --confirmed-rpm 15 --confirmed-tpm 250000
+--confirmed-rpd 500. Each actual API command:
+scripts/live_gemini_smoke.py --authorized-live --model gemini-3.5-flash-lite
+--remaining-budget-paise <reviewed remaining> --confirmed-rpm 15 --confirmed-tpm 250000
+--remaining-rpd <conservative reviewed bound>. Executed using .venv/Scripts/python.exe
+-X utf8, once per recorded attempt, not automatic retries. Date/auth/quota/budget gates
+remain; the local campaign ledger now refuses further calls. Future execution requires
+new review, not blind replay of these historical commands or rates.
+
+Ignored records: local-data/gemini35-preflight.json; local-data/gemini35-stage1.log,
+gemini35-stage2.log; local-data/gemini-campaign-20261027/alternative-35/ledger.json.
+Actual API observations by attempt3–7:
+1abcf7d0b17c4c5685123b6f570ca572,1f382c1f8eb5494bbd5ea3337c59def0,
+d8dab9a9985d4e1ca713af3949f70b9a,0740d71f33b04550a055f3fc345aa42a,
+b0da49f5d8e44a42914d2f9dce3a071c, each under local-data/live-gemini/<id>/observations.json.
+Only sanitized validation codes/allowlisted paths captured; untrusted keys/values and
+raw Pydantic/provider messages are excluded. Final runner intentionally exits1 because
+the whole-fixture expectation failed; persisted NEEDS_REVIEW is not hidden as a pass.
+
+Final targeted mock-HTTP/PostgreSQL verification: **36 passed in31.02s** across
+test_gemini_campaign, test_live_gemini_runner, test_gemini_request_contract and
+test_gemini_schema; Ruff lint/format passed on7 changed Python files. Log:
+local-data/gemini35-verification-final.log. Full command in STATUS.md. These are
+offline/code checks, distinct from the7 live requests and failed whole-fixture gate.
+Persistent EXTERNAL_AI_ENABLED=false,
+EXTRACTION_PROVIDER=disabled and external investigations false; .env/key unchanged.
+Frozen benchmark/pilots/hidden ground truth untouched. No full suite or Docker rebuild.
+
 ## Expanded campaign — sustained minimal-generation failure, 2026-10-27 (IST)
 
 This supersedes the earlier quota-blocked campaign below. Operator reconfirmed the

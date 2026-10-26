@@ -19,7 +19,7 @@ from uuid import uuid4
 import httpx
 from dotenv import dotenv_values
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 from sqlalchemy.orm import Session
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,9 +34,63 @@ from test_matching import setup  # noqa: E402
 from clearledger.config import Settings  # noqa: E402
 from clearledger.document_contract import Extraction, validate_semantics  # noqa: E402
 from clearledger.document_privacy import project  # noqa: E402
+from clearledger.extraction_provider import decode_output  # noqa: E402
 from clearledger.main import create_app  # noqa: E402
 from clearledger.models import ProviderReservation  # noqa: E402
 from clearledger.provider_diagnostics import diagnostic  # noqa: E402
+
+
+def schema_diagnostics(text):
+    """Fixed schema categories/paths only; no generated values, error text or URLs."""
+    known = {
+        "invoice_references",
+        "utr_references",
+        "payer_hint",
+        "claims",
+        "uncertainty",
+        "unparsed_fields",
+        "value",
+        "span",
+        "page",
+        "start",
+        "end",
+        "quote",
+        "category",
+        "description",
+        "amount_paise",
+        "amount_span",
+        "reason_code",
+    }
+    codes = {
+        "missing",
+        "extra_forbidden",
+        "int_type",
+        "string_type",
+        "list_type",
+        "model_type",
+        "dict_type",
+        "literal_error",
+        "greater_than_equal",
+        "less_than_equal",
+        "value_error",
+    }
+    try:
+        Extraction.model_validate(decode_output(text))
+    except ValidationError as error:
+        return [
+            {
+                "code": row["type"] if row["type"] in codes else "VALIDATION",
+                "path": [
+                    part if type(part) is int or part in known else "UNKNOWN" for part in row["loc"]
+                ],
+            }
+            for row in error.errors(include_input=False, include_context=False, include_url=False)[
+                :30
+            ]
+        ]
+    except Exception:
+        return [{"code": "DECODE", "path": []}]
+    return []
 
 
 def main():
@@ -45,12 +99,25 @@ def main():
     parser.add_argument("--confirmed-rpm", type=int, required=True)
     parser.add_argument("--confirmed-tpm", type=int, required=True)
     parser.add_argument("--remaining-rpd", type=int, required=True)
+    parser.add_argument(
+        "--model",
+        choices=["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"],
+        default="gemini-3.1-flash-lite",
+    )
+    parser.add_argument("--remaining-budget-paise", type=int)
     args = parser.parse_args()
     # Prices must be re-reviewed on a different day, not blindly replayed later.
     if not args.authorized_live or date.today() != date(2026, 10, 27):
         raise SystemExit("Explicit live authorization/current pricing review required")
     if args.confirmed_rpm < 3 or args.confirmed_tpm < 2048 or args.remaining_rpd < 4:
         raise SystemExit("Confirmed project quotas insufficient")
+    alternate = args.model == "gemini-3.5-flash-lite"
+    attempt_cost = 26 if alternate else 17
+    remaining_budget = args.remaining_budget_paise if alternate else 66
+    if alternate and (
+        type(remaining_budget) is not int or not attempt_cost <= remaining_budget <= 398
+    ):
+        raise SystemExit("Explicit remaining alternative-model budget required")
     logging.disable(logging.CRITICAL)
     local = dotenv_values(ROOT / ".env")
     key = os.environ.get("GEMINI_API_KEY") or local.get("GEMINI_API_KEY")
@@ -61,12 +128,12 @@ def main():
     output.mkdir(parents=True)
     report = {
         "provider": "gemini",
-        "model": "gemini-3.1-flash-lite",
+        "model": args.model,
         "cases": [],
-        "attempt_cost_cap_paise": 17,
-        "remaining_authorized_cap_paise": 66,
+        "attempt_cost_cap_paise": attempt_cost,
+        "remaining_authorized_cap_paise": remaining_budget,
         "maximum_attempts": 1,
-        "maximum_reserved_paise": 17,
+        "maximum_reserved_paise": attempt_cost,
         "billing_changes": False,
         "operator_confirmed_quotas": vars(args),
     }
@@ -106,7 +173,7 @@ def main():
                     "MODEL_LOOKUP", "HTTP_API", error.code, getattr(error, "status", None)
                 )
                 raise
-        if info.name != "models/gemini-3.1-flash-lite" or "generateContent" not in (
+        if info.name != f"models/{args.model}" or "generateContent" not in (
             info.supported_actions or []
         ):
             raise ValueError("MODEL_GATE_FAILED")
@@ -141,12 +208,24 @@ def main():
                 llm_max_output_tokens=512,
                 llm_daily_input_tokens=2048,
                 llm_daily_output_tokens=512,
-                llm_input_paise_per_million_tokens=3300,
-                llm_output_paise_per_million_tokens=19800,
-                llm_max_cost_paise_per_attempt=17,
+                llm_input_paise_per_million_tokens=3960 if alternate else 3300,
+                llm_output_paise_per_million_tokens=33000 if alternate else 19800,
+                llm_max_cost_paise_per_attempt=attempt_cost,
             )
             app = create_app(settings)
             assert app.state.finance_identity_verifier is None
+            if alternate:
+                original_transport = app.state.extraction_gateway.transport
+
+                class ObservedTransport:
+                    def generate(self, pages):
+                        reply = original_transport.generate(pages)
+                        report.setdefault("schema_diagnostics", []).append(
+                            schema_diagnostics(reply.json_text)
+                        )
+                        return reply  # Unchanged actual provider output; no repair or fake facts.
+
+                app.state.extraction_gateway.transport = ObservedTransport()
             try:
                 with TestClient(app) as api:
                     setup(api)
@@ -161,7 +240,7 @@ def main():
                         report["cases"].append(observation)
                         with Session(engine) as session:
                             used = session.query(ProviderReservation).count()
-                        if used >= 1 or (used + 1) * 17 > 66:
+                        if used >= 1 or (used + 1) * attempt_cost > remaining_budget:
                             raise ValueError("EXPERIMENT_BUDGET_GATE")
                         doc_response = upload(api, raw, name=f"unit-{name}.{suffix}", mime=mime)
                         assert doc_response.status_code == 200
@@ -203,18 +282,30 @@ def main():
                                 and parsed.claims[0].amount_paise == expected_amount
                                 and parsed.claims[0].category
                                 == ("rebate" if name == "conditional" else "damage")
+                                and parsed.claims[0].reason_code is None
                             )
                         )
                         observation["expected_fields_correct"] = correct
-                        for pointer in [r.span for r in parsed.invoice_references] + [
-                            c.description for c in parsed.claims
-                        ]:
+                        for pointer in (
+                            [r.span for r in parsed.invoice_references]
+                            + [c.description for c in parsed.claims]
+                            + [c.amount_span for c in parsed.claims if c.amount_span is not None]
+                        ):
                             verified = api.post(
                                 f"/documents/{doc['id']}/verify-span",
                                 headers=auth(),
                                 json=pointer.model_dump(mode="json"),
                             )
                             assert verified.status_code == 200
+                            assert verified.json()["source_consistent"]
+                        persisted = get(api, f"/documents/{doc['id']}/extractions")
+                        assert persisted.status_code == 200
+                        assert any(
+                            row["id"] == actual["id"] and row["result"] == actual["result"]
+                            for row in persisted.json()
+                        )
+                        observation["source_spans_verified"] = True
+                        observation["facts_persisted"] = True
                         if not correct or name == "injection":
                             report["stopped"] = "FIELDS_INCORRECT_OR_FINAL_CONTROL"
                             break

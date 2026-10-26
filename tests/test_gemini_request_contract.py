@@ -32,9 +32,12 @@ pytestmark = pytest.mark.postgres
     "fault,expected",
     [
         ("none", "NEEDS_REVIEW"),
+        ("alternative", "NEEDS_REVIEW"),
         ("float", "FAILED"),
         ("amount", "FAILED"),
         ("span", "FAILED"),
+        ("zero_page", "FAILED"),
+        ("outside_claim", "FAILED"),
         ("authority", "FAILED"),
         ("too_many", "FAILED"),
         ("uncertainty", "FAILED"),
@@ -70,6 +73,10 @@ def test_actual_sdk_contract_and_host_validation(
         body["claims"][0]["amount_paise"] = 999
     if fault == "span":
         body["invoice_references"][0]["span"]["start"] += 1
+    if fault == "zero_page":
+        body["invoice_references"][0]["span"]["page"] = 0
+    if fault == "outside_claim":
+        body["claims"][0]["description"] = span("damage")
     if fault == "authority":
         body["financial_authority"] = True
     if fault == "too_many":
@@ -78,6 +85,7 @@ def test_actual_sdk_contract_and_host_validation(
         body["uncertainty"] = "approved"
     captured = {}
     paths = []
+    model = "gemini-3.5-flash-lite" if fault == "alternative" else "gemini-3.1-flash-lite"
 
     def local_http(request):
         path = request.url.path
@@ -86,7 +94,7 @@ def test_actual_sdk_contract_and_host_validation(
             return httpx.Response(
                 200,
                 json={
-                    "name": "models/gemini-3.1-flash-lite",
+                    "name": f"models/{model}",
                     "supportedGenerationMethods": ["generateContent"],
                     "inputTokenLimit": 1048576,
                     "outputTokenLimit": 65536,
@@ -143,7 +151,7 @@ def test_actual_sdk_contract_and_host_validation(
     settings = client.app.state.settings
     settings.external_ai_enabled = True
     settings.extraction_provider = "gemini"
-    settings.gemini_model = "gemini-3.1-flash-lite"
+    settings.gemini_model = model
     settings.privacy_review_reference = "approved-synthetic-offline-unit"
     client.app.state.extraction_gateway = Gateway(
         GeminiTransport("offline-unit-not-a-secret", settings.gemini_model), attempts=1
@@ -161,7 +169,7 @@ def test_actual_sdk_contract_and_host_validation(
     assert result["status"] == expected
     assert len(paths) == 3 and paths[-1].endswith(":generateContent")
     counted = captured["count"]
-    assert counted.pop("model") == "models/gemini-3.1-flash-lite"
+    assert counted.pop("model") == f"models/{model}"
     assert counted == captured["generate"]
     assert (
         captured["generate"]["generationConfig"]["responseJsonSchema"]
@@ -173,7 +181,7 @@ def test_actual_sdk_contract_and_host_validation(
         == pages
     )
     assert not result["financial_authority"] and result["requires_human_review"]
-    if fault == "none":
+    if fault in {"none", "alternative"}:
         assert result["result"]["invoice_references"][0]["value"] == "I-1"
         assert result["result"]["claims"][0]["amount_paise"] == 101
         for pointer in [

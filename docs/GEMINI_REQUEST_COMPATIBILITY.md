@@ -61,8 +61,13 @@ Both countTokens' embedded request and actual generateContent serialization use 
 same new schema, system text, data and generation settings (structurally compared
 using the real SDK). Only remittance extraction uses this export; the investigation
 schema/provider path is unchanged and external investigations remain disabled.
-`gemini-remittance-shape-v1` is persisted in extraction input provenance/cache identity;
-legacy rows default to strict-domain-v1. Non-Gemini request input shape/idempotency
+The original v1 contract is historical; current `gemini-remittance-shape-v4` is
+persisted in extraction input provenance/cache identity. It adds explicit page-base/
+source-containment instructions and bounded exact token positions derived solely from
+projected text; it never repairs returned citations. The internal schema is unchanged.
+The3.5 live experiment reached persisted core facts and valid source spans, with one
+incorrect optional reason-code classification; see LIVE_GEMINI_EVALUATION.md.
+Legacy rows default to strict-domain-v1. Non-Gemini request input shape/idempotency
 remains unchanged, with a specific replay regression test. No historical extraction is rewritten or
 silently reused under a different wire contract. CSV1.0/internal extraction1.0 remain
 unchanged; no migration or financial-rule change is required.

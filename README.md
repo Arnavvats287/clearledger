@@ -185,8 +185,9 @@ during this pass. The sealed/blind evaluation remains separate.
 | Conditional matching recall | **0/315** |
 | Review-routing score | **0/255** |
 | Isolated deterministic LangGraph fixtures | **4 passed**: supported, missing, unsigned, conflicting evidence |
-| Real Gemini attempts | **6 failed**; latest minimal plain-text probes returned503,503,504; prior extraction HTTP400 remains unexplained |
-| Real LLM extraction accuracy | **Not established** |
+| Gemini3.1 attempts | **6 failed**; minimal probes503,503,504; earlier HTTP400 remains unexplained |
+| Gemini3.5 live integration | **7 generation responses**; final API persisted I-1/damage101 with valid spans and human review; incorrect optional reason code |
+| Real LLM extraction accuracy | One synthetic core-field success; whole-fixture expectation failed; general accuracy **not established** |
 
 Full snapshot/API coverage demonstrates integration completion, **not reconciliation
 usefulness**. Zero recall and review-routing scores remain failures to improve;
@@ -206,7 +207,8 @@ Independent datasets, hidden answers and original operator/scoring code are not 
 - **Gemini request compatibility:** an earlier generation returned HTTP400 with no
   known rejected field; the simplified-schema attempt returned503 UNAVAILABLE.
   Three later probes without JSON/schema constraints returned503,503,504 and stopped.
-  Neither acceptance of the schema nor real extraction accuracy is established.
+  Gemini3.5 now produces source-validated, persisted core facts with human review,
+  but misclassifies “disputed” as a reason code; no general accuracy is established.
   The offline portfolio demo makes no live calls or infrastructure changes.
 - **Reconciliation usefulness:** improve source-backed matching and actionable
   review routing, then measure against independent scoring without using answers

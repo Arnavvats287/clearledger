@@ -5,11 +5,14 @@ string-length constraints. Keep those checks in the unchanged strict host schema
 References, field names, required/null semantics, enums and closed objects survive.
 """
 
+import json
+import re
+from itertools import islice
 from typing import Any, cast
 
 from clearledger.document_contract import Extraction
 
-PROVIDER_SCHEMA_VERSION = "gemini-remittance-shape-v1"
+PROVIDER_SCHEMA_VERSION = "gemini-remittance-shape-v4"
 _HOST_ONLY_BOUNDS = frozenset(
     {
         "minimum",
@@ -39,3 +42,22 @@ def remittance_response_schema() -> dict[str, Any]:
         }
 
     return cast(dict[str, Any], simplify(Extraction.model_json_schema()))
+
+
+def remittance_contents(pages: list[str]) -> str:
+    """Position hints over projected text only; never guessed or repaired citations.
+
+    Every boundary refers to exact page-local Unicode positions. The model may
+    select wider excerpts but host validation still checks the original spans.
+    """
+    boundaries = (
+        [page, match.start(), match.end(), match.group()]
+        for page, text in enumerate(pages, 1)
+        for match in re.finditer(r"\w+(?:[-.]\w+)*|[^\w\s]", text)
+    )
+    return json.dumps(
+        {
+            "untrusted_pages": pages,
+            "source_token_boundaries": list(islice(boundaries, 512)),
+        }
+    )
