@@ -2,6 +2,8 @@
 
 ## Time-boxed synthetic AI usefulness evaluation — 2026-10-26 (IST)
 
+Verified evaluation checkpoint: `f72702c00dde8ded1a1bc99d195c32cee855725a`.
+
 The user-reported completed255-stage deterministic benchmark remains frozen and
 untouched. No operator/scorer, sealed split, dataset, schedule or hidden answers
 were read or modified. This is evaluation-only, not Milestone10 or an application
