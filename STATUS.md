@@ -1,5 +1,51 @@
 # Build status
 
+## Static/synthetic protocol line142 investigation — 2026-10-26 (IST)
+
+Application checkpoint remains `5cc695b` / verified status `24fb7e5`. No application
+code, validation, limits, permissions, chronology, provenance, financial or provider
+behavior changed. No image rebuild or benchmark/private-file access occurred.
+
+At current `scripts/chronological_protocol.py:142`, Stage.__init__ explicitly raises
+**ValueError("INPUT_ALLOWLIST_OR_HASH")** if any manifest member meets any of:
+1. `allowed(name)` is false: unsafe/unallowlisted path, category/extension/shape or
+   path-length/control-character restriction;
+2. the digest is not a string;
+3. the digest is not exactly64 lowercase hexadecimal characters.
+
+This is before Base64 decoding, document ingestion or response generation. A valid-
+shaped digest with mismatched bytes triggers line148 INPUT_HASH_OR_SIZE instead.
+An8MiB response overflow raises RuntimeError("RESPONSE_LIMIT") in Adapter.stage,
+not this ValueError. No overflow was assumed and no limit was increased.
+
+Executed `.venv/Scripts/python.exe local-data/protocol_line142_probe.py`: **8 synthetic
+checks PASS** in an application-owned in-memory fixture: accepted valid member;
+unallowlisted category, traversal, non-string digest, uppercase digest and short digest
+all reproduce line142; valid-shaped incorrect digest reproduces line148. A separate
+real adapter subprocess with malformed digest reproduces component=protocol,
+ValueError, source=chronological_protocol.py/__init__/142, exit2 and empty stdout,
+before database/API initialization. Log: `local-data/protocol-line142-probe.log`.
+No financial records, database resources, operator code or original inputs were used.
+
+HARNESS_OUTPUT/HARNESS_EXIT_FAILED are consistent secondary effects of that exit/no
+response. The50-document message is emitted only inside application_eval_runtime.documents
+after full Stage validation, and the adapter processes JSONL requests sequentially.
+It cannot establish a size failure or50-document limit in the rejected message; it
+must belong to earlier processing if the reported location identifies this guard.
+
+**Unresolved:** the sanitized location identifies the exact combined guard, but not
+which member/predicate failed. No offending member or safe predicate classification
+was supplied, and none was sought in private files. Correct rejection of synthetic
+invalid inputs does not prove an application defect. Therefore no speculative path
+expansion, hash normalization, invalid-input suppression or protocol behavior change.
+An independent operator could distinguish the alternatives using only booleans for
+allowed-path, string-digest and lowercase-SHA256-shape, without disclosing names/values.
+
+No application code changed, so no Docker bridge/full-suite reruns were warranted.
+The last verified image remains
+`sha256:75dc94f5b368b827a00f8ea1324a0c06fc7514b2d642800cc27cc722bcf6d309`.
+This is a documentation-only finding, not a fixed evaluation run. Stop; no push.
+
 ## Consolidated chronological evidence stabilization — 2026-10-26 (IST)
 
 Branch `fix/chronological-evidence-observations` from `964d009`. The user confirmed the
