@@ -1,5 +1,42 @@
 # Persistent chronological application adapter — protocol 1
 
+## Isolated Docker startup compatibility
+
+The operator invocation is exactly:
+
+```text
+/app/.venv/bin/python -X utf8 -I -B /app/scripts/chronological_adapter.py
+```
+
+The initial image included `application_eval_contract.py` but failed this invocation:
+Python isolated mode omits the script directory and ignores PYTHONPATH. The image now
+installs a **paths-only**, root-owned `clearledger_harness.pth` in its virtual environment's
+site-packages containing only `/app/scripts`. That directory is the immutable allowlisted
+application code, not a current/user/input directory. No path comes from the environment
+or document input; `-I` is retained. This also preserves the helpers' original `__file__`
+locations and `/app` migration root. Financial logic and provider settings are unchanged.
+
+The image entrypoint and build-time EOF import check use the exact command above as
+UID10001. `build_chronological_image.py` additionally runs
+`verify_chronological_startup.py`: first that exact invocation with empty stdin, then a
+separate explicit transitive-module/origin/flags probe. Both run without network or
+database credentials, from `/tmp` with read-only root, dropped capabilities, resource
+limits and a deliberately ineffective PYTHONPATH=/tmp. The probe verifies all eight
+allowlisted modules, required installed application/Alembic/SQLAlchemy/HTTPX dependencies,
+root-owned non-writable path registration, no current/user-site search and active
+isolated/ignore-environment/no-user-site/no-bytecode/UTF-8 flags. Missing imports or
+unexpected EOF stdout fail the build verification. This is distinct from the real
+three-stage restricted bridge integration, which now also uses the exact entrypoint.
+
+```powershell
+uv run --frozen python scripts/build_chronological_image.py
+uv run --frozen python scripts/verify_chronological_startup.py
+```
+
+No private operator files or benchmark inputs are required by this preflight. Final
+image identity, test results and checkpoint are in STATUS.md. Historical clock and
+independent-scoring limitations below remain unchanged.
+
 This is the application-side JSONL implementation of the independently supplied public
 `PROTOCOL.md` and `runner_image/bridge.py`. Baseline: `a7cb6ec` (`cf6bf75` application
 evaluation). The previous [single-snapshot measurements](POST_M09_APPLICATION_EVALUATION.md)

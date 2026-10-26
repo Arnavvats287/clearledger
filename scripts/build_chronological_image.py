@@ -2,6 +2,7 @@
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from uuid import uuid4
 
@@ -39,6 +40,9 @@ def main():
     shutil.copyfile(ROOT / "infra/chronological.Dockerfile", context / "Dockerfile")
     subprocess.run(
         ["docker", "build", "--tag", "clearledger-chronological:local", str(context)], check=True
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/verify_chronological_startup.py")], check=True
     )
 
 

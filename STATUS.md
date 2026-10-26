@@ -1,5 +1,68 @@
 # Build status
 
+## Narrow isolated-mode Docker startup fix — 2026-10-26 (IST)
+
+Branch `fix/chronological-isolated-imports`, from verified status `1b4d78b` (adapter
+`e958ff7`). The operator-reported `application_eval_contract` import failure was
+independently reproduced on the prior allowlisted image using exactly
+`/app/.venv/bin/python -X utf8 -I -B /app/scripts/chronological_adapter.py`.
+The file **was present** (`Path.is_file() == True`) but isolated-mode `find_spec` returned
+None: Python -I excludes the script directory and ignores PYTHONPATH. No private
+operator logs, schedules, truth, benchmark code or original dataset were accessed.
+
+Image-only packaging registers the fixed root-owned `/app/scripts` directory in a
+paths-only `.venv` site-packages `clearledger_harness.pth`. There is no adapter-level
+sys.path editing, current-directory fallback, environment-derived import path or removal of -I.
+Original helper locations/migration ROOT remain `/app/scripts` and `/app`. The entrypoint
+now exactly matches the operator invocation. Financial/application/provider code, source
+schemas, migrations, Gemini switches and existing tests remain unchanged.
+
+Every build now performs the exact invocation as UID10001 with EOF stdin, then runs
+`verify_chronological_startup.py` outside the image. Its no-network/read-only/cap-dropped/
+resource-bounded container executes that same exact argv from `/tmp` with an intentionally
+ineffective PYTHONPATH=/tmp, then separately asserts isolation flags, root-owned
+non-writable path registration, all eight allowlisted helper origins, `/app` ROOT and
+required application/Alembic/SQLAlchemy/HTTPX transitive imports. Four unit regression
+cases cover exact argv/probe wiring, nonzero/noisy failure and allowlist coverage.
+
+### Verified commands and results
+
+- `.venv/Scripts/python.exe scripts/build_chronological_image.py`: **PASS**, including
+  the exact build-time operator invocation and automatic restricted post-build startup/
+  transitive-import preflight. `local-data/chrono-isolated-build.log` contains all eight
+  helper origins, required installed dependency origins and successful flag assertions.
+- The prior image's exact invocation failed as reported, while its helper file existed;
+  this was import-path isolation, not an omitted allowlisted file. A negative check on
+  the rebuilt image masked `application_eval_inputs.py` using a read-only disposable
+  overmount: the exact entrypoint correctly failed with ImportError. Image bytes remain
+  unchanged. `local-data/chrono-isolated-missing-transitive.log`.
+- Focused `python -m pytest tests/test_chronological_startup.py -q`: **4 passed in 0.35s**.
+- `uv run --frozen python scripts/verify.py`: **ALL PASS; 676 passed in 1392.31s
+  (23m12s), no skips**, all prior 672 tests retained. Lock/dependencies/Ruff lint+format/
+  strict typing/matching bounds/PostgreSQL migration roundtrips/drift/integrity/security/
+  API/concurrency/persistence checks passed. Full private log:
+  `local-data/verification/20261026T013742017606Z.log`.
+- `python scripts/verify_chronological_bridge.py --bridge <previously supplied public
+  bridge.py> --docker`: **PASS**, exact isolated entrypoint, three minimal stages plus
+  replay, four REAL_API ABSTAIN responses, financial non-mutation PASS throughout, and
+  maximum stage **14.658175254s**. Private run:
+  `local-data/chronological-verification/85c16035de0443fc8374e64a11fa782b/`.
+  This is not the independent benchmark or an original-stage accuracy claim.
+- `uv run --frozen python scripts/verify_isolated_restart.py`: **4 passed in 50.33s**;
+  only its labelled disposable resources removed. Log:
+  `local-data/verification/isolated-restart-20261026T014222788707Z.log`.
+
+Reviewed six intended files only: Dockerfile/build helper, new standalone preflight and
+four-case test module, chronological contract and STATUS. Source seals remained fixed
+through the final checks; staged credential/whitespace/scope checks passed. No app,
+financial logic, existing test, dependency, migration or Gemini-setting changes. No
+development data reset/downgrade, production credentials or real benchmark inputs used.
+The implementation checkpoint is recorded by the following documentation-only commit.
+
+New local image: **`sha256:4acf25a7f0d3b10a96825e0bcd486ff5392bfc631d861f08e062a4c47fe92c3f`**.
+No push or independent benchmark execution. All original clock/source-authority/scoring
+limitations below remain unchanged; the independent operator still owns its smoke rerun.
+
 ## Persistent chronological evaluation adapter — 2026-10-26 (IST)
 
 Authorized from verified **`a7cb6ec`** (evaluation implementation `cf6bf75`), branch
