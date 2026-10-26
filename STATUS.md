@@ -2,6 +2,8 @@
 
 ## Actual Gemini smoke — first attempt failed safely, 2026-10-26 (IST)
 
+Actual-run/report checkpoint: `d0d8931129d9ba4248e23d16a04313d81e32b8d5`.
+
 User supplied active AI Studio limits15 RPM/250000 input TPM/500 RPD with usage0/500,
 Free tier, no billing enablement. This direct operator confirmation cleared the
 pending quota gate; no account quota/billing changes were performed. Rechecked
