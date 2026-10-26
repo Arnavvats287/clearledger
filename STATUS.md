@@ -2,6 +2,8 @@
 
 ## Narrow late-evidence category compatibility fix — 2026-10-26 (IST)
 
+Verified implementation checkpoint: `fd1ad025686a44b9fe81730f6acf096e6fd6def2`.
+
 User confirmed that the original application-visible input contract supplies
 `app_visible/evidence_corpus/late_evidence/<file>`. The shared GROUPS constant in
 `scripts/application_eval_inputs.py` omitted this category, causing protocol
