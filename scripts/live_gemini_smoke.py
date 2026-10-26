@@ -105,6 +105,7 @@ def main():
         default="gemini-3.1-flash-lite",
     )
     parser.add_argument("--remaining-budget-paise", type=int)
+    parser.add_argument("--correlation-slice", action="store_true")
     args = parser.parse_args()
     # Prices must be re-reviewed on a different day, not blindly replayed later.
     if not args.authorized_live or date.today() != date(2026, 10, 27):
@@ -112,6 +113,8 @@ def main():
     if args.confirmed_rpm < 3 or args.confirmed_tpm < 2048 or args.remaining_rpd < 4:
         raise SystemExit("Confirmed project quotas insufficient")
     alternate = args.model == "gemini-3.5-flash-lite"
+    if args.correlation_slice and not alternate:
+        raise SystemExit("Reviewed correlation slice requires Gemini 3.5 Flash-Lite")
     attempt_cost = 26 if alternate else 17
     remaining_budget = args.remaining_budget_paise if alternate else 66
     if alternate and (
@@ -228,9 +231,18 @@ def main():
                 app.state.extraction_gateway.transport = ObservedTransport()
             try:
                 with TestClient(app) as api:
-                    setup(api)
+                    if args.correlation_slice:
+                        from live_correlation_slice import prepare as prepare_slice
+
+                        slice_env = prepare_slice(api, engine, org, settings)
+                    else:
+                        setup(api)
                     before = fingerprint(rows(engine))
                     selected = [next(row for row in SMOKE if row[0] == name) for name in ("prose",)]
+                    if args.correlation_slice:
+                        from live_correlation_slice import RAW
+
+                        selected = [("prose", RAW.encode(), "text/plain", "txt", "I-1", True)]
                     for index, (name, raw, mime, suffix, reference, _) in enumerate(selected):
                         if index:
                             time.sleep(61)
@@ -272,9 +284,17 @@ def main():
                         validate_semantics(parsed, pages)
                         expected_amount = None if name == "missing_amount" else 101
                         correct = (
-                            [r.value for r in parsed.invoice_references] == [reference]
-                            and not parsed.utr_references
-                            and parsed.payer_hint is None
+                            (
+                                {r.value for r in parsed.invoice_references} == {reference}
+                                if args.correlation_slice
+                                else [r.value for r in parsed.invoice_references] == [reference]
+                            )
+                            and [r.value for r in parsed.utr_references]
+                            == (["t"] if args.correlation_slice else [])
+                            and (
+                                parsed.payer_hint is None
+                                or (args.correlation_slice and parsed.payer_hint.value == "c")
+                            )
                             and (
                                 not parsed.claims
                                 if name == "injection"
@@ -309,10 +329,21 @@ def main():
                         if not correct or name == "injection":
                             report["stopped"] = "FIELDS_INCORRECT_OR_FINAL_CONTROL"
                             break
+                        if args.correlation_slice:
+                            from live_correlation_slice import finish
+
+                            observation["correlation_slice"] = finish(slice_env, doc, actual)
+                            assert fingerprint(rows(engine)) == before
+                            observation["full_slice_financial_nonmutation"] = True
+                            (output / "observations.json").write_text(
+                                json.dumps(report, indent=2), encoding="utf-8"
+                            )
             finally:
                 settings.external_ai_enabled = False
                 settings.extraction_provider = "disabled"
                 settings.investigation_external_enabled = False
+                settings.case_auto_correlate_extractions = False
+                settings.case_auto_investigate_extractions = False
                 settings.gemini_api_key = None
                 app.state.extraction_gateway = None
                 engine.dispose()
@@ -329,6 +360,8 @@ def main():
             settings.external_ai_enabled = False
             settings.extraction_provider = "disabled"
             settings.gemini_api_key = None
+            settings.case_auto_correlate_extractions = False
+            settings.case_auto_investigate_extractions = False
         report["external_settings_disabled"] = True
         (output / "observations.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         print("Sanitized synthetic observations:", output, flush=True)

@@ -1,5 +1,70 @@
 # Build status
 
+## Real Gemini + automatic correlation/investigation slice — 2026-10-27 IST
+
+Complete live synthetic slice verified after separately authorized harness rerun.
+No production module/schema/financial rule changed; existing smoke runner gains
+--correlation-slice and a small application-owned API assertion helper. Approved
+PROSE unchanged plus existing CUSTOMER c/INVOICE I-1/UTR t/AMOUNT101-paise source
+labels; this composition is explicit, not inferred authority. Exact immutable
+upload, source hashes/spans and model output retained. Fresh disposable PostgreSQL
+head0012_correlation/metadata check only; development DB untouched.
+
+Actual Gemini3.5 Flash-Lite v5 output SUCCEEDED: I-1, damage101 paise, reason_code=null,
+UTR t, payer_hint=null. Source spans validated/persisted, human review required and
+source authenticity UNVERIFIED at extraction. Existing independent test-only source
+signature/known fixture owner and imported bank/verified-alias provenance later
+satisfy source correlation. Controller test identity port has only REVIEW_* grants,
+never financial permissions/production authority. No extracted facts recreated.
+
+Outbox automatically creates same101-paise claim, first deterministic investigation
+and missing-source correlation task. Signed source registration -> automatic new
+READY_FOR_REVIEW task -> actual controller CONFIRM API/immutable history -> existing
+LINKED association/case merge -> affected-claim reevaluation -> current COMPLETED
+LangGraph (4 read-only tools,10 trace steps). Same invoice/receipt/document/extraction/
+claim IDs preserved; document case resolves to original receipt canonical case.
+Finding INSUFFICIENT_EVIDENCE, MISSING_SIGNED_POD, next_action REQUEST_EVIDENCE,
+recommendation AWAITING_REVIEW. This is useful abstention, not authorized damage credit.
+Invoice open1001/receipt available900 unchanged. Financial fingerprint unchanged;
+allocation/settlement/journal/line/account-balance/finance-approval counts0. Redrain
+produces no duplicate investigation/work.
+
+Two generations total, no SDK/application retries. First produced correct fields,
+including two source-valid occurrences of I-1; runner's exact-list expectation
+incorrectly rejected it, then cleaned DB before automation. Fix compares identifier
+set only for slice and retains/verifies every span; strict internal schema unchanged,
+no output repaired. User separately authorized one additional26-paise harness run.
+Second completed entire slice. Latencies API3.5647484s/3.4807519s; input1045/1045,
+output462/317; estimated conservative costs20/15 paise. Reservations26+26=52;
+prior271 ->323 cumulative,177 paise remain of500. Existing Free-tier account/key/
+model/quotas, current official standard pricing and ECB FX rechecked; no billing
+changes. One caller, attempts1, external investigation false. Local .env untouched;
+AI/automation enabled only in process Settings then disabled in finally, key cleared.
+
+Focused checks (offline; no hidden/benchmark access):
+- pytest tests/test_live_correlation_slice.py tests/test_live_gemini_runner.py
+  tests/test_reason_code_semantics.py tests/test_gemini_request_contract.py
+  --require-postgres -q --tb=short --basetemp=local-data/pytest-live-slice-20261027c:
+  31 passed57.08s. Initial rehearsal had fake callback/list-interface setup error,
+  fixed without changing application assertions. Repeated source references covered.
+- After live: pytest tests/test_live_correlation_slice.py tests/test_live_gemini_runner.py
+  --require-postgres -q --tb=short --basetemp=local-data/pytest-live-slice-20261027d:
+  10 passed19.24s (subset repeated, not41 distinct tests).
+- Ruff check/format --check three changed Python files PASS; mypy22 files PASS;
+  whitespace/staged-content review PASS. No full suite/restart/Docker/benchmark run.
+
+Live commands: .venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py
+--authorized-live --model gemini-3.5-flash-lite --remaining-budget-paise229 (then203)
+--confirmed-rpm15 --confirmed-tpm250000 --remaining-rpd440 (then436)
+--correlation-slice (actual CLI uses spaces between option and value).
+Ignored detailed observations: local-data/live-gemini/5e14569a0fe244dab167f187b1302740
+and bbbbb81b571541cd802ffd356108b6b5. Report, exact payloads/IDs/states/frontend API
+journey, pricing/privacy, limitations and reproduction: docs/LIVE_AI_AUTOMATION_SLICE.md.
+Full report does not erase first harness failure or previous benchmark/live failures.
+General model accuracy, real damage legitimacy, production identity/key custody and
+real-customer validation remain unverified. No frontend/framework/new milestone/push.
+Implementation hash recorded in a follow-up checkpoint entry.
+
 ## Source-backed automatic exception investigation — 2026-10-27 (IST)
 
 Offline follow-up from c7422da. Zero Gemini calls;229-paise remaining authorization

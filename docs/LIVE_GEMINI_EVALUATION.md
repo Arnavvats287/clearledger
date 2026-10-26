@@ -1,5 +1,18 @@
 # Live Gemini extraction evaluation
 
+## Subsequent v5 real AI + automation verification — 2026-10-27 IST
+
+The separately authorized synthetic vertical slice now completed with real Gemini
+3.5 extraction and reason_code=null. Same claim flowed automatically through
+source-backed correlation review, controller confirmation and refreshed original
+LangGraph, ending REQUEST_EVIDENCE/MISSING_SIGNED_POD with no financial mutation.
+Two actual generations, first correct extraction stopped by runner's occurrence-count
+assumption; separately authorized second completed. New reservations52 paise;
+cumulative323,177 remain. This does not replace historical failures/benchmarks or
+establish general accuracy. Full actual results, API payloads, costs and controls:
+[LIVE_AI_AUTOMATION_SLICE.md](LIVE_AI_AUTOMATION_SLICE.md).
+
+
 Offline follow-up (2026-10-27): provider contract v5 rejects unlabeled status/category
 words as reason codes; explicitly sourced codes survive validation/privacy filtering.
 Optional initial deterministic case investigations reuse persisted extraction facts

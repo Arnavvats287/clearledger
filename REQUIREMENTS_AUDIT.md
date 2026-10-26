@@ -1,5 +1,18 @@
 # ClearLedger requirements-alignment audit
 
+## Live synthetic vertical slice — 2026-10-27
+
+Real Gemini v5 extraction -> outbox ClaimSource/claim -> missing-proof task ->
+independent synthetic signed remittance -> controller CONFIRM -> existing case
+merge/association -> automatic deterministic LangGraph refresh verified together.
+Trace: scripts/live_gemini_smoke.py --correlation-slice, scripts/live_correlation_slice.py,
+tests/test_live_correlation_slice.py (offline one/repeated-reference controls),
+docs/LIVE_AI_AUTOMATION_SLICE.md (actual run/payloads/IDs/costs/limitations).
+Damage101 paise remains unsupported without signed POD: review/request evidence,
+no financial mutation. First harness failure retained; second call explicitly
+authorized. Production G1, real source/key custody, real-customer/benchmark accuracy
+remain unresolved; no benchmark or legal authority inferred from a synthetic success.
+
 ## Source-backed exception correlation — 2026-10-27
 
 Current authenticated remittance -> bounded exact receipt/customer/invoice proof:
