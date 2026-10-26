@@ -69,7 +69,10 @@ correlation-final-current-verified.log, correlation-history-final.log. Prelimina
 focused failures also exposed missing uncertain-extraction citations; fixed scoped
 read-only retrieval/verified pointer retention while keeping unknowns and abstention.
 Test NameErrors during expansion were fixed, not skipped. No existing tests changed.
-Local implementation/status checkpoint identifiers are recorded in a follow-up entry.
+Implementation checkpoint: `1f770db9b095b4feeb12fe3cad67b07985b61bed`
+(`feat: connect source-backed correlation review to exception investigations`).
+Staged33 intended files reviewed; no original tests modified, credentials/local logs/
+datasets staged. External-AI/automation local flags checked disabled. No push.
 Contracts and frontend endpoints: docs/CORRELATION_REVIEW.md. New API tests cover
 complete and uncertain investigations with source facts/citations/trace, missing,
 conflicting, ambiguous and rejected proof, late/revised evidence, idempotency,
