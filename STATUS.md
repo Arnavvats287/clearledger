@@ -57,7 +57,11 @@ four-case test module, chronological contract and STATUS. Source seals remained 
 through the final checks; staged credential/whitespace/scope checks passed. No app,
 financial logic, existing test, dependency, migration or Gemini-setting changes. No
 development data reset/downgrade, production credentials or real benchmark inputs used.
-The implementation checkpoint is recorded by the following documentation-only commit.
+Verified implementation checkpoint: **`89785da07d28662a36a33e44f6975b46ffca95d3`**,
+message `fix: support isolated chronological Docker startup`. Exactly six intended files
+were reviewed/staged and all required checks passed before committing. The working tree
+was clean afterward. This documentation-only follow-up records the hash; executable
+source/image inputs remain unchanged. No push or independent benchmark run.
 
 New local image: **`sha256:4acf25a7f0d3b10a96825e0bcd486ff5392bfc631d861f08e062a4c47fe92c3f`**.
 No push or independent benchmark execution. All original clock/source-authority/scoring
