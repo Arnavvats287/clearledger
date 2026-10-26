@@ -36,6 +36,7 @@ from clearledger.models import (
     Receipt,
 )
 from clearledger.provider_budget import reserve
+from clearledger.provider_diagnostics import diagnostic
 from clearledger.remittance_parser import deterministic
 
 
@@ -240,6 +241,7 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
             "usage_complete": False,
             "attempts": 0,
         }
+        failure_phase = "SOURCE_VALIDATION"
         try:
             integrity(doc, store)
             if doc.parse_status != "READY":
@@ -281,7 +283,11 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
                             ),
                         )
                         metrics.update(usage)
-                        extracted = Extraction.model_validate(decode_output(reply.json_text))
+                        failure_phase = "RESPONSE_DECODING"
+                        decoded = decode_output(reply.json_text)
+                        failure_phase = "SCHEMA_VALIDATION"
+                        extracted = Extraction.model_validate(decoded)
+                        failure_phase = "SOURCE_VALIDATION"
                         extracted = restore(extracted, projected.pages, doc.pages)
                         validate_semantics(extracted, doc.pages)
                     counts = {}
@@ -294,6 +300,7 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
                     status = "SUCCEEDED" if extracted.uncertainty == "none" else "NEEDS_REVIEW"
         except ExtractionError as error:
             metrics.update(getattr(error, "metrics", {}))
+            metrics.setdefault("diagnostic", diagnostic(failure_phase, "DOMAIN_VALIDATION"))
             error_code = str(error)
             status = (
                 "BLOCKED"
@@ -311,6 +318,7 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
             )
             reason = "CONTROLLED_EXTRACTION_FAILURE"
         except (ValueError, TypeError, IndexError, RecursionError):
+            metrics["diagnostic"] = diagnostic(failure_phase, "VALIDATION")
             status, error_code, reason = (
                 "FAILED",
                 "INVALID_EXTRACTION_OUTPUT",

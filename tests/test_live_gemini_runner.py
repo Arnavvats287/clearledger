@@ -35,7 +35,7 @@ import pytest
             "--confirmed-tpm",
             "250000",
             "--remaining-rpd",
-            "15",
+            "3",
         ],
     ],
 )

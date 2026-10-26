@@ -1,5 +1,54 @@
 # Build status
 
+## Offline Gemini phase diagnostics — 2026-10-26 (IST)
+
+**No external API/metadata/generation/pricing/FX request in this task.** Existing
+23.62s PROVIDER_FAILED evidence still does not establish the failing phase, provider
+HTTP status or whether generation was reached. No historical result was rewritten
+or speculative cause asserted. Remaining conservative budget stays83 paise.
+
+Added closed-vocabulary provider_diagnostics; worker emits phase/category and optional
+safe integer HTTP status only. MODEL_LOOKUP, TOKEN_COUNT, CONTENT_GENERATION and
+RESPONSE_DECODING distinguish SDK boundaries; parent orchestrator adds schema/source
+validation and worker timeout/process/resource failures. Killed-worker internal phase
+remains unknown. Sanitized details survive transport/gateway into append-only extraction
+metrics/API/history. Unknown worker diagnostic fields/class names/messages/URLs/keys/
+prompts/bodies cannot propagate. Original error/retry semantics remain compatible;
+arbitrary worker domain-error strings are now rejected instead of echoed. No raw
+response logging, new capabilities, source-verification bypass or financial change.
+
+Updated the existing exact worker-envelope test to require its original error/retry
+values plus precise new diagnostic values. New tests mock SDK HTTP403/400/429/503,
+timeouts, security/domain exceptions, response decode, parent process/resource errors,
+malformed worker payloads and unsafe status/diagnostic fields. Actual API fake-provider
+tests cover persisted/replayed diagnostics, JSON/schema/source failures, canary
+non-leakage, review/no authority and unchanged financial records. No real provider used.
+
+Future retry runner now mechanically selects only existing PROSE, one attempt,3 daily
+HTTP operations,2048/512 daily token caps and17-paise maximum, against remaining83.
+No automatic additional document or retry. Standalone metadata plus attempt requires
+at least4 remaining account HTTP operations; corresponding refusal-boundary test
+updated from old multi-document requirement. Same-day pricing lock and explicit
+authorization remain required. **Prepared only; no live invocation.** Recheck current
+pricing/FX/model/account quotas and synthetic projection after separate authorization.
+
+Actual targeted pytest command (TEST_DATABASE_URL loaded privately):
+`.venv/Scripts/python.exe -m pytest tests/test_provider_diagnostics.py
+tests/test_document_diagnostics.py tests/test_document_domain.py
+tests/test_provider_controls.py tests/test_documents.py tests/test_live_gemini_runner.py
+--require-postgres -q --tb=short`: **131 passed in148.21s**, disposable PostgreSQL only,
+no skips. Log `local-data/gemini-diagnostics-targeted.log`. An earlier restricted
+unit run had70 pass/1 Windows sandbox temp-directory setup error; retained separately
+in `local-data/gemini-diagnostics-unit.log`. Normal-permission targeted run above
+covered it successfully; no assertion removed/weakened or test skipped.
+
+Ruff lint/format on all changed Python files and Git whitespace checks PASS. No full
+suite, static-type gate, Docker rebuild, restart check or unrelated feature work.
+External extraction/investigations reverified disabled; no ignored .env/key change.
+No independent benchmark/operator/sealed-data access. Contracts and live report updated;
+native source only, no claim that an existing image includes these diagnostics.
+Verified checkpoint will be recorded in a follow-up status commit; no push.
+
 ## Actual Gemini smoke — first attempt failed safely, 2026-10-26 (IST)
 
 Actual-run/report checkpoint: `d0d8931129d9ba4248e23d16a04313d81e32b8d5`.

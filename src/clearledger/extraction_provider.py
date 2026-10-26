@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol, cast
 
 from clearledger.document_contract import ExtractionError
+from clearledger.provider_diagnostics import diagnostic, exception_category, sanitized
 
 PREFLIGHT_CODES = {
     "MODEL_NOT_AVAILABLE",
@@ -36,8 +37,9 @@ class Transport(Protocol):
 
 
 class ProviderFailure(Exception):
-    def __init__(self, code: str, retryable: bool = False) -> None:
+    def __init__(self, code: str, retryable: bool = False, *, details: object = None) -> None:
         self.code, self.retryable = code, retryable
+        self.diagnostic = sanitized(details) if details is not None else None
         super().__init__(code)
 
 
@@ -112,6 +114,8 @@ class Gateway:
         started = self.clock()
         attempts_started = 0
         reservations: list[dict[str, object]] = []
+        phase = "ADMISSION"
+        failure_diagnostic: dict[str, object] | None = None
         try:
             for attempt in range(1, self.attempts + 1):
                 now = self.clock()
@@ -122,9 +126,12 @@ class Gateway:
                         raise ExtractionError("PROVIDER_RATE_LIMIT")
                     self._times.append(now)
                 try:
+                    phase = "ADMISSION"
+                    failure_diagnostic = None
                     if before_attempt is not None:
                         reservations.append(before_attempt())
                     attempts_started += 1
+                    phase = "PROVIDER_TRANSPORT"
                     reply = self.transport.generate(pages)
                     if len(reply.json_text.encode()) > 100_000:
                         raise ExtractionError("PROVIDER_OUTPUT_LIMIT")
@@ -183,6 +190,9 @@ class Gateway:
                         "counted_input_tokens": reply.counted_input_tokens,
                     }
                 except ProviderFailure as error:
+                    failure_diagnostic = (
+                        sanitized(error.diagnostic) if error.diagnostic is not None else None
+                    )
                     if not error.retryable or attempt == self.attempts:
                         raise ExtractionError(
                             error.code if error.code in PREFLIGHT_CODES else "PROVIDER_FAILED"
@@ -201,6 +211,8 @@ class Gateway:
                     "estimated_cost_paise": None,
                     "usage_complete": False,
                     "budget_reservations": reservations,
+                    "diagnostic": failure_diagnostic
+                    or diagnostic(phase, exception_category(error)),
                 },
             ) from None
         finally:
@@ -245,11 +257,38 @@ class GeminiTransport:
                 },
                 timeout=self.timeout_ms / 1000 + 3,
             )
-        except ExtractionError:
-            raise ProviderFailure("TRANSPORT_TIMEOUT", retryable=True) from None
+        except ExtractionError as error:
+            if str(error) == "PARSER_TIMEOUT":
+                details = diagnostic("WORKER_TIMEOUT", "TIMEOUT")
+            else:
+                details = diagnostic("WORKER_PROCESS", "RESOURCE")
+            raise ProviderFailure("TRANSPORT_TIMEOUT", retryable=True, details=details) from None
+        except (ValueError, TypeError) as error:
+            raise ProviderFailure(
+                "GEMINI_FAILURE", details=diagnostic("RESPONSE_DECODING", exception_category(error))
+            ) from None
+        except OSError as error:
+            raise ProviderFailure(
+                "GEMINI_FAILURE", details=diagnostic("WORKER_PROCESS", exception_category(error))
+            ) from None
+        if not isinstance(result, dict):
+            raise ProviderFailure(
+                "GEMINI_FAILURE", details=diagnostic("RESPONSE_DECODING", "DECODE")
+            )
         if result.get("error"):
-            code = result["error"] if result["error"] in PREFLIGHT_CODES else "GEMINI_FAILURE"
-            raise ProviderFailure(code, retryable=bool(result.get("retryable")))
+            supplied_code = result["error"]
+            code = (
+                supplied_code
+                if isinstance(supplied_code, str) and supplied_code in PREFLIGHT_CODES
+                else "GEMINI_FAILURE"
+            )
+            raise ProviderFailure(
+                code, retryable=bool(result.get("retryable")), details=result.get("diagnostic")
+            )
+        if not isinstance(result.get("json_text"), str):
+            raise ProviderFailure(
+                "GEMINI_FAILURE", details=diagnostic("RESPONSE_DECODING", "DECODE")
+            )
         return ProviderReply(
             str(result["json_text"]),
             result.get("input_tokens"),

@@ -25,9 +25,11 @@ def main():
 
     from clearledger.document_contract import Extraction, ExtractionError
     from clearledger.investigation_contract import InvestigatorReply
+    from clearledger.provider_diagnostics import diagnostic, exception_category
 
     install_guard(allow_gemini=True)
 
+    phase = "LOCAL_VALIDATION"
     try:
         request = json.loads(sys.stdin.buffer.read(1_000_000))
         task = request.get("task", "remittance")
@@ -45,6 +47,7 @@ def main():
                 "Explicitly report unknowns. Return JSON only. No tool execution is available."
             )
         )
+        phase = "WORKER_STARTUP"
         with genai.Client(
             api_key=request["key"],
             vertexai=False,
@@ -55,6 +58,7 @@ def main():
             ),
         ) as client:
             model = request["model"]
+            phase = "MODEL_LOOKUP"
             info = client.models.get(model=model)
             if info.name != f"models/{model}":
                 raise ExtractionError("MODEL_NOT_AVAILABLE")
@@ -88,6 +92,7 @@ def main():
                 },
                 "tools": [],
             }
+            phase = "TOKEN_COUNT"
             counted = client.models.count_tokens(
                 model=model,
                 contents=contents,
@@ -101,6 +106,7 @@ def main():
                 raise ExtractionError("INVALID_TOKEN_COUNT")
             if counted.total_tokens > min(max_input, info.input_token_limit):
                 raise ExtractionError("PROVIDER_INPUT_LIMIT")
+            phase = "CONTENT_GENERATION"
             response = client.models.generate_content(
                 model=model,
                 contents=contents,
@@ -115,6 +121,7 @@ def main():
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
                 ),
             )
+            phase = "RESPONSE_DECODING"
             usage = response.usage_metadata
             candidates = usage.candidates_token_count if usage else None
             thoughts = getattr(usage, "thoughts_token_count", None)
@@ -133,12 +140,34 @@ def main():
                 },
                 "counted_input_tokens": counted.total_tokens,
             }
+            phase = "WORKER_PROCESS"
     except ExtractionError as error:
-        result = {"error": str(error), "retryable": False}
+        safe_codes = {
+            "UNSUPPORTED_PROVIDER_TASK",
+            "MODEL_NOT_AVAILABLE",
+            "MODEL_NOT_SUPPORTED",
+            "MODEL_LIMITS_UNAVAILABLE",
+            "MODEL_OUTPUT_LIMIT",
+            "INVALID_TOKEN_COUNT",
+            "PROVIDER_INPUT_LIMIT",
+        }
+        result = {
+            "error": str(error) if str(error) in safe_codes else "PROVIDER_FAILED",
+            "retryable": False,
+            "diagnostic": diagnostic(phase, "DOMAIN_VALIDATION"),
+        }
     except errors.APIError as error:
-        result = {"error": "PROVIDER_FAILED", "retryable": error.code in (429, 500, 502, 503, 504)}
-    except Exception:
-        result = {"error": "PROVIDER_FAILED", "retryable": False}
+        result = {
+            "error": "PROVIDER_FAILED",
+            "retryable": error.code in (429, 500, 502, 503, 504),
+            "diagnostic": diagnostic(phase, "HTTP_API", error.code),
+        }
+    except Exception as error:
+        result = {
+            "error": "PROVIDER_FAILED",
+            "retryable": False,
+            "diagnostic": diagnostic(phase, exception_category(error)),
+        }
     sys.stdout.write(json.dumps(result))
 
 

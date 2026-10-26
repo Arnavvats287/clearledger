@@ -324,7 +324,14 @@ def test_unavailable_or_unsuitable_model_abstains_without_generation(monkeypatch
     )
     monkeypatch.setattr(sys, "stdout", output)
     gemini_worker.main()
-    assert json.loads(output.getvalue()) == {"error": code, "retryable": False}
+    assert json.loads(output.getvalue()) == {
+        "error": code,
+        "retryable": False,
+        "diagnostic": {
+            "phase": "TOKEN_COUNT" if "count" in change else "MODEL_LOOKUP",
+            "exception_category": "VALIDATION" if change.get("missing") else "DOMAIN_VALIDATION",
+        },
+    }
     assert calls == ["unit-model"] and "private" not in output.getvalue()
 
 

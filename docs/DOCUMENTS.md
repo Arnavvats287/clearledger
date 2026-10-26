@@ -83,6 +83,18 @@ Limits: at most 2 worker jobs/process; parser wall timeout 10s; Windows Job aggr
 
 Metrics include reported input/output (output includes reported reasoning), total/reasoning/cached counts where supplied, latency_ms, actual attempts and usage_complete. Missing/failed-attempt usage is unknown. Optional configured INR paise-per-million-token rates produce integer ceiling estimated_cost_paise only for complete usage; absent rates/partial retry usage yields null, never invented zero. Estimates are not provider billing/FX facts. No prompt/result body is in telemetry.
 
+Failure metrics may additionally contain `diagnostic` with only fixed `phase`,
+fixed `exception_category` and optional integer `http_status` (100–599, excluding
+bool). Worker phases distinguish MODEL_LOOKUP, TOKEN_COUNT, CONTENT_GENERATION and
+RESPONSE_DECODING; parent orchestration additionally identifies SCHEMA_VALIDATION,
+SOURCE_VALIDATION, WORKER_TIMEOUT and WORKER_PROCESS. UNKNOWN is explicit when a
+phase cannot be established. A timeout that kills a worker identifies the timeout
+boundary, not its last internal HTTP phase. HTTP status is retained only when
+provided by the SDK API exception; missing status is never inferred. Exception
+messages, class names, bodies, prompts, keys, URLs and arbitrary worker diagnostic
+fields are not recorded. These metadata do not authenticate a source, refund a
+reservation, grant authority or change fail-closed extraction/retry policies.
+
 ### Milestone 04B: economical configuration and durable admission
 
 No default Gemini model ID is assumed. Set an operator-reviewed economical `GEMINI_MODEL` and optional INR paise rates in ignored local configuration only after authorization/review. On an authorized uncached attempt, the isolated transport calls official SDK `models.get` for that exact ID, checks returned name, generation support and positive input/output limits, then counts the **complete** generation request before generating. Unknown/missing/incompatible models or excessive input abstain; no fallback model, tools, autonomous router or escalation exists. The installed SDK's public `HttpOptions.extra_body` carries the Developer API's documented `generateContentRequest` for counting system/schema/content together; offline real-SDK tests assert its equality with the subsequent generation payload. See [Google model metadata](https://ai.google.dev/api/models) and [full-request token counting](https://ai.google.dev/api/tokens). No live model availability, cheapest model, account entitlement, pricing or provider interoperability was verified in this audit; no live API was called.

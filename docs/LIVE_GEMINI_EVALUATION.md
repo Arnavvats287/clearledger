@@ -1,5 +1,54 @@
 # Live Gemini extraction evaluation
 
+## Offline failure-diagnostic hardening — 2026-10-26 (IST)
+
+No external calls were made in this follow-up: no metadata, token counting,
+generation, pricing/FX HTTP fetch or diagnostic retry. The original failure's
+**cause remains UNKNOWN**. Its generic PROVIDER_FAILED and elapsed time cannot
+establish which worker phase failed or whether generation was reached. The new
+diagnostics cannot retroactively recover missing evidence. No quota, schema,
+network, provider or authentication cause is asserted without evidence.
+
+New failure-only `metrics.diagnostic` survives worker → transport → gateway →
+persisted extraction API/history. Only allowlisted phase/exception-category codes
+and optional safe HTTP integer100–599 can cross the boundary. Model lookup,
+token count, generation, response decoding, Pydantic schema validation and source
+validation are distinct. Parent worker timeout/process/resource failures also get
+distinct codes; a killed worker's last HTTP phase remains unknown. Existing public
+error codes/retry behavior remain compatible; the live runner still permits only
+one attempt. Unknown SDK messages, arbitrary exception class names, key/prompt/body/
+URL canaries, malformed diagnostic payloads and unsafe status types are excluded.
+
+Examples of mocked diagnostic outputs (not live failure evidence):
+
+```json
+{"phase":"TOKEN_COUNT","exception_category":"HTTP_API","http_status":400}
+{"phase":"CONTENT_GENERATION","exception_category":"TIMEOUT"}
+{"phase":"SCHEMA_VALIDATION","exception_category":"VALIDATION"}
+{"phase":"WORKER_TIMEOUT","exception_category":"TIMEOUT"}
+```
+
+Actual-API fake-provider tests verify immutable failure-history persistence,
+idempotent replay, unchanged financial state, human review and no authority. Source
+hash/span/semantic verification, privacy projection, worker isolation and monetary
+rules remain enforced. No full regression gate or Docker rebuild was run. Native
+source is updated; an existing Docker image is not claimed to contain this change.
+
+**Prepared, NOT authorized/executed:** one separately authorized retry of the same
+existing PROSE fixture. `live_gemini_smoke.py` now selects only that fixture, reserves
+one attempt/three HTTP operations, caps daily input/output at2048/512 and maximum
+estimated attempt cost17 paise against the remaining83 paise. It cannot auto-continue
+to additional fixtures. The remaining-RPD admission gate requires four operations,
+including standalone metadata lookup. No pricing/token limit/budget increase.
+Before a future authorization is executed, recheck current official pricing/FX,
+model availability, account quota and exact synthetic projection; the runner retains
+its same-day pricing-review lock and explicit opt-in requirement. No billing or
+financial authority will be enabled. A failed/uncertain retry consumes its full17-
+paise reservation; no refund assumption. This follow-up leaves83 paise available.
+
+Targeted tests/Ruff results and local checkpoint are in STATUS.md. External extraction
+and investigations were checked disabled; the key was never emitted or committed.
+
 ## Actual provider extraction attempt — 2026-10-26 (IST)
 
 **One real-provider extraction attempt failed safely; no additional documents or

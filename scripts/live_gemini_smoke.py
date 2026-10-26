@@ -48,7 +48,7 @@ def main():
     # Prices must be re-reviewed on a different day, not blindly replayed later.
     if not args.authorized_live or date.today() != date(2026, 10, 26):
         raise SystemExit("Explicit live authorization/current pricing review required")
-    if args.confirmed_rpm < 3 or args.confirmed_tpm < 2048 or args.remaining_rpd < 16:
+    if args.confirmed_rpm < 3 or args.confirmed_tpm < 2048 or args.remaining_rpd < 4:
         raise SystemExit("Confirmed project quotas insufficient")
     logging.disable(logging.CRITICAL)
     local = dotenv_values(ROOT / ".env")
@@ -63,8 +63,9 @@ def main():
         "model": "gemini-3.1-flash-lite",
         "cases": [],
         "attempt_cost_cap_paise": 17,
-        "experiment_cap_paise": 100,
-        "maximum_five_attempts_paise": 85,
+        "remaining_authorized_cap_paise": 83,
+        "maximum_attempts": 1,
+        "maximum_reserved_paise": 17,
         "billing_changes": False,
         "operator_confirmed_quotas": vars(args),
     }
@@ -128,11 +129,11 @@ def main():
                 llm_timeout_ms=30000,
                 llm_requests_per_minute=1,
                 llm_shared_requests_per_minute=3,
-                llm_daily_requests=15,
+                llm_daily_requests=3,
                 llm_max_input_tokens=2048,
                 llm_max_output_tokens=512,
-                llm_daily_input_tokens=10240,
-                llm_daily_output_tokens=2560,
+                llm_daily_input_tokens=2048,
+                llm_daily_output_tokens=512,
                 llm_input_paise_per_million_tokens=3300,
                 llm_output_paise_per_million_tokens=19800,
                 llm_max_cost_paise_per_attempt=17,
@@ -143,10 +144,7 @@ def main():
                 with TestClient(app) as api:
                     setup(api)
                     before = fingerprint(rows(engine))
-                    selected = [
-                        next(row for row in SMOKE if row[0] == name)
-                        for name in ("prose", "missing_amount", "conditional", "injection")
-                    ]
+                    selected = [next(row for row in SMOKE if row[0] == name) for name in ("prose",)]
                     for index, (name, raw, mime, suffix, reference, _) in enumerate(selected):
                         if index:
                             time.sleep(61)
@@ -156,7 +154,7 @@ def main():
                         report["cases"].append(observation)
                         with Session(engine) as session:
                             used = session.query(ProviderReservation).count()
-                        if used >= 5 or (used + 1) * 17 >= 100:
+                        if used >= 1 or (used + 1) * 17 > 83:
                             raise ValueError("EXPERIMENT_BUDGET_GATE")
                         doc_response = upload(api, raw, name=f"unit-{name}.{suffix}", mime=mime)
                         assert doc_response.status_code == 200
