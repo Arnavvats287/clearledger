@@ -23,7 +23,8 @@ def main():
     from google import genai
     from google.genai import errors, types
 
-    from clearledger.document_contract import Extraction, ExtractionError
+    from clearledger.document_contract import ExtractionError
+    from clearledger.gemini_schema import remittance_response_schema
     from clearledger.investigation_contract import InvestigatorReply
     from clearledger.provider_diagnostics import diagnostic, exception_category
 
@@ -76,7 +77,11 @@ def main():
             if max_output > info.output_token_limit:
                 raise ExtractionError("MODEL_OUTPUT_LIMIT")
             contents = json.dumps({"untrusted_pages": request["pages"]})
-            schema = (Extraction if task == "remittance" else InvestigatorReply).model_json_schema()
+            schema = (
+                remittance_response_schema()
+                if task == "remittance"
+                else InvestigatorReply.model_json_schema()
+            )
             # SDK 2.33's typed CountTokensConfig omits Developer API system/schema fields.
             # Public extra_body sends the documented full generateContentRequest instead.
             full_request = {

@@ -1,5 +1,17 @@
 # Live Gemini extraction evaluation
 
+## Offline wire-compatibility mitigation — no third live attempt
+
+2026-10-26: real SDK serialization/public-spec review found no proven malformed
+generation field. Exact HTTP400 root remains unestablished. Provider-only schema
+export removes documented decoder-complexity bounds while the strict internal
+Pydantic/source/financial checks remain unchanged; live service acceptance is unknown.
+See [precise findings and one-call acceptance gate](GEMINI_REQUEST_COMPATIBILITY.md).
+All SDK HTTP in new tests is intercepted locally. No model/key lookup, token count,
+generation or quota/billing API call occurred. Two real failed attempts remain the
+only live results; real LLM accuracy is still not established. Remaining budget66
+paise, future attempt cap17; separate authorization required. External AI stays off.
+
 ## Exactly one authorized diagnostic retry — 2026-10-26 (IST)
 
 **FAILED at CONTENT_GENERATION; HTTP_API; provider HTTP400. No further attempt.**

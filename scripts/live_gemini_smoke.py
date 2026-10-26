@@ -63,7 +63,7 @@ def main():
         "model": "gemini-3.1-flash-lite",
         "cases": [],
         "attempt_cost_cap_paise": 17,
-        "remaining_authorized_cap_paise": 83,
+        "remaining_authorized_cap_paise": 66,
         "maximum_attempts": 1,
         "maximum_reserved_paise": 17,
         "billing_changes": False,
@@ -154,7 +154,7 @@ def main():
                         report["cases"].append(observation)
                         with Session(engine) as session:
                             used = session.query(ProviderReservation).count()
-                        if used >= 1 or (used + 1) * 17 > 83:
+                        if used >= 1 or (used + 1) * 17 > 66:
                             raise ValueError("EXPERIMENT_BUDGET_GATE")
                         doc_response = upload(api, raw, name=f"unit-{name}.{suffix}", mime=mime)
                         assert doc_response.status_code == 200

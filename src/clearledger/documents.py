@@ -17,6 +17,7 @@ from clearledger.document_parse import PARSER_VERSION
 from clearledger.document_privacy import PRIVACY_VERSION, project, restore
 from clearledger.document_runtime import parse_bounded
 from clearledger.extraction_provider import decode_output
+from clearledger.gemini_schema import PROVIDER_SCHEMA_VERSION
 from clearledger.matching import (
     bank_valid,
     build_snapshot,
@@ -57,6 +58,7 @@ def semantic_cache_key(inputs):
         {
             **{key: inputs[key] for key in keys},
             "max_output_tokens": inputs.get("max_output_tokens", 4096),
+            "provider_schema_version": inputs.get("provider_schema_version", "strict-domain-v1"),
         }
     )
 
@@ -209,6 +211,8 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
         "shared_rpm": settings.llm_shared_requests_per_minute,
         "max_cost_paise": settings.llm_max_cost_paise_per_attempt,
     }
+    if settings.extraction_provider == "gemini":
+        inputs["provider_schema_version"] = PROVIDER_SCHEMA_VERSION
     input_hash = digest(inputs)
     if prior:
         row = owned(session, DocumentExtraction, org, prior.extraction_id)

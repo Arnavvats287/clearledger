@@ -83,6 +83,14 @@ Limits: at most 2 worker jobs/process; parser wall timeout 10s; Windows Job aggr
 
 Metrics include reported input/output (output includes reported reasoning), total/reasoning/cached counts where supplied, latency_ms, actual attempts and usage_complete. Missing/failed-attempt usage is unknown. Optional configured INR paise-per-million-token rates produce integer ceiling estimated_cost_paise only for complete usage; absent rates/partial retry usage yields null, never invented zero. Estimates are not provider billing/FX facts. No prompt/result body is in telemetry.
 
+Gemini remittance wire schema `gemini-remittance-shape-v1` preserves the internal
+Extraction fields/types/nulls/enums/closed objects but omits decoder-side numeric,
+array and string bounds. All original bounds and source validations remain in the
+unchanged strict host schema. Schema version is included in input provenance/cache
+identity; legacy entries default to strict-domain-v1. This is a compatibility-risk
+mitigation, not evidence that a live request now succeeds. Details and the exact
+separately authorized smoke gate: [GEMINI_REQUEST_COMPATIBILITY.md](GEMINI_REQUEST_COMPATIBILITY.md).
+
 Failure metrics may additionally contain `diagnostic` with only fixed `phase`,
 fixed `exception_category` and optional integer `http_status` (100–599, excluding
 bool). Worker phases distinguish MODEL_LOOKUP, TOKEN_COUNT, CONTENT_GENERATION and

@@ -1,5 +1,77 @@
 # Build status
 
+## Offline Gemini generation-request compatibility — 2026-10-26 (IST)
+
+No Gemini/model/quota/token-count/generation API call; no third live attempt, billing
+change, benchmark or frontend. Public official model/structured-output/generateContent
+documentation reviewed. Model remains gemini-3.1-flash-lite, SDK locked2.33.0. Actual
+prior HTTP400 still has no retained rejection body: **no specific incompatible field
+or proven remote repair established**. New change is a documented-risk mitigation,
+not an assertion that JSON Schema caused400 or that live AI now succeeds.
+
+Real SDK serialization inspected with local httpx.MockTransport: correct
+contents/systemInstruction/tools/generationConfig; candidateCount1, temperature0,
+maxOutputTokens512, application/json and responseJsonSchema; no automatic-function-
+calling field on wire. SDK passes schema dict unchanged. Official references support
+the model's structured output and $defs/$ref/anyOf/closed objects; none arbitrarily
+removed. Google documents numeric/array bound complexity as a possible400 cause and
+string-length constraints as ignored. Original2238-byte schema size alone is not proof
+of oversize. Token counting is not proof of generation-time decoder acceptance.
+
+Added small provider-only `gemini_schema.remittance_response_schema`, deriving the
+same field/type/enum/null/required/closed-object structure without numeric/array/string
+bounds. Wire JSON size1961 bytes. Remittance path only; prompts/MIME/generation values,
+model and Investigator unchanged. Strict internal Extraction Pydantic schema remains
+byte-for-byte identical, including integer-paise/bigint/range/length/list checks;
+decoding/privacy restoration/source amount/span/category/ownership checks unchanged.
+Schema marker gemini-remittance-shape-v1 enters extraction input provenance/cache key;
+legacy entries default strict-domain-v1, no historical row rewrites or financial migration.
+
+Tests compare actual old/new SDK request serialization (only schema differs), and
+actual API → real transport/worker/SDK with every HTTP operation intercepted locally.
+countTokens' embedded generation request structurally equals generateContent request.
+Existing free-form PROSE is first NEEDS_REVIEW without SDK activity. Scripted valid
+facts then flow through host validation/persistence/verify-span; explicitly not live
+AI accuracy. Float/negative/over-bigint money, wrong source amount, bad span, added
+authority, excessive references and invalid uncertainty rejected. Financial state,
+human review/no authority and existing worker/resource/diagnostic controls preserved.
+
+Actual targeted checks, TEST_DATABASE_URL loaded privately for disposable DBs:
+- Initial pytest targets: test_gemini_schema, test_gemini_request_contract,
+  test_provider_diagnostics, test_document_diagnostics, test_document_domain,
+  test_provider_controls::test_unavailable_or_unsuitable_model_abstains_without_generation,
+  test_live_gemini_runner: **88 passed,7 failed in42.15s**. Seven new contract-test
+  adapter failures were a missing default timeout argument when forwarding document
+  parser work. Fixed only the test adapter signature; no production incompatibility
+  inferred from these harness failures. `local-data/gemini-offline-compatibility.log`.
+- Corrected affected API/SDK contract tests plus all provider_controls/cache/quota
+  regressions and live-runner refusal checks: **39 passed in60.89s**,
+  `local-data/gemini-offline-compatibility-final.log`.
+- Combined unique passing targeted coverage initially116, then **117 tests** after
+  the additional disabled-provider identity regression; not a claimed single117-test
+  execution. Collection confirmed116 before that final case was added.
+  Final schema-only unit check after typing annotation: **8 passed in1.61s** (repeat
+  subset), `local-data/gemini-schema-final-unit.log`. Local serialization evidence:
+  `local-data/gemini-serialization-probe.log`. All provider transport here is mocked HTTP.
+- Final review narrowed the version field to Gemini-only inputs, retaining old
+  deterministic/fake request hashes. API+schema regressions (including persisted
+  Gemini version and legacy disabled-provider same-key replay) **16 passed in21.12s**,
+  `local-data/gemini-compatibility-scope-check.log`. This includes one new distinct
+  case and repeated relevant checks; no production domain validation changed.
+- Ruff check/format on6 changed Python files and Git whitespace checks PASS. No full
+  suite, type gate, Docker/restart or unrelated architecture work.
+
+Precise findings and acceptance gate: `docs/GEMINI_REQUEST_COMPATIBILITY.md`.
+Future value requires actual model to extract I-1/damage101 paise from unchanged
+PROSE into the existing source-verified document extraction with explicit uncertainty,
+human review and no authority; payment900 is not another deduction/payment-total field.
+Exactly one separately authorized future attempt,17-paise cap within remaining66;
+runner now records66 (not stale83), no automatic continuation. Recheck current prices/
+FX/model/account quotas/privacy and same-day review lock before execution. No call now.
+Persistent external extraction/investigations reverified disabled, no .env/key changes.
+Two failed live attempts remain the only live results; real LLM accuracy unestablished.
+Verified checkpoint recorded in follow-up status commit; no push.
+
 ## Portfolio readiness — complete accountant review workflow proved first
 
 Verified implementation checkpoint: `936d74501493f3cbdfac6d72cfb30d6cc649bf90`.
