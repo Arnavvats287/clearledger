@@ -88,8 +88,9 @@ and zero API-error observations. Those results were supplied by the operator/use
 this pass did not access/rescore frozen artifacts. The tiny walkthrough proves
 selected capabilities and regression expectations, not benchmark quality.
 
-Two real Gemini attempts failed; latest diagnostics show CONTENT_GENERATION /
-HTTP_API / HTTP400. The precise rejected field is unknown. Real LLM accuracy is not
-established, and no new external call or infrastructure debugging occurred here.
+At the portfolio checkpoint two real Gemini attempts had failed, latest HTTP400.
+A separately authorized third attempt later failed at CONTENT_GENERATION /
+HTTP_API / HTTP503 / UNAVAILABLE; neither the earlier rejected field nor live LLM
+accuracy is established. The offline portfolio demo itself makes no external calls.
 DocILE/ContractNLI, sealed blind evaluation and real-customer validation remain
 future/unverified work. See README for limitations and the full contracts.

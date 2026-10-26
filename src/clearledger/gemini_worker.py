@@ -165,7 +165,7 @@ def main():
         result = {
             "error": "PROVIDER_FAILED",
             "retryable": error.code in (429, 500, 502, 503, 504),
-            "diagnostic": diagnostic(phase, "HTTP_API", error.code),
+            "diagnostic": diagnostic(phase, "HTTP_API", error.code, getattr(error, "status", None)),
         }
     except Exception as error:
         result = {

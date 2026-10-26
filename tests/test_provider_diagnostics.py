@@ -16,20 +16,25 @@ CANARY = "PRIVATE-KEY-PROMPT-BODY-https://secret.invalid/private"
 
 
 @pytest.mark.parametrize(
-    "phase,kind,status,category",
+    "phase,kind,status,category,provider_status",
     [
-        ("MODEL_LOOKUP", "http", 403, "HTTP_API"),
-        ("TOKEN_COUNT", "http", 400, "HTTP_API"),
-        ("CONTENT_GENERATION", "http", 429, "HTTP_API"),
-        ("CONTENT_GENERATION", "http", 503, "HTTP_API"),
-        ("TOKEN_COUNT", "timeout", None, "TIMEOUT"),
-        ("CONTENT_GENERATION", "timeout", None, "TIMEOUT"),
-        ("MODEL_LOOKUP", "security", None, "SECURITY"),
-        ("MODEL_LOOKUP", "domain", None, "DOMAIN_VALIDATION"),
-        ("RESPONSE_DECODING", "decode", None, "DECODE"),
+        ("MODEL_LOOKUP", "http", 403, "HTTP_API", "PERMISSION_DENIED"),
+        ("TOKEN_COUNT", "http", 400, "HTTP_API", "INVALID_ARGUMENT"),
+        ("CONTENT_GENERATION", "http", 400, "HTTP_API", "FAILED_PRECONDITION"),
+        ("CONTENT_GENERATION", "http", 429, "HTTP_API", "RESOURCE_EXHAUSTED"),
+        ("CONTENT_GENERATION", "http", 503, "HTTP_API", "UNAVAILABLE"),
+        ("CONTENT_GENERATION", "http", 400, "HTTP_API", None),
+        ("CONTENT_GENERATION", "http", 400, "HTTP_API", CANARY),
+        ("TOKEN_COUNT", "timeout", None, "TIMEOUT", None),
+        ("CONTENT_GENERATION", "timeout", None, "TIMEOUT", None),
+        ("MODEL_LOOKUP", "security", None, "SECURITY", None),
+        ("MODEL_LOOKUP", "domain", None, "DOMAIN_VALIDATION", None),
+        ("RESPONSE_DECODING", "decode", None, "DECODE", None),
     ],
 )
-def test_mock_sdk_failure_phases_never_expose_body(monkeypatch, phase, kind, status, category):
+def test_mock_sdk_failure_phases_never_expose_body(
+    monkeypatch, phase, kind, status, category, provider_status
+):
     from google import genai
     from google.genai.errors import APIError
 
@@ -42,7 +47,7 @@ def test_mock_sdk_failure_phases_never_expose_body(monkeypatch, phase, kind, sta
         if current != phase:
             return
         if kind == "http":
-            raise APIError(status, {"error": {"message": CANARY}})
+            raise APIError(status, {"error": {"message": CANARY, "status": provider_status}})
         if kind == "timeout":
             raise TimeoutError(CANARY)
         if kind == "security":
@@ -97,7 +102,7 @@ def test_mock_sdk_failure_phases_never_expose_body(monkeypatch, phase, kind, sta
     assert result == {
         "error": "PROVIDER_FAILED",
         "retryable": status in (429, 503),
-        "diagnostic": diagnostic(phase, category, status),
+        "diagnostic": diagnostic(phase, category, status, provider_status),
     }
     assert visited[-1] == phase
     assert CANARY not in output.getvalue() and "secret.invalid" not in output.getvalue()
@@ -106,7 +111,9 @@ def test_mock_sdk_failure_phases_never_expose_body(monkeypatch, phase, kind, sta
     with pytest.raises(ProviderRunError) as failure:
         Gateway(GeminiTransport(CANARY, "unit-model"), attempts=1).generate(["Invoice I-1"])
     assert str(failure.value) == "PROVIDER_FAILED"
-    assert failure.value.metrics["diagnostic"] == diagnostic(phase, category, status)
+    assert failure.value.metrics["diagnostic"] == diagnostic(
+        phase, category, status, provider_status
+    )
     assert CANARY not in json.dumps(failure.value.metrics)
 
 
@@ -153,3 +160,33 @@ def test_invalid_worker_response_is_not_success(monkeypatch, reply):
     with pytest.raises(ProviderRunError) as failure:
         Gateway(GeminiTransport(CANARY, "unit-model"), attempts=1).generate(["synthetic"])
     assert failure.value.metrics["diagnostic"] == diagnostic("RESPONSE_DECODING", "DECODE")
+
+
+@pytest.mark.parametrize(
+    "value", [None, CANARY, "invalid_argument", True, [CANARY], {"body": CANARY}]
+)
+def test_provider_status_unknown_never_reads_or_copies_error_body(value):
+    result = sanitized(
+        {
+            "phase": "CONTENT_GENERATION",
+            "exception_category": "HTTP_API",
+            "http_status": 400,
+            "provider_status": value,
+            "body": CANARY,
+        }
+    )
+    assert result == {
+        "phase": "CONTENT_GENERATION",
+        "exception_category": "HTTP_API",
+        "http_status": 400,
+        "provider_status": "UNKNOWN",
+    }
+    assert CANARY not in json.dumps(result)
+
+
+def test_same_http_code_is_not_used_to_infer_provider_status():
+    for status in ("INVALID_ARGUMENT", "FAILED_PRECONDITION", "OUT_OF_RANGE"):
+        assert (
+            diagnostic("CONTENT_GENERATION", "HTTP_API", 400, status)["provider_status"] == status
+        )
+    assert diagnostic("CONTENT_GENERATION", "HTTP_API", 400)["provider_status"] == "UNKNOWN"

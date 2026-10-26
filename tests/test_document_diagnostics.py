@@ -38,6 +38,7 @@ def test_safe_failure_diagnostic_is_durable_without_financial_mutation(
                 "phase": phase,
                 "exception_category": "HTTP_API",
                 "http_status": 400,
+                "provider_status": "FAILED_PRECONDITION",
                 "body": canary,
             },
         )
@@ -56,6 +57,7 @@ def test_safe_failure_diagnostic_is_durable_without_financial_mutation(
     assert result["metrics"]["diagnostic"]["phase"] == phase
     if fault == "provider":
         assert result["metrics"]["diagnostic"]["http_status"] == 400
+        assert result["metrics"]["diagnostic"]["provider_status"] == "FAILED_PRECONDITION"
     assert canary not in json.dumps(result)
     assert not result["financial_authority"] and result["requires_human_review"]
     assert len(transport.calls) == 1

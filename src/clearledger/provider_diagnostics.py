@@ -33,15 +33,43 @@ CATEGORIES = frozenset(
         "DOMAIN_VALIDATION",
     }
 )
+PROVIDER_STATUSES = frozenset(
+    {
+        "UNKNOWN",
+        "CANCELLED",
+        "INVALID_ARGUMENT",
+        "DEADLINE_EXCEEDED",
+        "NOT_FOUND",
+        "ALREADY_EXISTS",
+        "PERMISSION_DENIED",
+        "UNAUTHENTICATED",
+        "RESOURCE_EXHAUSTED",
+        "FAILED_PRECONDITION",
+        "ABORTED",
+        "OUT_OF_RANGE",
+        "UNIMPLEMENTED",
+        "INTERNAL",
+        "UNAVAILABLE",
+        "DATA_LOSS",
+    }
+)
 
 
-def diagnostic(phase: str, category: str, http_status: object = None) -> dict[str, object]:
+def diagnostic(
+    phase: str, category: str, http_status: object = None, provider_status: object = None
+) -> dict[str, object]:
     result: dict[str, object] = {
         "phase": phase if phase in PHASES else "UNKNOWN",
         "exception_category": category if category in CATEGORIES else "INTERNAL",
     }
     if type(http_status) is int and 100 <= http_status <= 599:
         result["http_status"] = http_status
+    if category == "HTTP_API":
+        result["provider_status"] = (
+            provider_status
+            if isinstance(provider_status, str) and provider_status in PROVIDER_STATUSES
+            else "UNKNOWN"
+        )
     return result
 
 
@@ -54,6 +82,7 @@ def sanitized(value: object) -> dict[str, object]:
         phase if isinstance(phase, str) else "UNKNOWN",
         category if isinstance(category, str) else "INTERNAL",
         value.get("http_status"),
+        value.get("provider_status"),
     )
 
 

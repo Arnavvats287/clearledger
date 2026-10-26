@@ -36,6 +36,7 @@ from clearledger.document_contract import Extraction, validate_semantics  # noqa
 from clearledger.document_privacy import project  # noqa: E402
 from clearledger.main import create_app  # noqa: E402
 from clearledger.models import ProviderReservation  # noqa: E402
+from clearledger.provider_diagnostics import diagnostic  # noqa: E402
 
 
 def main():
@@ -46,7 +47,7 @@ def main():
     parser.add_argument("--remaining-rpd", type=int, required=True)
     args = parser.parse_args()
     # Prices must be re-reviewed on a different day, not blindly replayed later.
-    if not args.authorized_live or date.today() != date(2026, 10, 26):
+    if not args.authorized_live or date.today() != date(2026, 10, 27):
         raise SystemExit("Explicit live authorization/current pricing review required")
     if args.confirmed_rpm < 3 or args.confirmed_tpm < 2048 or args.remaining_rpd < 4:
         raise SystemExit("Confirmed project quotas insufficient")
@@ -87,7 +88,7 @@ def main():
             contingency_percent=20,
         )
         from google import genai
-        from google.genai import types
+        from google.genai import errors, types
 
         with genai.Client(
             api_key=key,
@@ -98,7 +99,13 @@ def main():
                 client_args={"trust_env": False},
             ),
         ) as client:
-            info = client.models.get(model=report["model"])
+            try:
+                info = client.models.get(model=report["model"])
+            except errors.APIError as error:
+                report["preflight_diagnostic"] = diagnostic(
+                    "MODEL_LOOKUP", "HTTP_API", error.code, getattr(error, "status", None)
+                )
+                raise
         if info.name != "models/gemini-3.1-flash-lite" or "generateContent" not in (
             info.supported_actions or []
         ):
@@ -120,7 +127,7 @@ def main():
                 review_access_enabled=False,
                 extraction_provider="gemini",
                 external_ai_enabled=True,
-                privacy_review_reference="authorized-synthetic-prose-review-2026-10-26",
+                privacy_review_reference="authorized-synthetic-prose-review-2026-10-27",
                 gemini_api_key=SecretStr(key),
                 gemini_model=report["model"],
                 investigation_provider="deterministic",

@@ -1,5 +1,10 @@
 # Offline Gemini extraction compatibility review — 2026-10-26
 
+Subsequent authorized verification,27 October: exactly one request using this
+schema failed at CONTENT_GENERATION / HTTP503 / provider status UNAVAILABLE. This
+does not prove the prior400 was fixed or that schema compilation succeeded. No
+successful live extraction is established. Full measured result: [live report](LIVE_GEMINI_EVALUATION.md).
+
 ## Finding and limits of the evidence
 
 The latest real attempt established CONTENT_GENERATION / HTTP_API / HTTP400 after

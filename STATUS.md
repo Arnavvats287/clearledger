@@ -1,5 +1,64 @@
 # Build status
 
+## Final authorized Gemini compatibility verification — 2026-10-27 (IST)
+
+Inspected installed google-genai2.33.0 APIError: numeric `.code` and structured
+`.status` are separate from unsafe `.message`/`.details`/`.response`/exception text.
+Extended closed diagnostics with canonical Google RPC provider-status allowlist.
+Worker/host metadata errors read only SDK code/status; absent/non-string/unrecognized
+values become UNKNOWN, never inferred from HTTP400. Parent re-sanitizes the status;
+body/message/prompt/key/sensitive URL never persisted/logged. No internal schema,
+financial rule, source verification, provider/model/project/key/billing change.
+
+Before live execution, targeted offline tests: provider_diagnostics,
+document_diagnostics, gemini_schema, gemini_request_contract, live_gemini_runner,
+two budget/privacy preflight targets: **58 passed in35.35s**. Added two host-metadata
+status cases afterward; all6 runner cases **passed in2.06s**. **60 distinct targeted
+checks** passed (four repeated runner cases), not a full suite. Logs:
+`local-data/gemini-final-offline-checks.log`, `local-data/gemini-final-runner-checks.log`.
+Tests distinguish INVALID_ARGUMENT/FAILED_PRECONDITION at HTTP400, other statuses,
+UNKNOWN fallbacks, canary non-leakage, durable API metadata and unchanged strict facts.
+Ruff lint/format on6 changed Python files and Git whitespace checks PASS.
+
+Refreshed official pricing on27 October: standard USD0.25 input/1.50 output per
+million unchanged; free-tier billing retained. Advanced the explicit date-bound
+pricing-review lock to27 October without disabling it. Live preflight verified same
+key/exact gemini-3.1-flash-lite and ECB latest available2026-10-26
+INR/USD95.18546657132642116553450125, within freshness/buffer. Conservative110/USD
+plus20% contingency,2048/512 cap,17-paise maximum; remaining budget before attempt66.
+Exact approved PROSE/projection unchanged. Existing operator quota evidence15 RPM/
+250000 TPM/500 RPD, with conservative remaining492 deducting up to eight known prior
+HTTP operations; not claimed as a new dashboard observation or unrelated usage audit.
+One preflight metadata GET plus at most three worker operations remain within limits.
+
+Executed exactly once: `.venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py
+--authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 492`.
+**FAILED: CONTENT_GENERATION / HTTP_API / provider HTTP503 / UNAVAILABLE**.
+New simplified-schema provider request reached generation after lookup/token-count
+checks passed, but503 is not evidence that prior400 is fixed/schema compiled.
+Service's specific unavailability reason UNKNOWN (bodies deliberately not retained).
+No retry, extra fixture, diagnostic generation or further debugging/API call after failure.
+
+Actual API latency3.626688700s; internal3595ms; attempts1; result{}; no reference,
+damage amount or citation returned. Accuracy/hallucination/citation quality NOT
+EVALUABLE. Input/output/total usage and actual estimated spend UNKNOWN/null;
+usage_complete=false. Conservatively consume17 new paise, total51 reserved across
+three failed attempts; **49 paise remain** of original100. No refund/zero-cost claim.
+Outer HTTP200 is a failure-result envelope; process exit1 is expected. Real LLM
+accuracy remains unestablished. No original raw error body or credentials stored.
+
+Private synthetic observations:
+`local-data/live-gemini/b3817f2e2d434381950439d71cd0bc43/observations.json`;
+`local-data/gemini-final-live-attempt.log`. Fresh disposable PostgreSQL upgraded/
+checked at head and cleaned. Financial fingerprint unchanged, human review true,
+financial authority false. Runtime key/gateway/flags cleared; persistent extraction
+and external investigations reverified disabled. Same existing key preserved; .env
+not changed. No financial action/customer message, billing enablement, model switch,
+benchmark/sealed-data modification, full suite, Docker rebuild or new milestone.
+Live report/current README updated honestly to three failures, without rewriting
+frozen evaluation metrics. Authorization consumed; no further call implied.
+Verified checkpoint recorded in follow-up status commit; no push.
+
 ## Offline Gemini generation-request compatibility — 2026-10-26 (IST)
 
 Verified offline implementation checkpoint: `413881f02210ac4de33e3898fec19c26296b9f37`.

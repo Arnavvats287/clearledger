@@ -1,5 +1,78 @@
 # Live Gemini extraction evaluation
 
+## Final authorized compatibility attempt — 2026-10-27 (IST)
+
+**FAILED: CONTENT_GENERATION / HTTP_API / HTTP503 / provider status UNAVAILABLE.**
+Exactly one authorized PROSE attempt used gemini-remittance-shape-v1, the simplified
+provider-only schema. No automatic retry, second fixture, billing/key/project/model
+change, financial action or subsequent debugging call occurred. This is the third
+real provider-path attempt overall; no valid live extraction has yet returned.
+
+First inspected installed google-genai2.33.0 errors.APIError: `.code` is numeric HTTP
+status, `.status` is a separate structured field, whereas `.message`, `.details`,
+`.response` and exception stringification may contain private data. The worker reads
+only code/status. Diagnostic sanitization allowlists canonical Google RPC error
+statuses (INVALID_ARGUMENT, FAILED_PRECONDITION, etc.) at worker and parent boundaries.
+Missing/non-string/unrecognized status becomes UNKNOWN, without guessing from HTTP.
+Host metadata-preflight API errors use the same filter. No raw response/body/message,
+prompt/key/URL or arbitrary exception name is introduced into diagnostics.
+Reference:[Google error conventions](https://google.aip.dev/193).
+
+Offline checks passed before execution:58 targeted diagnostic/strict-validation/
+SDK-contract/refusal/privacy/budget tests in35.35s, then6 runner checks in2.06s,
+including two new metadata-preflight status cases. **60 distinct checks passed**,
+with four repeated runner checks, not64 distinct tests. INVALID_ARGUMENT versus
+FAILED_PRECONDITION at HTTP400, other statuses, unknowns and leak canaries verified.
+Ruff passed. Existing application source/span/money/authority rules unchanged.
+
+Fresh preflight passed: same key accessible for exact model, current official paid
+text prices USD0.25 input/1.50 output per million (free tier retained), latest available
+ECB2026-10-26 INR/USD95.18546657132642116553450125 within freshness window. Used
+conservative110/USD plus20% contingency;2048/512 token maximum reserves17 paise.
+The date-bound pricing review advanced to27 October after checking official pricing;
+the gate was not disabled. Exact original PROSE and approved privacy projection
+unchanged. Operator-confirmed quotas15 RPM/250000 TPM/500 RPD; conservative remaining
+492 accounts for at most eight earlier HTTP operations since the supplied usage
+snapshot. No fresh account-dashboard observation is claimed. One metadata GET plus
+at most three transport operations remain below those limits; no quota/billing API
+or unrelated account action was invoked.
+
+Actual one-time command:
+
+```powershell
+.venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py --authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 492
+```
+
+| Measurement | Actual result |
+|---|---|
+| Extraction status / attempts | FAILED /1 |
+| Phase / exception category | CONTENT_GENERATION / HTTP_API |
+| Provider HTTP / structured status | 503 / UNAVAILABLE |
+| Application HTTP | 200 failure-result envelope, not extraction success |
+| Invoice I-1 / damage101 paise | No fields returned; acceptance criteria unmet |
+| Citation validity / unsupported claims | NOT EVALUABLE; no facts/citations returned |
+| Latency | 3.626688700s API wall time;3595ms internal |
+| Input/output/total usage; actual estimated spend | UNKNOWN/null; usage_complete=false |
+| New conservative reservation consumed | 17 paise, no refund assumed |
+| Total reserved / remaining original100-paise budget | 51 /49 paise |
+| Facts / human review / authority | Empty result /required /false |
+| Financial state / cleanup | Unchanged fingerprint /disposable DB removed |
+
+Model lookup and token-count validation preceded generation successfully on this
+run; the exact counted tokens were not retained on failure. The service reported
+UNAVAILABLE. Exact underlying service reason is unknown; no provider message/body
+was retained. **503 does not prove the earlier400 is fixed or that the simplified
+schema was accepted/compiled**. Real model extraction accuracy remains unestablished.
+No retry, field adjustment or additional investigation was initiated after failure.
+
+Private logs:`local-data/gemini-final-{offline-checks,runner-checks,live-attempt}.log`.
+Actual synthetic observations:
+`local-data/live-gemini/b3817f2e2d434381950439d71cd0bc43/observations.json`.
+Runner exited1 on failed extraction. Process settings/key/gateway cleared; persistent
+external extraction/investigation defaults reverified disabled. Existing API key
+preserved, no .env edit/rotation. No full suite, Docker rebuild, sealed evaluation or
+255-stage benchmark run. This authorization is consumed; no further call implied.
+
 ## Offline wire-compatibility mitigation — no third live attempt
 
 2026-10-26: real SDK serialization/public-spec review found no proven malformed

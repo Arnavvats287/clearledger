@@ -100,7 +100,12 @@ phase cannot be established. A timeout that kills a worker identifies the timeou
 boundary, not its last internal HTTP phase. HTTP status is retained only when
 provided by the SDK API exception; missing status is never inferred. Exception
 messages, class names, bodies, prompts, keys, URLs and arbitrary worker diagnostic
-fields are not recorded. These metadata do not authenticate a source, refund a
+fields are not recorded. For SDK API errors, `provider_status` additionally retains
+only allowlisted canonical Google error statuses (for example INVALID_ARGUMENT,
+FAILED_PRECONDITION or UNAVAILABLE). The SDK's structured `APIError.status` is used;
+messages/details are never parsed or persisted. Missing/unrecognized values become
+UNKNOWN; HTTP400 alone never implies INVALID_ARGUMENT or FAILED_PRECONDITION.
+These metadata do not authenticate a source, refund a
 reservation, grant authority or change fail-closed extraction/retry policies.
 
 ### Milestone 04B: economical configuration and durable admission

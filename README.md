@@ -185,7 +185,7 @@ during this pass. The sealed/blind evaluation remains separate.
 | Conditional matching recall | **0/315** |
 | Review-routing score | **0/255** |
 | Isolated deterministic LangGraph fixtures | **4 passed**: supported, missing, unsigned, conflicting evidence |
-| Real Gemini attempts | **2 failed**; latest at CONTENT_GENERATION / HTTP_API / HTTP400 |
+| Real Gemini attempts | **3 failed**; latest CONTENT_GENERATION / HTTP_API / HTTP503 / UNAVAILABLE; prior HTTP400 remains unexplained |
 | Real LLM extraction accuracy | **Not established** |
 
 Full snapshot/API coverage demonstrates integration completion, **not reconciliation
@@ -203,9 +203,10 @@ Independent datasets, hidden answers and original operator/scoring code are not 
 
 ## Known limitations and future work
 
-- **Gemini request compatibility:** generation returned HTTP400; the rejected
-  field/reason is unknown. Real extraction accuracy/usefulness is unproven. No live
-  calls or infrastructure debugging are part of this portfolio pass.
+- **Gemini request compatibility:** an earlier generation returned HTTP400 with no
+  known rejected field; the simplified-schema attempt returned503 UNAVAILABLE.
+  Neither acceptance of the schema nor real extraction accuracy is established.
+  The offline portfolio demo makes no live calls or infrastructure changes.
 - **Reconciliation usefulness:** improve source-backed matching and actionable
   review routing, then measure against independent scoring without using answers
   as evidence. The current benchmark scores are not improved by this demo.
