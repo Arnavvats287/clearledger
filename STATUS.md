@@ -1,5 +1,56 @@
 # Build status
 
+## Time-boxed synthetic AI usefulness evaluation — 2026-10-26 (IST)
+
+The user-reported completed255-stage deterministic benchmark remains frozen and
+untouched. No operator/scorer, sealed split, dataset, schedule or hidden answers
+were read or modified. This is evaluation-only, not Milestone10 or an application
+architecture change. Existing application/image/financial behavior is unchanged.
+
+Added `scripts/evaluate_ai_usefulness.py`, eight minimal remittance controls and
+four actual-API LangGraph investigations in `tests/test_ai_usefulness.py`, plus an
+offline/redaction launcher unit test. Disposable PostgreSQL databases only. All
+external model keys are cleared in the launcher child; fake transport is injected
+only inside selected tests. No local environment configuration was edited.
+
+Actual commands/results:
+- `.venv/Scripts/python.exe scripts/evaluate_ai_usefulness.py`: **12 passed in50.02s**;
+  local log `local-data/ai-usefulness-run-final.log`. Four investigations retrieved
+  scoped evidence, emitted typed explanations and review recommendations: signed
+  support SUPPORTED; missing/unsigned/conflicting evidence INSUFFICIENT_EVIDENCE.
+  All remained financially non-authoritative/current and preserved financial state.
+- Eight actual-API document uploads/extractions: deterministic3 SUCCEEDED and5
+  NEEDS_REVIEW. Fake positive controls on3 prose documents preserved references,
+  two101-paise claims and one unknown amount; all still required review. One fake
+  malicious approval/tool output failed validation. Original/canonical source spans
+  checked independently; additional fake pointers verified via actual span API.
+- Targeted pytest with `--require-postgres` on
+  `test_investigations.py::test_fabricated_citations_are_rejected`,
+  `test_documents.py::test_adversarial_documents_and_outputs_cannot_grant_authority`,
+  `test_documents.py::test_semantic_fallback_privacy_and_external_disabled_by_default`,
+  `test_documents.py::test_provider_failure_and_privacy_conflict_are_durable_controlled_failures`:
+  **11 passed in47.38s**; `local-data/ai-usefulness-security.log`. Launcher sets only
+  TEST_DATABASE_URL privately from ignored configuration; conftest disables models.
+- `.venv/Scripts/python.exe -m pytest tests/test_ai_usefulness_runner.py -q --tb=short`:
+  **1 passed in0.37s**; guards forced-off settings, blank key, credential redaction
+  and propagation of child failure. Ruff lint/format checks on all3 Python files
+  and Git whitespace checks PASS. **24 targeted tests passed total.**
+
+The initial harness run had4 passing investigations/8 extraction test failures due
+to reading canonical pages from the wrong existing endpoint. Corrected harness to
+`/documents/{id}/text`; no application changes or assertions weakened. Initial log
+retained locally; final successful results supersede those harness failures.
+
+Detailed concise report, exact examples/coverage/latencies, reproduction and proposed
+separately authorized live smoke plan: `docs/AI_USEFULNESS_EVALUATION.md`.
+Per-case actual synthetic observations remain ignored in `local-data/ai-usefulness/`.
+Live Gemini calls0, paid spend0; no valid model/key/rates assumed. Mock token counts
+and latency are not live usage/accuracy. Payment-total extraction is unsupported;
+the schema models deduction amounts. Plain-email Subject still requires review.
+Production source authentication and LLM benefit/generalization remain unverified.
+No full benchmark/regression/restart run per targeted scope; no push. Implementation
+checkpoint recorded in the follow-up documentation commit.
+
 ## Narrow late-evidence category compatibility fix — 2026-10-26 (IST)
 
 Verified implementation checkpoint: `fd1ad025686a44b9fe81730f6acf096e6fd6def2`.
