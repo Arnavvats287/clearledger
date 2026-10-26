@@ -2,6 +2,8 @@
 
 ## Offline Gemini generation-request compatibility — 2026-10-26 (IST)
 
+Verified offline implementation checkpoint: `413881f02210ac4de33e3898fec19c26296b9f37`.
+
 No Gemini/model/quota/token-count/generation API call; no third live attempt, billing
 change, benchmark or frontend. Public official model/structured-output/generateContent
 documentation reviewed. Model remains gemini-3.1-flash-lite, SDK locked2.33.0. Actual
