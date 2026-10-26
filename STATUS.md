@@ -63,7 +63,9 @@ journey, pricing/privacy, limitations and reproduction: docs/LIVE_AI_AUTOMATION_
 Full report does not erase first harness failure or previous benchmark/live failures.
 General model accuracy, real damage legitimacy, production identity/key custody and
 real-customer validation remain unverified. No frontend/framework/new milestone/push.
-Implementation hash recorded in a follow-up checkpoint entry.
+Verified implementation/report checkpoint: `6f1ecde7a14c2dab3678a01d9121bbf2c344cc72`
+(`test: prove live synthetic extraction and investigation slice`). Seven intended
+files staged/reviewed; no local observations/keys/databases/data staged. No push.
 
 ## Source-backed automatic exception investigation — 2026-10-27 (IST)
 
