@@ -2,6 +2,8 @@
 
 ## One authorized diagnostic Gemini retry — 2026-10-26 (IST)
 
+Actual retry/report checkpoint: `779075cba529e852820ab428d3137eff157fff1e`.
+
 Executed exactly one additionally authorized attempt on the existing synthetic
 PROSE fixture using the updated isolated worker diagnostics. No automatic retry,
 additional document, financial/billing operation, external investigation or benchmark
