@@ -19,6 +19,8 @@ SCRIPTS = {
     "pilot_runtime.py",
 }
 CODES = {
+    "OBSERVATION_READ_API_ERROR",
+    "EVIDENCE_RESPONSE_INVALID",
     "PRIVATE_PROVENANCE_STORAGE_BUDGET",
     "PRIVATE_SOURCE_ARCHIVE_CHANGED",
     "CSV_API_ERROR",
@@ -37,6 +39,46 @@ CODES = {
     "OUTBOX_DRAIN_BUDGET",
     "WORKER_OUTPUT_INVALID",
 }
+API_CODES = {
+    "EVIDENCE_FINANCIAL_SOURCE_BUDGET",
+    "EVIDENCE_INVOICE_SCOPE_BUDGET",
+    "EVIDENCE_SOURCE_BUDGET",
+    "EVIDENCE_ORIGINAL_DOCUMENT_BUDGET",
+    "EVIDENCE_ORIGINAL_BYTE_BUDGET",
+    "CASE_ANALYSIS_LIMIT",
+    "CASE_MEMBERSHIP_LIMIT",
+    "CASE_GRAPH_LIMIT",
+    "STALE_EVIDENCE_CASE_CONTEXT",
+    "STALE_CASE_VERSION",
+    "STALE_CASE_INPUTS_REFRESH_REQUIRED",
+    "STALE_INVESTIGATION_INPUTS",
+    "VERIFIED_CASE_CUSTOMER_REQUIRED",
+    "INVOICE_OUTSIDE_EVIDENCE_CASE",
+    "CLAIM_OUTSIDE_EVIDENCE_CASE",
+    "EVIDENCE_DATABASE_OR_QUERY_LIMIT",
+    "REVIEW_DATABASE_OR_QUERY_LIMIT",
+    "REVIEW_READ_ONLY",
+    "DEMO_SESSION_INVALID",
+    "DEMO_SESSION_REQUIRED",
+    "DEMO_AUTHORITY_REVOKED",
+    "INVALID_EVIDENCE_REQUEST",
+    "INVALID_EVIDENCE_INPUT_OR_SOURCE",
+    "CLAIM_ALREADY_RESOLVED",
+    "INVESTIGATION_CLAIM_LIMIT",
+    "CASE_MERGED_USE_CANONICAL_ID",
+    "INVESTIGATION_SOURCE_BUDGET",
+}
+
+
+def response_code(response):
+    try:
+        body = response.json()
+    except ValueError:
+        return "UNRECOGNIZED_API_RESPONSE"
+    code = body.get("detail") if isinstance(body, dict) else None
+    return code if type(code) is str and code in API_CODES else "UNRECOGNIZED_API_RESPONSE"
+
+
 LEGACY_CODES = {
     "Evaluation role login failed": "ROLE_LOGIN_FAILED",
     "Pagination budget exceeded": "PAGINATION_BUDGET",
@@ -144,6 +186,8 @@ def diagnostic(error, component):
     result = {"component": component, "exception_type": name, "code": code, "source": location}
     if isinstance(error, WorkerFailure):
         result["worker_failure"] = error.details
+    if isinstance(error, ObservationFailure):
+        result["http"] = {"status": error.status, "code": error.api_code}
     return result
 
 
@@ -214,3 +258,10 @@ class WorkerFailure(RuntimeError):
     def __init__(self, code, details=None):
         super().__init__(code)
         self.details = details
+
+
+class ObservationFailure(RuntimeError):
+    def __init__(self, code, response):
+        super().__init__(code)
+        self.status = response.status_code
+        self.api_code = response_code(response)

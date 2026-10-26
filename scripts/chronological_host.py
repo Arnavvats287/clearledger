@@ -13,7 +13,12 @@ from uuid import UUID, uuid5
 from alembic import command
 from alembic.config import Config
 from application_eval_host import API, ROOT, application, environment
-from chronological_diagnostics import WorkerFailure, diagnostic, worker_diagnostic
+from chronological_diagnostics import (
+    ObservationFailure,
+    WorkerFailure,
+    diagnostic,
+    worker_diagnostic,
+)
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
@@ -158,6 +163,12 @@ class BoundedAPI(API):
         if left <= 0:
             raise TimeoutError("STAGE_DEADLINE")
         return left
+
+    def get(self, path):
+        response = self.request("GET", path)
+        if response.status_code != 200:
+            raise ObservationFailure("OBSERVATION_READ_API_ERROR", response)
+        return response.json()
 
     def request(self, method, path, *, key=None, **kwargs):
         from chronological_protocol import canonical

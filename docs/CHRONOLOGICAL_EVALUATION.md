@@ -1,5 +1,45 @@
 # Persistent chronological application adapter — protocol 1
 
+## Consolidated evidence/case observation handling
+
+Synthetic actual-API reproduction demonstrates **HTTP409 EVIDENCE_FINANCIAL_SOURCE_BUDGET**:
+the same authorized analyst can query a small case, then exceed the documented eight-
+financial-import budget after invoices arrive through separate incremental imports.
+READ ONLY validation checks the case's original sources before returning evidence. The
+old adapter converted every non-200 into fatal EVIDENCE_API_ERROR. This demonstrates
+an integration defect; **the private stage-41 HTTP status/code remain UNKNOWN**, as the
+operator explicitly confirmed. No private files were consulted and no cause is guessed.
+
+Authorization remains unchanged: evidence POST search/verify requires READ; analyst
+and auditor sessions can read scoped evidence, while an auditor cannot refresh cases
+or start investigations (WORK). Invalid sessions still fail401, insufficient roles403,
+wrong customer/scope404, malformed requests422 and infrastructure failures503. These
+remain fatal adapter errors with safe HTTP status and an allowlisted fixed detail code;
+unknown details are not echoed. No retry with stronger credentials or fallback identity.
+
+Known **409** evidence work-budget denials and stale-context rejections are explicitly
+REVIEW_REQUIRED/search_complete=false, with their original status, code and response
+retained privately. No successful result/items are invented, no downstream investigation
+uses the incomplete snapshot, and receipt predictions remain abstentions with a human-
+review reason. The backend's eight-import, invoice, original-byte/document and case limits
+are untouched. Source consistency still does not imply authenticity or financial authority.
+
+A valid completed200 empty result is NO_EVIDENCE. Valid nonempty results are retrieval-
+COMPLETE, not deduction approval. Malformed200 responses remain fatal. Searches paginate
+at most four pages of at most50 hits using actual cursors and the same version/context;
+remaining pages yield explicit incomplete/review, never completeness. Repeated/missing
+cursors or contradictory completeness flags are rejected. Raw pages and safe per-case
+outcomes are retained; evidence query counts reflect actual page requests.
+
+Neighboring observations use the existing `/cases?receipt_id=...` filter when no new
+documents need discovery; pagination correctly preserves existing query parameters.
+This avoids recomputing unrelated case histories on every receipt-only stage. New-document
+discovery still uses the bounded all-case API because it has no document filter; this
+can still hit the unchanged stage deadline on a very large history. Unexpected refresh/
+read/investigation denials remain fatal. Already RESOLVED claims are explicitly not
+submitted again, and actual case state is reread after investigation workers update it.
+No application authorization, accounting, source-validation or database rules changed.
+
 ## Failure diagnostics and retainable partial provenance
 
 The operator reported RuntimeError after 40 sealed stages, followed by
@@ -17,7 +57,7 @@ An already written normal snapshot remains immutable and is reused if later resp
 processing fails. The hash is advertised only after reading and verifying the retained
 bytes. `failure.json` contains safe diagnostic metadata; `response.json` records ERROR
 where writable. Existing successful stages are never overwritten/reused for conflicting
-requests. Status stays ERROR, the run stays poisoned and financial checks stay FAIL or
+requests. Fatal stage errors stay ERROR, the run stays poisoned and financial checks stay FAIL or
 NOT_EVALUABLE. No failed/unknown response becomes a successful observation.
 
 The existing 1 GiB managed-artifact ceiling is unchanged: up to 64 MiB (one sixteenth)

@@ -1,5 +1,81 @@
 # Build status
 
+## Consolidated chronological evidence stabilization — 2026-10-26 (IST)
+
+Branch `fix/chronological-evidence-observations` from `964d009`. The user confirmed the
+private stage-41 status/detail code are **UNKNOWN**. No private evaluation artifacts,
+schedule, ground truth or benchmark inputs were accessed. Demonstrated synthetic cause:
+actual authorized API search returns **409 EVIDENCE_FINANCIAL_SOURCE_BUDGET** after more
+than eight distinct financial imports are needed in a READ ONLY evidence transaction;
+the previous adapter treated this documented abstention as fatal EVIDENCE_API_ERROR.
+This is proven for application-owned fixtures, not asserted as the private incident's cause.
+
+Consolidated harness-only fixes:
+- Known409 work-budget/stale-context denials become explicit incomplete/REVIEW_REQUIRED
+  observations with the actual status/code, no invented successful evidence or allocation,
+  no investigation from the denied snapshot, and a human-review explanation.
+- All401/403/404/422/5xx and unknown conflicts remain fatal with safe HTTP status/fixed
+  code diagnostics. Valid200 empty evidence is distinguished from denial; malformed200
+  is fatal. No authorization fallback, permission increase or backend-limit change.
+- Evidence uses actual cursors across at most4 pages of50; residual results explicitly
+  remain incomplete. Raw pages and status are preserved, not silently truncated into success.
+- Receipt-only stages query existing scoped case APIs; query pagination preserves
+  receipt_id filters instead of appending a second '?'. Unrelated histories aren't scanned.
+  New-document discovery retains the bounded global scan and its documented runtime risk.
+- Resolved claims aren't resubmitted; skipped requests are recorded without pretending
+  an investigation ran. Case versions are reread after worker completion. Neighboring
+  refresh/read/investigation failures remain fatal and observable.
+
+Actual focused tests: **88 passed in 78.36s**, retaining the previous68 chronological
+cases plus20 new consolidated cases. Synthetic real APIs verify authorized analyst/auditor
+READ, invalid-session401, auditor WORK denial403, wrong-owner404, true missing evidence,
+fragmented-import409, 52 native hits over2 pages, unchanged financial rows and a full
+ABSTAIN stage under the source budget denial. Unit negatives cover non200/malformed200,
+bounded pagination, scoped workloads, resolved claims and fresh post-worker snapshots.
+Log: `local-data/chrono-evidence-focused.log`. Initial isolated reproduction:
+**1 passed in 12.81s**, `local-data/chrono-evidence-reproduction.log`.
+
+Allowlisted rebuild/exact isolated startup preflight and one restricted Docker bridge
+test passed; private bridge run:
+`local-data/chronological-verification/7f12a6c60b344f1ba724933bd6410744/`, three stages plus
+replay, all financial checks PASS, Gemini disabled; max stage12.417448317s. One final
+complete frozen gate was run only after consolidation; no repeated full gates or
+isolated restart checks. No application/domain/schema/settings/test assertion weakening,
+private benchmark execution or push.
+
+Rebuilt image: **`sha256:75dc94f5b368b827a00f8ea1324a0c06fc7514b2d642800cc27cc722bcf6d309`**.
+Remaining limits: fragmented cases beyond the unchanged eight-source cap require review;
+four-page incomplete searches cannot claim completeness; new-document discovery can
+still reach the fixed stage deadline on large histories; true authentication, ownership,
+validation or infrastructure faults deliberately remain fatal. No independent benchmark
+accuracy or private stage-41 status is asserted.
+
+### Actual final verification
+
+- Initial isolated actual-API reproduction: **1 passed in12.81s**, proving authorized
+  **409 EVIDENCE_FINANCIAL_SOURCE_BUDGET**, `local-data/chrono-evidence-reproduction.log`.
+- `python -m pytest tests/test_chronological_evidence.py tests/test_chronological_failures.py
+  tests/test_chronological_evaluation.py tests/test_chronological_startup.py -q --require-postgres`:
+  **88 passed in78.36s**, `local-data/chrono-evidence-focused.log`.
+- `python scripts/build_chronological_image.py`: **PASS**, frozen allowlisted build and
+  exact isolated operator startup/transitive preflight. `local-data/chrono-evidence-build.log`.
+- One `python scripts/verify_chronological_bridge.py --bridge <previously supplied public
+  bridge.py> --docker`: **PASS**, actual APIs/owned disposable PostgreSQL, three minimal
+  stages plus replay, all financial checks PASS, no external AI. `local-data/chrono-evidence-docker.log`.
+- Exactly one `uv run --frozen python scripts/verify.py`: **ALL PASS;709 passed in
+  1478.99s (24m38s), no skips**, retaining all689 prior cases plus20 new cases. Lock/
+  dependency/Ruff lint+format/strict typing/matching bounds/PostgreSQL migration roundtrips/
+  drift/integrity/security/API/concurrency and existing restart regressions passed.
+  Full private log: `local-data/verification/20261026T043407955351Z.log`.
+
+Reviewed seven intended files only: four harness/client/diagnostic modules, one20-case
+test module, chronological contract and STATUS. Application permissions/evidence limits,
+financial rules, database schema, source CSVs, provider settings and prior assertions are
+unchanged. Source seal, staged credential scan, whitespace and scope checks passed; no
+executable changes followed final verification. Only disposable databases were used.
+No private evaluation files, hidden answers, datasets or schedules were accessed/modified;
+no benchmark or paid calls, no remote push. Completion hash is recorded in the follow-up.
+
 ## Narrow chronological failure/provenance investigation — 2026-10-26 (IST)
 
 Branch `fix/chronological-failure-diagnostics` from `93f7071`. **Stage 41's specific

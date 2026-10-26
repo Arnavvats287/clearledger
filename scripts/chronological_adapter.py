@@ -11,7 +11,7 @@ from application_eval_contract import latency_summary, snapshot_predictions
 from application_eval_host import fingerprint, rows
 from application_eval_inputs import sha
 from application_eval_runtime import documents, matching
-from chronological_diagnostics import diagnostic, route
+from chronological_diagnostics import ObservationFailure, diagnostic, response_code, route
 from chronological_host import (
     BoundedAPI,
     application,
@@ -21,6 +21,7 @@ from chronological_host import (
 )
 from chronological_protocol import MAX_RESPONSE, Deltas, canonical
 
+from clearledger.evidence_contract import SearchResult
 from clearledger.finance_models import CashAllocation, LedgerJournal, LedgerLine, NoncashSettlement
 from clearledger.models import ProviderReservation
 
@@ -28,6 +29,18 @@ PROTECTED = (LedgerJournal, LedgerLine, CashAllocation, NoncashSettlement, Provi
 MAX_ARTIFACT_BYTES = 1024 * 1024 * 1024
 MAX_STAGES = 10000
 FAILURE_RESERVE_BYTES = 64 * 1024 * 1024
+EVIDENCE_PAGE_LIMIT = 4
+REVIEW_EVIDENCE_CODES = {
+    "EVIDENCE_FINANCIAL_SOURCE_BUDGET",
+    "EVIDENCE_INVOICE_SCOPE_BUDGET",
+    "EVIDENCE_SOURCE_BUDGET",
+    "EVIDENCE_ORIGINAL_DOCUMENT_BUDGET",
+    "EVIDENCE_ORIGINAL_BYTE_BUDGET",
+    "CASE_ANALYSIS_LIMIT",
+    "CASE_MEMBERSHIP_LIMIT",
+    "CASE_GRAPH_LIMIT",
+    "STALE_EVIDENCE_CASE_CONTEXT",
+}
 
 
 class Adapter:
@@ -210,6 +223,10 @@ class Adapter:
                 response["prediction"] = snapshot_predictions(
                     data, observed_matches, stage.request["as_of"]
                 )[0]
+                if any(e["outcome"] == "REVIEW_REQUIRED" for e in evidence):
+                    response["prediction"]["human_reviews"].append(
+                        "REVIEW REQUIRED: evidence retrieval incomplete; no supported allocation"
+                    )
             response["status"] = "ABSTAIN"
             observations = {
                 "imports": imported,
@@ -270,8 +287,17 @@ class Adapter:
                         {"id": c["id"], "version": c["version"], "is_stale": c["is_stale"]}
                         for c in cases
                     ],
-                    "evidence_queries": len(evidence),
-                    "investigation_requests": len(investigations),
+                    "evidence_queries": sum(len(e["pages"]) for e in evidence),
+                    "evidence_outcomes": [
+                        {
+                            "status": e["http_status"],
+                            "outcome": e["outcome"],
+                            "reason": e.get("reason"),
+                            "search_complete": e["search_complete"],
+                        }
+                        for e in evidence
+                    ],
+                    "investigation_requests": sum("run" in i for i in investigations),
                     "receipt_available": bool(requested),
                     "finance_read_status": finance_status,
                     "latency": latency_summary(
@@ -378,12 +404,26 @@ class Adapter:
         identifiers = {r["id"] for r in receipts}
         document_ids = {d["document"]["id"] for d in documents.values()}
         cases, evidence, investigations = [], [], []
-        for case in self.api.collection("/review/cases"):
+        # Existing scoped case API avoids revalidating every unrelated historical case.
+        discovered = (
+            self.api.collection("/review/cases")
+            if document_ids
+            else [
+                case
+                for receipt in receipts
+                for case in self.api.collection(f"/cases?receipt_id={receipt['id']}")
+            ]
+        )
+        seen = set()
+        for case in discovered:
             if not identifiers.intersection(case["receipt_ids"]) and not document_ids.intersection(
                 case["document_ids"]
             ):
                 continue
             identifier = case["id"]
+            if identifier in seen:
+                continue
+            seen.add(identifier)
             if case["is_stale"]:
                 self.component = "case_refresh"
                 refreshed = self.api.request(
@@ -394,27 +434,28 @@ class Adapter:
                     },
                 )
                 if refreshed.status_code != 200:
-                    raise RuntimeError("STALE_CASE_REFRESH_API_ERROR")
+                    raise ObservationFailure("STALE_CASE_REFRESH_API_ERROR", refreshed)
                 case = self.api.get(f"/review/cases/{identifier}")
-            cases.append(case)
             if case["customer_id"] is not None:
                 self.component = "evidence_query"
-                query = self.api.request(
-                    "POST",
-                    f"/cases/{identifier}/evidence/search",
-                    json={
-                        "expected_case_version": case["version"],
-                        "expected_context_sha256": case["context_sha256"],
-                        "customer_id": case["customer_id"],
-                        "tool": "get_invoice_evidence",
-                        "limit": 50,
-                    },
-                )
-                if query.status_code != 200:
-                    raise RuntimeError("EVIDENCE_API_ERROR")
-                evidence.append(query.json())
+                observation = self.observe_evidence(case)
+                evidence.append(observation)
+                if observation["outcome"] == "REVIEW_REQUIRED":
+                    cases.append(case)
+                    continue  # No investigation from an incomplete/denied evidence snapshot.
             self.component = "claim_read"
             claims = self.api.collection(f"/review/cases/{identifier}/claims")
+            resolved = [c["id"] for c in claims if c["state"] == "RESOLVED"]
+            if resolved:
+                investigations.append(
+                    {
+                        "case_id": identifier,
+                        "outcome": "NOT_REQUESTED",
+                        "reason": "CLAIM_ALREADY_RESOLVED",
+                        "claim_ids": resolved,
+                    }
+                )
+            claims = [c for c in claims if c["state"] != "RESOLVED"]
             for start in range(0, len(claims), 10):
                 current = self.api.get(f"/review/cases/{identifier}")
                 self.component = "investigation_start"
@@ -429,7 +470,7 @@ class Adapter:
                     },
                 )
                 if run.status_code != 200:
-                    raise RuntimeError("INVESTIGATION_API_ERROR")
+                    raise ObservationFailure("INVESTIGATION_API_ERROR", run)
                 self.component = "investigation_worker"
                 drain_owned(self.engine, self.org, self.env, self.api)
                 self.component = "investigation_read"
@@ -439,7 +480,71 @@ class Adapter:
                         "findings": self.api.get(f"/investigations/{run.json()['id']}/findings"),
                     }
                 )
+            cases.append(self.api.get(f"/review/cases/{identifier}") if claims else case)
         return cases, evidence, investigations
+
+    def observe_evidence(self, case):
+        pages, cursor = [], None
+        for _ in range(EVIDENCE_PAGE_LIMIT):
+            query = self.api.request(
+                "POST",
+                f"/cases/{case['id']}/evidence/search",
+                json={
+                    "expected_case_version": case["version"],
+                    "expected_context_sha256": case["context_sha256"],
+                    "customer_id": case["customer_id"],
+                    "tool": "get_invoice_evidence",
+                    "limit": 50,
+                    **({"after_id": cursor} if cursor else {}),
+                },
+            )
+            if query.status_code != 200:
+                code = response_code(query)
+                if query.status_code == 409 and code in REVIEW_EVIDENCE_CODES:
+                    pages.append({"http_status": 409, "response": query.json()})
+                    return {
+                        "case_id": case["id"],
+                        "http_status": 409,
+                        "pages": pages,
+                        "outcome": "REVIEW_REQUIRED",
+                        "reason": code,
+                        "search_complete": False,
+                    }
+                raise ObservationFailure("EVIDENCE_API_ERROR", query)
+            try:
+                result = SearchResult.model_validate(query.json())
+            except ValueError:
+                raise ObservationFailure("EVIDENCE_RESPONSE_INVALID", query) from None
+            pages.append({"http_status": 200, "response": query.json()})
+            if not result.has_more:
+                if not result.search_complete:
+                    raise ObservationFailure("EVIDENCE_RESPONSE_INVALID", query)
+                return {
+                    "case_id": case["id"],
+                    "http_status": 200,
+                    "pages": pages,
+                    "outcome": "COMPLETE"
+                    if any(p["response"]["items"] for p in pages)
+                    else "NO_EVIDENCE",
+                    "search_complete": True,
+                }
+            next_cursor = str(result.next_after_id) if result.next_after_id else None
+            if (
+                not result.items
+                or not next_cursor
+                or next_cursor == cursor
+                or result.search_complete
+            ):
+                raise ObservationFailure("EVIDENCE_RESPONSE_INVALID", query)
+            cursor = next_cursor
+        return {
+            "case_id": case["id"],
+            "http_status": 200,
+            "pages": pages,
+            "outcome": "REVIEW_REQUIRED",
+            "reason": "EVIDENCE_OBSERVATION_PAGE_LIMIT",
+            "search_complete": False,
+        }
 
 
 def main():

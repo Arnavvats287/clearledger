@@ -120,7 +120,8 @@ class API:
     def collection(self, path):
         result = []
         for _ in range(100):
-            page = self.get(f"{path}?limit=100&offset={len(result)}")
+            separator = "&" if "?" in path else "?"
+            page = self.get(f"{path}{separator}limit=100&offset={len(result)}")
             result.extend(page)
             if len(page) < 100:
                 return result
