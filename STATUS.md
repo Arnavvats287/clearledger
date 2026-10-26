@@ -38,6 +38,7 @@ local-data/gemini-campaign-offline-final.log. Ruff lint/format passed. No full s
 Docker, restart or benchmark. Settings confirmed extraction disabled, external AI
 false and external investigation false; .env untouched. Local checkpoint follows;
 not a successful end-to-end AI claim, and no push.
+Verified diagnostic/result checkpoint: `ba8e755255c7fdd44d0c07a66aa972049e74740d`.
 
 ## Controlled Gemini campaign — preflight blocked, 2026-10-27 (IST)
 
