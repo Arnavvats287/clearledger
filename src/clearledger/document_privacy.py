@@ -3,9 +3,15 @@
 import re
 from dataclasses import dataclass
 
-from clearledger.document_contract import Extraction, ExtractionError, literal, span_text
+from clearledger.document_contract import (
+    REASON_CODE_SOURCE,
+    Extraction,
+    ExtractionError,
+    literal,
+    span_text,
+)
 
-PRIVACY_VERSION = "projection-v1"
+PRIVACY_VERSION = "projection-v2"
 SENSITIVE: dict[str, str] = {
     "GSTIN": r"\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b",
     "PAN": r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",
@@ -56,6 +62,9 @@ def project(pages: list[str]) -> Projected:
         if "█" in page:
             raise ExtractionError("PRIVACY_RESERVED_CHARACTER")
         preserve = [(m.start(1), m.end(1)) for m in REFERENCE.finditer(page)]
+        # Preserve only the recognized field label/separator and its bounded code,
+        # so #/=/_ do not erase the proof that this value was explicitly a code.
+        preserve += [(m.start(), m.end(1)) for m in REASON_CODE_SOURCE.finditer(page)]
         amounts = list(AMOUNT.finditer(page))
         for amount in amounts:
             suffix = page[amount.end() :]

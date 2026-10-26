@@ -12,7 +12,7 @@ from typing import Any, cast
 
 from clearledger.document_contract import Extraction
 
-PROVIDER_SCHEMA_VERSION = "gemini-remittance-shape-v4"
+PROVIDER_SCHEMA_VERSION = "gemini-remittance-shape-v5"
 _HOST_ONLY_BOUNDS = frozenset(
     {
         "minimum",

@@ -1,5 +1,22 @@
 # ClearLedger requirements-alignment audit
 
+## Offline semantic/automation follow-up — 2026-10-27
+
+Reason-code traceability: document_contract.validate_semantics requires exact prose
+field-label evidence; remittance_parser.structured retains exact explicit JSON fields;
+document_privacy projection-v2 preserves code labels/values while rejecting sensitive
+overlap. tests/test_reason_code_semantics.py covers status/category rejection, genuine
+codes (including disputed as explicit code), partial-code rejection and privacy.
+
+Initial automation gap: existing document events/case_processing.parsed_claims already
+create ClaimSource-backed claims. New default-off CASE_AUTO_INVESTIGATE_EXTRACTIONS
+includes only current EXTRACTED claims on remittance reevaluation, using existing
+deterministic investigation scheduling/outbox/snapshot/limits. Integration trace:
+tests/test_extraction_automation.py (no manual claim/investigation start, failed/stale
+source exclusion, limit review, deduplication, tenant/non-mutation). No new financial
+authority, dataset, framework or migration. Missing receipt/customer source evidence
+still abstains. No live Gemini call; v5 accuracy and production G1 stay unverified.
+
 ## Authorized chronological adapter — 2026-10-26
 
 From `a7cb6ec`, dedicated `eval/persistent-chronological-adapter`; separate API integration,

@@ -1,5 +1,14 @@
 # Architecture and runtime boundaries
 
+The opt-in first-investigation bridge reuses case_processing.reevaluate and
+investigation_service.schedule_affected inside the existing outbox transaction.
+Source-backed extraction -> case/ClaimSource creation was already implemented;
+only the first deterministic investigation trigger was missing. No new worker,
+queue, model framework, schema/migration or finance capability is introduced.
+Reason-code validation and privacy projection distinguish explicit field evidence
+from status/category words before any claim enters this path. Contracts:
+[DOCUMENTS.md](DOCUMENTS.md), [INVESTIGATIONS.md](INVESTIGATIONS.md).
+
 ## Deployment V1
 Local Compose: `api` (FastAPI/Python), `db` (PostgreSQL), and later `worker` + `redis` and `web` (Next.js). A local file-store adapter persists immutable raw bytes in a volume. No production integrations. One company, INR only. Database = authoritative transactional source; job queue = delivery mechanism; graph checkpoint = investigation progress, never ledger truth.
 

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     investigation_external_enabled: bool = False
     case_outbox_max_attempts: int = Field(default=3, ge=1, le=10)
     case_outbox_lease_seconds: int = Field(default=30, ge=5, le=300)
+    case_auto_investigate_extractions: bool = False
     extraction_provider: Literal["disabled", "gemini", "fake"] = "disabled"
     external_ai_enabled: bool = False
     privacy_review_reference: str = ""

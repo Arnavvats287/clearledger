@@ -1,5 +1,71 @@
 # Build status
 
+## Reason-code semantics and first-investigation bridge — 2026-10-27 (IST)
+
+Offline task only: **zero Gemini calls**, no key/config/billing/project changes.
+Remaining conservative authorization229 paise unchanged. The historical3.5 v4 run
+and its reason-code false positive remain in LIVE_GEMINI_EVALUATION.md; corrected v5
+model behavior is unverified. No benchmark/pilot/hidden answer modification or access.
+
+Fixed the specific acceptance hole: prose reason_code now requires the exact code
+occurrence after an explicit reason code/ reason_code/ reason-code field label and
+separator. Unlabeled damage/disputed -> REASON_CODE_LABEL_REQUIRED, not a rewritten
+or silently discarded value. Actual typed JSON reason_code values and genuinely
+labeled prose codes (including disputed) are preserved. Category damage and source
+dispute context remain separate; a source word cannot set lifecycle DISPUTED. No
+new status field, catalogue, tax conclusion or financial rule. Strict schemas, money,
+hash/span/containment checks unchanged. Projection-v2 preserves only recognized label/
+code with all sensitive-overlap guards; Gemini contract-v5 changes cache identity.
+Originals/historical extractions remain immutable. Initial focused test found two
+label-separator masking failures; preserved the bounded label/separator as essential
+evidence and retained PII conflict rejection. No assertion was weakened.
+
+Inspection established extraction -> domain/outbox -> case/ClaimSource already
+exists, including validated NEEDS_REVIEW facts. Missing piece was first investigation;
+existing automatic scheduling only reinvestigated findings. New default-off
+CASE_AUTO_INVESTIGATE_EXTRACTIONS lets remittance reevaluation include current EXTRACTED
+claims with latest valid extraction source. Reuses existing transactional scheduling,
+company lock/lease, snapshot/version/tenant checks, limits, idempotency and immutable
+provenance. Always deterministic, allow_external=false, regardless of manual provider.
+Cause event/trigger recorded. Failed/superseded sources cannot start new work; excess
+claims yield existing review-limit event. No migration, infrastructure or dependency.
+No claim/invoice/bank receipt facts are recreated through manual APIs in this path.
+
+Verified offline actual API upload -> fake extraction -> validation/persistence ->
+outbox -> claim with exact extraction source -> original LangGraph -> current
+INSUFFICIENT_EVIDENCE/HUMAN_REVIEW finding. Default-off, failed source, latest-failed,
+claim budget, duplicate/replay, tenant and financial non-mutation assertions pass.
+This proves plumbing with scripted extraction, not live Gemini accuracy. Original
+PROSE has no verified receipt/customer correlation, so document/receipt cases stay
+separate and evidence uncertainty is retained. Exact next target: source-backed,
+versioned receipt-correlation review using existing identity/association contracts,
+then affected-claim reevaluation; do not fabricate UTR/attestations or infer ownership
+from invoice text. Enabling a flag does not replay delivered events; existing cases
+can use the current investigation-start API without re-entering facts.
+
+Actual affected command: `.venv/Scripts/python.exe -m pytest
+tests/test_reason_code_semantics.py tests/test_extraction_automation.py
+tests/test_document_domain.py tests/test_document_security.py tests/test_documents.py
+tests/test_cases.py tests/test_investigations.py tests/test_gemini_request_contract.py
+tests/test_gemini_schema.py tests/test_gemini_campaign.py tests/test_ai_usefulness.py
+tests/test_portfolio_demo.py --require-postgres -q --tb=short
+--basetemp=local-data/pytest-semantic-auto-20261027c`: **210 passed in554.72s**.
+Child Gemini key cleared and both external flags forced false; only disposable
+PostgreSQL databases, offline mocks and deterministic providers. Final extra exact-
+occurrence boundary: `pytest tests/test_reason_code_semantics.py -q --tb=short
+--basetemp=local-data/pytest-reason-code-20261027d`: **10 passed in0.70s**, nine repeated
+and one added after regression collection; **211 distinct tests**,15 new. Earlier
+focused14 tests passed17.21s. Logs: local-data/semantic-automation-regressions.log,
+reason-code-final.log, semantic-automation-focused-final.log. Mypy: `.venv/Scripts/python.exe
+-m mypy`: **21 source files, no issues**. Ruff lint on src plus changed tests and
+format --check on10 changed Python files PASS; Git whitespace PASS. No full suite,
+restart or Docker run claimed. Persistent external AI/extraction/automatic flag all
+verified disabled; .env untouched, .env.example contains default false only.
+
+Contracts/architecture/requirements traceability updated. Financial/identity/approval
+authority unchanged, no posting/customer communication. Verified checkpoint recorded
+in a follow-up status commit; no push and no later milestone started.
+
 ## Gemini3.5 live integration — accepted core facts, reason-code error (2026-10-27)
 
 Existing Free-tier key/model gemini-3.5-flash-lite verified; operator confirmed own

@@ -1,5 +1,12 @@
 # Live Gemini extraction evaluation
 
+Offline follow-up (2026-10-27): provider contract v5 rejects unlabeled status/category
+words as reason codes; explicitly sourced codes survive validation/privacy filtering.
+Optional initial deterministic case investigations reuse persisted extraction facts
+and the existing outbox/LangGraph. Tests/limits: STATUS.md and INVESTIGATIONS.md.
+**No further live calls;229 paise remain.** Historical v4 metrics and its incorrect
+reason-code result below are preserved; corrected live-model accuracy is unverified.
+
 ## Gemini3.5 alternative — live validated facts, one semantic quality error (2026-10-27)
 
 **Real Gemini3.5 generation works.** The final actual-API run persisted invoice I-1

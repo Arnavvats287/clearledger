@@ -1,5 +1,13 @@
 # Security model and threat-driven tests
 
+Prose reason codes require exact source-label evidence, never a status/category
+guess. Projection-v2 preserves the recognized bounded code and field separator as
+an essential identifier; sensitive overlap still fails closed. Explicit codes are
+not authenticated evidence or claim approval. Optional first investigations from
+validated extraction reuse the existing company/lease/snapshot/limit checks and are
+always deterministic/external-off. The scheduling flag cannot activate Gemini or
+grant finance authority; missing customer/receipt links remain missing.
+
 ## Milestone 04 implemented controls and approved provider exception
 
 The original trust/authorization rules below remain binding. [DOCUMENTS.md](DOCUMENTS.md) defines the implemented separate document interface and its limits. All document reads/writes require a strong local bearer token and configured company scope; actor labels remain locally asserted and full identity/roles/maker-checker are still deferred (G1). Financial import/read APIs are not retroactively authenticated by this change. No live/shared real-data or posting-readiness claim is made.

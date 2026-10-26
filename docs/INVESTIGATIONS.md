@@ -1,5 +1,55 @@
 # Director–Investigator contract v1
 
+## Optional first investigation from validated extraction (2026-10-27)
+
+Validated document extraction already atomically publishes document/outbox events;
+case processing creates immutable claims and ClaimSource links from the persisted
+extraction, without manual claim entry. Previously automatic scheduling only reran
+claims with earlier findings; an initial investigation required an explicit API start.
+
+`CASE_AUTO_INVESTIGATE_EXTRACTIONS=true` opts the existing worker into that first
+**deterministic** investigation. Default false preserves existing behavior. Only a
+case.remittance_observed cause can include newly EXTRACTED claims, scoped to the
+same case/company and attached to the document's latest successful or NEEDS_REVIEW
+extraction. A superseded/failed latest extraction cannot qualify a new target. The
+existing snapshot builder independently rechecks source integrity/current context.
+Unknown amount/customer/invoice/extraction certainty remains explicit review input.
+
+The run, request provenance and investigation.requested outbox event commit with
+reevaluation in the same fenced company transaction. Event metadata links the cause
+event and include_extracted flag. Existing idempotency/snapshot uniqueness, claim/
+tool/time limits, immutable histories and lease recovery remain. Too many claims
+produce the existing investigation.limit_reached review event; no claim is discarded.
+This path always uses provider deterministic and allow_external=false, even if the
+manual provider setting is gemini. It cannot grant source authentication or finance
+authority. Findings require human review; claim adjudication states are not inferred
+from words such as disputed.
+
+For an already configured organization/database/document store, opt in locally and
+run the existing worker (no new service/framework or Redis):
+
+```powershell
+$env:CASE_AUTO_INVESTIGATE_EXTRACTIONS = "true"
+uv run --frozen python -m clearledger.case_worker --once --limit 100
+```
+
+The usual ongoing worker may instead drain subsequent committed events. No external
+model is enabled by this flag. Already-delivered events are not replayed when a flag
+changes; existing backlog cases can use the ordinary investigation-start API without
+re-entering claims. Use existing extraction-history, case/claim, investigation
+findings and trace APIs to observe provenance/results. The offline regression test
+`test_extraction_automation.py` exercises API upload/fake validated extraction ->
+outbox -> original case/claim -> real LangGraph -> persisted current human-review
+finding, with no manual claim recreation or investigation start. Fake extraction is
+explicitly not evidence of corrected live Gemini accuracy; this task made zero calls.
+
+Remaining gap for the approved PROSE: it has no verified UTR/customer association.
+The document case must remain separate from a receipt case, and investigation reports
+insufficient evidence. Next target is a source-backed, versioned receipt-correlation
+review using existing identity/association contracts, followed by affected-claim
+reevaluation. Do not manufacture a UTR/attestation, merge on invoice text, or bypass
+production identity/evidence-authentication requirements to make automation succeed.
+
 M08 adds a separate gated simulator, never a graph posting node. Findings still grant
 no financial/legal authority; finance independently verifies evidence, rules, current
 trusted identities and maker-checker approval. Stale/unsupported referenced findings are

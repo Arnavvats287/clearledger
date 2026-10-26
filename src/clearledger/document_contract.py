@@ -16,6 +16,11 @@ Paise = Annotated[int, Field(strict=True, ge=0, le=2**63 - 1)]
 Category = Literal[
     "tax", "damage", "short_shipment", "rebate", "early_discount", "other", "unknown"
 ]
+# Prose needs an explicit field label, not a category/status word promoted to a code.
+REASON_CODE_SOURCE = re.compile(
+    r"(?=\breason[ _-]+code\s*[:#=]\s*([A-Za-z0-9][A-Za-z0-9_./-]{0,99})\b)",
+    re.IGNORECASE,
+)
 
 
 class StrictModel(BaseModel):
@@ -209,6 +214,11 @@ def validate_semantics(result: Extraction, pages: list[str], *, structured: bool
                 or claim.reason_code.span.end > claim.description.end
             ):
                 raise ExtractionError("REASON_OUTSIDE_CLAIM")
+            if not structured and not any(
+                match.span(1) == (claim.reason_code.span.start, claim.reason_code.span.end)
+                for match in REASON_CODE_SOURCE.finditer(pages[claim.reason_code.span.page - 1])
+            ):
+                raise ExtractionError("REASON_CODE_LABEL_REQUIRED")
     for unparsed in result.unparsed_fields:
         span_text(pages, unparsed)
 

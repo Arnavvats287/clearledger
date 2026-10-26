@@ -18,6 +18,9 @@ SYSTEM_INSTRUCTION = (
     "amount_span and reason_code span; those spans must be inside description on the same page. "
     "An amount span includes its currency/unit and complete delimited number. "
     "Reference spans contain only the exact identifier following an explicit invoice/UTR label. "
+    "Category damage is separate from dispute status disputed. Keep status words in source "
+    "descriptions, never infer a reason_code from category/status. A reason_code requires an "
+    "explicit source reason code label; otherwise it is null. Preserve genuinely labeled codes. "
     "Keep uncertainty/unparsed spans explicit. Never invent references/claims."
 )
 

@@ -164,7 +164,7 @@ def test_prompt_distinguishes_page_number_from_character_offset():
     assert "first supplied page is page 1" in SYSTEM_INSTRUCTION
     assert "zero-based Unicode positions; end is exclusive" in SYSTEM_INSTRUCTION
     assert "inside description on the same page" in SYSTEM_INSTRUCTION
-    assert PROVIDER_SCHEMA_VERSION == "gemini-remittance-shape-v4"
+    assert PROVIDER_SCHEMA_VERSION == "gemini-remittance-shape-v5"
 
 
 def test_token_boundaries_are_exact_unicode_slices_of_projected_pages():

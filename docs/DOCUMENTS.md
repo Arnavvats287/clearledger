@@ -1,6 +1,31 @@
 # Document intelligence contract — milestone 04
 
-Version: **remittance-extraction-1.0**; canonical parser **canonical-text-v1**; privacy projection **projection-v1**. This is a separate interface from financial CSV DATA_CONTRACT v1.0. All four CSV schemas/identities/import ordering remain unchanged. Argon supplies realistic documents/datasets; none are bundled/generated/imported automatically. Examples/test inputs are minimal isolated code fixtures.
+## Reason-code semantics (offline hardening, 2026-10-27)
+
+Category `damage`, source status word `disputed`, and an explicitly supplied reason
+code are different facts. In prose, a reason-code span must occupy the complete bounded
+identifier immediately following `reason code:`, `reason_code=`, `reason-code#` or an
+equivalent case-insensitive form. The exact value, category cue, same-page containment
+and every existing source/amount check still apply. Missing explicit code means null;
+an unlabeled status/category promoted to a code fails `REASON_CODE_LABEL_REQUIRED`.
+The validator rejects the extraction; it never silently deletes or rewrites a code.
+The word disputed remains in immutable source/description and cannot transition a
+case/claim into DISPUTED or grant approval. Extraction1.0 adds no dispute-status field.
+
+Structured JSON's actual `claims[i].reason_code` field is already explicit and is
+reparsed at that exact path; genuinely supplied values, including the literal word
+disputed, are retained. There is no invented code catalogue or blacklist of words.
+Unsupported prose code formats abstain rather than being silently discarded.
+Privacy projection-v2 preserves only the recognized label/separator and bounded
+code; PAN/GSTIN/account/contact/other sensitive overlap still fails closed. This is
+an essential-identifier exception for approved synthetic text, not real-data approval.
+
+Gemini provider contract v5 clarifies this rule and changes cache input identity;
+internal schema/CSV1.0 remain unchanged and immutable historical results are retained.
+The earlier v4 real run is not retroactively corrected. New semantics/prompt are
+offline-tested only; no new Gemini call, live accuracy claim or budget consumption.
+
+Version: **remittance-extraction-1.0**; canonical parser **canonical-text-v1**; privacy projection **projection-v2**. This is a separate interface from financial CSV DATA_CONTRACT v1.0. All four CSV schemas/identities/import ordering remain unchanged. Argon supplies realistic documents/datasets; none are bundled/generated/imported automatically. Examples/test inputs are minimal isolated code fixtures.
 
 ## Access and local configuration
 
@@ -83,7 +108,7 @@ Limits: at most 2 worker jobs/process; parser wall timeout 10s; Windows Job aggr
 
 Metrics include reported input/output (output includes reported reasoning), total/reasoning/cached counts where supplied, latency_ms, actual attempts and usage_complete. Missing/failed-attempt usage is unknown. Optional configured INR paise-per-million-token rates produce integer ceiling estimated_cost_paise only for complete usage; absent rates/partial retry usage yields null, never invented zero. Estimates are not provider billing/FX facts. No prompt/result body is in telemetry.
 
-Gemini remittance provider contract `gemini-remittance-shape-v4` preserves the internal
+Gemini remittance provider contract `gemini-remittance-shape-v5` preserves the internal
 Extraction fields/types/nulls/enums/closed objects but omits decoder-side numeric,
 array and string bounds. All original bounds and source validations remain in the
 unchanged strict host schema. Schema version is included in input provenance/cache

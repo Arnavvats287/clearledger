@@ -209,6 +209,9 @@ Independent datasets, hidden answers and original operator/scoring code are not 
   Three later probes without JSON/schema constraints returned503,503,504 and stopped.
   Gemini3.5 now produces source-validated, persisted core facts with human review,
   but misclassifies “disputed” as a reason code; no general accuracy is established.
+  The offline v5 contract now rejects unlabeled reason codes; its live-model accuracy
+  is unverified. Optional first deterministic investigations consume persisted claims
+  via the existing worker; see [INVESTIGATIONS.md](docs/INVESTIGATIONS.md).
   The offline portfolio demo makes no live calls or infrastructure changes.
 - **Reconciliation usefulness:** improve source-backed matching and actionable
   review routing, then measure against independent scoring without using answers

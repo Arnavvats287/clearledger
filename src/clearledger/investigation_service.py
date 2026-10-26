@@ -280,8 +280,8 @@ def finding_current(session, org, finding, settings):
         return False
 
 
-def schedule_affected(session, org, case, affected, settings, event_id):
-    """Reinvestigate only already investigated affected claims, never unrelated claims."""
+def schedule_affected(session, org, case, affected, settings, event_id, *, include_extracted=False):
+    """Reinvestigate affected findings; opt in current newly extracted claims only."""
     from uuid import NAMESPACE_URL, uuid5
 
     from clearledger.investigation_contract import StartInput
@@ -294,6 +294,37 @@ def schedule_affected(session, org, case, affected, settings, event_id):
             )
         )
     )
+    if include_extracted:
+        # Never revive superseded/failed extraction assertions or adopt another case's claims.
+        # Snapshot below independently revalidates immutable originals and semantic evidence.
+        latest_by_document = {}
+        for claim in session.scalars(
+            select(Claim).where(
+                Claim.organization_id == org,
+                Claim.case_id.in_(members(session, org, case)),
+                Claim.id.in_(affected),
+                Claim.state == "EXTRACTED",
+            )
+        ):
+            if claim.document_id not in latest_by_document:
+                latest_by_document[claim.document_id] = session.scalar(
+                    select(DocumentExtraction)
+                    .where(
+                        DocumentExtraction.organization_id == org,
+                        DocumentExtraction.document_id == claim.document_id,
+                    )
+                    .order_by(DocumentExtraction.extraction_version.desc())
+                    .limit(1)
+                )
+            latest = latest_by_document[claim.document_id]
+            if (
+                latest is not None
+                and latest.status in {"SUCCEEDED", "NEEDS_REVIEW"}
+                and not latest.error_code
+                and scoped(session, ClaimSource, org, claim_id=claim.id, extraction_id=latest.id)
+                is not None
+            ):
+                targets.add(claim.id)
     if not targets:
         return
     if len(targets) > settings.investigation_limits.max_claims:
@@ -371,7 +402,11 @@ def schedule_affected(session, org, case, affected, settings, event_id):
             "case_id",
             case.id,
             "investigation-worker",
-            {"run_id": str(run.id)},
+            {
+                "run_id": str(run.id),
+                "cause_event_id": str(event_id),
+                "include_extracted": include_extracted,
+            },
             key={"investigation": str(run.id)},
             case_version=case.version,
         )

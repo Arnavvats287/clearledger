@@ -1,5 +1,13 @@
 # Persistent deduction cases — contract v1.0
 
+Post-M09 extraction automation is an opt-in scheduling extension, not a case-state
+or finance change. Existing committed extraction events already create source-linked
+claims, including validated NEEDS_REVIEW facts. CASE_AUTO_INVESTIGATE_EXTRACTIONS
+defaults false; when true, the existing bounded reevaluation schedules first
+deterministic investigations for current extracted claims. No facts are recreated,
+receipt/customer association inferred, or model status promoted to claim authority.
+Limits, provenance and the remaining correlation gap: [INVESTIGATIONS.md](INVESTIGATIONS.md).
+
 M08 extension: `verified_settled_paise` now derives from committed noncash settlements,
 bounded to signed-bigint paise; without settlements it remains zero. Historical M05
 snapshots below remain unchanged. Independently approved posting can advance private

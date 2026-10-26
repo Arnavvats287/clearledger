@@ -300,7 +300,18 @@ def reevaluate(session, org, event, store, settings=None):
     if settings is not None:
         from clearledger.investigation_service import schedule_affected
 
-        schedule_affected(session, org, case, targets, settings, event.id)
+        schedule_affected(
+            session,
+            org,
+            case,
+            targets,
+            settings,
+            event.id,
+            include_extracted=(
+                settings.case_auto_investigate_extractions
+                and cause.event_type == "case.remittance_observed"
+            ),
+        )
     return case
 
 
