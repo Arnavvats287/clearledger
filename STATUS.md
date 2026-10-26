@@ -74,7 +74,13 @@ financial rules, database schema, source CSVs, provider settings and prior asser
 unchanged. Source seal, staged credential scan, whitespace and scope checks passed; no
 executable changes followed final verification. Only disposable databases were used.
 No private evaluation files, hidden answers, datasets or schedules were accessed/modified;
-no benchmark or paid calls, no remote push. Completion hash is recorded in the follow-up.
+no benchmark or paid calls, no remote push.
+
+Verified implementation checkpoint: **`5cc695ba185660025d939a6db5ceb24ba93b4cc3`**,
+message `fix: stabilize evidence abstentions and case observations`. Exactly seven
+intended files were reviewed/staged; all required checks passed before commit and the
+working tree was clean afterward. This documentation-only follow-up records its hash.
+Executable source/image inputs remain unchanged. No push; stop before Milestone10.
 
 ## Narrow chronological failure/provenance investigation — 2026-10-26 (IST)
 
