@@ -1,5 +1,52 @@
 # Build status
 
+## Authorized live Gemini smoke — blocked preflight, 2026-10-26 (IST)
+
+User explicitly authorized only the existing eight synthetic fixtures, extraction
+only, estimated100-paise maximum. No Gemini API request was made: no model lookup,
+token count or generation. Paid API spend0. Public Google documentation/pricing and
+FBIL historical reference information were read; no private benchmark files touched.
+
+Safe local configuration inspection confirmed a key is present (not its validity),
+model gemini-3.1-flash-lite, provider gemini and external enablement true. No key was
+printed/logged/committed. ClearLedger recognizes EXTRACTION_PROVIDER=disabled|gemini|fake,
+EXTERNAL_AI_ENABLED, GEMINI_MODEL and GEMINI_API_KEY; GEMINI_ENABLED is ignored.
+PRIVACY_REVIEW_REFERENCE was missing; effective retry/minute/output values also
+differed from the authorized smoke profile. No API server/live worker was started.
+
+Google's official model page documents the exact stable ID; account/API availability
+remains NOT VERIFIED because the configuration/budget gates failed first. Official
+standard text rates:USD0.25/million input and USD1.50/million output including thinking.
+Exact Decimal maximum cost:USD0.002816 per8192-input/512-output attempt;
+five=USD0.014080, eight=USD0.022528. A current billing conversion/100-paise bound was
+not verified. Historical2026-10-01 FBIL INR96.2856/USD would yield136/217 paise for
+five/eight respectively; it was not treated as today's quote or authority to spend.
+
+Proven configuration incompatibility: provider_budget reserves three HTTP operations
+per attempt (get/count/generate). Shared-minute cap2 rejects the first attempt before
+transport; daily cap8 admits only two complete attempts. Neither quota semantics nor
+financial/security/application code was altered. No limits or spend authorization
+were increased. Revised pacing/quotas and a certified under-cap reservation are
+required before any retry; see `docs/LIVE_GEMINI_EVALUATION.md` for exact blockers.
+
+At the user's request, ignored local .env enablement was returned to disabled:
+EXTERNAL_AI_ENABLED=false, EXTRACTION_PROVIDER=disabled,
+INVESTIGATION_EXTERNAL_ENABLED=false and the unused GEMINI_ENABLED=false. Key/model
+preserved, verified by an in-memory equality check without emitting the value.
+No financial actions, investigations, communication or benchmark execution occurred.
+Live accuracy/latency/usage/cost estimates remain NOT EVALUATED; prior mocks stay offline.
+
+Actual targeted verification: `.venv/Scripts/python.exe -m pytest
+tests/test_live_gemini_preflight.py
+tests/test_provider_controls.py::test_optional_integer_cost_ceiling_fails_closed
+--require-postgres -q --tb=short` (TEST_DATABASE_URL loaded privately):
+**5 passed in7.20s**, only disposable generated PostgreSQL databases. Tests prove
+configuration names, exact USD reservation arithmetic, minute/day mismatch and
+missing-price/over-cost rejection. Local log `local-data/live-gemini-preflight.log`.
+Ruff check/format on the new test and Git diff whitespace checks PASS. No full suite,
+benchmark, restart or Docker rebuild requested/needed for test/report-only changes.
+Implementation checkpoint will be recorded in the follow-up status commit; no push.
+
 ## Time-boxed synthetic AI usefulness evaluation — 2026-10-26 (IST)
 
 Verified evaluation checkpoint: `f72702c00dde8ded1a1bc99d195c32cee855725a`.

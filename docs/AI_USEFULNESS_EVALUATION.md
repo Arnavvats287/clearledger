@@ -124,3 +124,9 @@ The operator must approve the model/budget and synthetic privacy projection befo
 enabling external extraction for that isolated session. Restore defaults afterward.
 Actual live outputs must undergo existing independent source-span/semantic checks,
 record complete usage/estimated cost or explicit unknown, and preserve human review.
+
+Subsequent authorization/preflight: see [LIVE_GEMINI_EVALUATION.md](LIVE_GEMINI_EVALUATION.md).
+Live calls were authorized but did not execute: the proposed shared minute/day limits
+use HTTP-operation units (three reserved per attempt), not generation-attempt units,
+and the full token reservation did not pass the100-paise budget gate. The earlier
+proposed configuration is therefore not an executable approved run profile.
