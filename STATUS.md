@@ -57,7 +57,8 @@ not changed. No financial action/customer message, billing enablement, model swi
 benchmark/sealed-data modification, full suite, Docker rebuild or new milestone.
 Live report/current README updated honestly to three failures, without rewriting
 frozen evaluation metrics. Authorization consumed; no further call implied.
-Verified checkpoint recorded in follow-up status commit; no push.
+Verified implementation/result checkpoint: `f9ac57dc280983d48e5d3383e9824cd4693d0cff`.
+Recorded in this follow-up status commit; no push.
 
 ## Offline Gemini generation-request compatibility — 2026-10-26 (IST)
 
