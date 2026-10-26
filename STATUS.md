@@ -1,5 +1,60 @@
 # Build status
 
+## Actual Gemini smoke — first attempt failed safely, 2026-10-26 (IST)
+
+User supplied active AI Studio limits15 RPM/250000 input TPM/500 RPD with usage0/500,
+Free tier, no billing enablement. This direct operator confirmation cleared the
+pending quota gate; no account quota/billing changes were performed. Rechecked
+official prices and live ECB FX2026-10-26 (INR95.18546657132642116553450125/USD).
+Exact key-authenticated models.get preflight succeeded again. Reduced conservative
+reservation17 paise/attempt,85 maximum for five, unchanged100-paise authorization.
+No key emitted. Privacy-filtered original PROSE only, exact projection already reviewed.
+
+Added explicitly opt-in `scripts/live_gemini_smoke.py`: actual document APIs through
+FastAPI TestClient, real Gateway/GeminiTransport/isolated SDK worker, fresh disposable
+PostgreSQL upgraded/checked at head; no fake provider injection. In-process settings
+only:2048/512 token caps, one attempt, one caller,3 internal HTTP operations/minute,
+15/day,17-paise per-attempt cost gate; at most five attempts and61s between additional
+attempts. External investigations and verified finance identity remain disabled.
+First fixture must return correct source-validated fields before any continuation.
+No need to modify application domain, reservation semantics or frozen benchmark.
+
+Actual invocation: `.venv/Scripts/python.exe -X utf8 scripts/live_gemini_smoke.py
+--authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 500`.
+**First actual provider-path attempt FAILED, code PROVIDER_FAILED**, one attempt,
+no retries/additional documents. Outer API HTTP200 is a failure-result envelope,
+not extraction success. API latency23.620253200s; recorded internal23592ms.
+No fields/citations returned; model accuracy/hallucination/citation metrics NOT
+EVALUABLE. Token usage and actual estimated token cost unknown/null. Conservatively
+consume the17-paise reservation (83 paise unused authorization); do not refund or
+report usage/cost0. Free-tier billing remained unchanged; no billing statement queried.
+The worker's safe generic failure does not identify get/count/generate stage or
+provider HTTP status: underlying cause and whether generation was reached UNKNOWN.
+No diagnostic generation/retry or speculative security change was made.
+
+Financial rows fingerprint unchanged, human review=true, financial authority=false.
+Disposable DB cleaned and process settings/key/gateway disabled/cleared. Persistent
+ignored .env flags were never enabled and were reverified disabled afterward.
+Original invocation recorded the failed extraction then completed normally; final
+runner returns nonzero on failed/incorrect extraction. It was not rerun with live
+authorization. No independent dataset/operator/scorer/sealed-result access or change.
+
+Private actual observations:
+`local-data/live-gemini/fb1116f0ead443c0af4d88729b0d3364/observations.json`;
+`local-data/live-gemini-execution.log`. Committed aggregate findings and limitations:
+`docs/LIVE_GEMINI_EVALUATION.md` (earlier preflights preserved as history).
+
+Offline targeted verification: pytest `tests/test_live_gemini_runner.py`,
+`tests/test_live_gemini_preflight.py`,
+`tests/test_provider_controls.py::test_optional_integer_cost_ceiling_fails_closed`,
+`--require-postgres -q --tb=short`: **12 passed in11.16s**, disposable DBs only,
+`local-data/live-gemini-targeted.log`. After final exit-code change: launcher refusal
+tests **4 passed in2.17s**, `local-data/live-gemini-runner-final.log`; this is a repeat
+of four of those12 tests, not16 distinct tests. Ruff lint/format and Git whitespace
+checks PASS. No full suite, benchmark or restart run. CI tests exercise refusal paths
+only and cannot invoke an authorized live extraction. Checkpoint recorded below via
+follow-up status commit; no push and no new milestone.
+
 ## Authorized Gemini unblocking — reduced budget verified, account quotas pending
 
 Verified preflight checkpoint: `050cca848eb7c87f083d491cd44fea83993f1524`.

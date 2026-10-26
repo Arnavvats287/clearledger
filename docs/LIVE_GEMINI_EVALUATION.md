@@ -1,5 +1,85 @@
 # Live Gemini extraction evaluation
 
+## Actual provider extraction attempt — 2026-10-26 (IST)
+
+**One real-provider extraction attempt failed safely; no additional documents or
+retries were sent. No successful live extraction or model-accuracy result is claimed.**
+The previous quota blocker was cleared by the user's direct AI Studio confirmation:
+Free tier,15 RPM,250000 input TPM,500 RPD, displayed model usage0/500. Billing was
+not enabled or modified. This is operator-confirmed quota evidence, not an API quota
+query or an independently inspected account dashboard.
+
+Preflight repeated: official standard text pricing remains USD0.25/million input,
+USD1.50/million output including thinking; free tier listed as free. ECB daily XML
+again returned2026-10-26, INR95.18546657132642116553450125/USD. Conservative110 with
+20% contingency gives3300/19800 paise-per-million rates,17 paise per2048/512-token
+attempt,85 paise maximum for five. Budget not increased; no assumption of free-tier
+billing was needed for admission. Fresh key-authenticated model metadata lookup
+succeeded for the exact configured model. Runtime limits:one attempt,one sequential
+caller,three internal HTTP operations/minute,15/day; token maxima2048/512 and daily
+10240/2560. Including the standalone model lookup, the first attempt's at-most-four
+HTTP operations remain below confirmed15 RPM/500 RPD. No further operation was made
+after the failed attempt.
+
+`scripts/live_gemini_smoke.py` executed actual document ingestion, canonical-text,
+baseline extraction and allow_external extraction APIs via FastAPI TestClient in a
+fresh disposable PostgreSQL database upgraded to head. It used the real configured
+Gateway/GeminiTransport and isolated google-genai worker, not FakeTransport or
+scripted output. Only the existing approved PROSE document was uploaded; its exact
+reviewed original/projection are shown below. The transport receives only projected
+pages plus the static system/schema, not originals or DB/financial capabilities.
+The API's finance identity verifier remained absent; no financial action was invoked.
+
+| Measurement | Observed result |
+|---|---|
+| Deterministic baseline | NEEDS_REVIEW, SEMANTIC_EXTRACTION_REQUIRED, no fields |
+| Real provider path | LLM route, FAILED, fixed code PROVIDER_FAILED |
+| HTTP response | 200 extraction-result envelope; not a successful extraction |
+| Provider attempts | 1; no retry |
+| End-to-end live extraction API latency | 23.620253200 seconds |
+| Internal recorded extraction latency | 23592 ms |
+| Valid returned extractions | 0/1 attempted |
+| Invoice reference / deduction amount | No returned fields; NOT EVALUABLE as model accuracy |
+| Citation validity / hallucinations | No returned citations/facts; NOT EVALUABLE, not a zero-error claim |
+| Input/output/total token usage | Unknown; usage_complete=false |
+| Estimated actual token spend | Unknown/null, not reported as zero |
+| Conservative consumed reservation | 17 paise; not refunded on uncertainty |
+| Remaining authorized budget | 83 paise, unused because first attempt failed |
+| Review / financial authority | requires_human_review=true; financial_authority=false |
+| Financial state | Exact before/after fingerprint unchanged |
+| Database cleanup / external settings | Disposable database removed; process settings disabled |
+
+**Underlying provider failure remains unknown.** The existing worker collapses API
+and other transport exceptions to a fixed safe failure code; it does not retain the
+failed get/count/generate phase or HTTP status. A started transport attempt is proven;
+whether generateContent was reached/completed cannot be established. No claim of a
+successful generation, quota rejection, schema rejection or zero billing is made.
+No remote diagnostic retry, provider/security weakening, prompt rewrite or additional
+generation was undertaken. Payment-total extraction remains unsupported by the schema.
+
+Actual sanitized observations: ignored
+`local-data/live-gemini/fb1116f0ead443c0af4d88729b0d3364/observations.json`;
+execution log:`local-data/live-gemini-execution.log`. No key or raw provider reply
+was logged; the private artifact deliberately records the approved synthetic projection.
+The original runner invocation completed normally after recording the failed extraction;
+its final version now returns nonzero on failed/incorrect extraction, preventing a
+shell completion code from being mistaken for model success. It was not rerun.
+
+Invocation (requires a fresh explicit authorization and current price review):
+
+```powershell
+uv run --frozen python scripts/live_gemini_smoke.py --authorized-live --confirmed-rpm 15 --confirmed-tpm 250000 --remaining-rpd 500
+```
+
+Do not rerun automatically. No arguments contain a key or database URL. The runner
+requires same-day pricing review, fresh operator quota figures, reads credentials
+locally and only creates/drops a generated disposable DB. Its process-local settings
+are disabled/cleared in finally; .env remains disabled and its key unchanged. Ordinary
+pytest/CI never enables this path. Targeted offline gate/refusal/privacy/cost tests:
+12 passed in11.16s; no full regression or independent benchmark. Final formatting/
+lint/checkpoint results are recorded in STATUS.md. The frozen255-stage baseline,
+trusted operator, sealed evaluation and independent data were not accessed/modified.
+
 ## Reduced-budget retry — 2026-10-26 (IST): account-quota gate pending
 
 **One actual Google models.get call succeeded for the configured key. Zero token-
