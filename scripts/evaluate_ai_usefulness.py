@@ -15,7 +15,7 @@ from dotenv import dotenv_values
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def main():
+def run_tests(targets):
     env = os.environ.copy()
     local = dotenv_values(ROOT / ".env")
     env["TEST_DATABASE_URL"] = env.get("TEST_DATABASE_URL") or (
@@ -35,7 +35,7 @@ def main():
             sys.executable,
             "-m",
             "pytest",
-            "tests/test_ai_usefulness.py",
+            *targets,
             "--require-postgres",
             "-q",
             "--tb=short",
@@ -56,6 +56,10 @@ def main():
             output = output.replace(value, "<redacted>")
     print(output, end="")
     return completed.returncode
+
+
+def main():
+    return run_tests(["tests/test_ai_usefulness.py"])
 
 
 if __name__ == "__main__":

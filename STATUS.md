@@ -1,5 +1,69 @@
 # Build status
 
+## Portfolio readiness — complete accountant review workflow proved first
+
+2026-10-26 (IST). Followed the priority correction: before README replacement,
+proved ONE continuous same-company/database API workflow independently:
+**1 passed in8.70s**, `local-data/portfolio-accountant-proof.log`. Invoice1101 paise
+and bank receipt1000 → UNRESOLVED without verified intent → explicit source-backed
+test attestation → UNIQUE1000-paise partial candidate retaining101 paise → deterministic
+remittance rebate101 → explicitly test-attested UTR correlation LINKED → same canonical
+case/invoice/receipt/document/claim → signed test promotion101 → actual outbox/LangGraph
+retrieval/verifier → cited SUPPORTED finding/HUMAN_REVIEW/case AWAITING_REVIEW.
+Actual AR remains1101, cash unapplied1000, verified settlement0; full financial API
+snapshot unchanged. No approval, settlement, posting or real-source authority fabricated.
+
+Added reproducible `uv run --frozen python scripts/portfolio_demo.py`. Uses actual
+FastAPI routes via in-process TestClient, real PostgreSQL and production graph/outbox,
+not mocked API responses or an LLM. Fresh disposable test databases only, no development
+reset/seed/restart. Existing tiny fixtures and minimal amount variants only, no realistic
+dataset creation or benchmark access. Test publisher signatures and intent/UTR
+attestations explicitly establish fixture trust only, never production finance authority.
+The primary same-case workflow completes to human review; approval/posting and real
+LLM usefulness are not represented as successful. No broken required step concealed.
+
+Actual final demo command (`.venv/Scripts/python.exe scripts/portfolio_demo.py`):
+**5 passed in37.35s**, `local-data/portfolio-demo-final.log`. Includes primary chain,
+exact-match/idempotency control, deterministic extraction, actual verify-span calls,
+raw SHA-256 check, source-row/import links, audit/document/case histories and graph
+trace; supported/missing/conflicting controls yield HUMAN_REVIEW/REQUEST_EVIDENCE.
+All5 scenarios assert review required, no financial authority, no balance changes.
+An earlier4-scenario demo passed23.27s; final gate adds the explicitly prioritized
+continuous chain and stronger provenance checks, not a misleading aggregate count.
+
+Small shared offline runner refactor `run_tests(targets)` preserves the original
+usefulness command while supporting the new demo; clears child Gemini key, forces
+external/investigator defaults off, redacts captured credential configuration and
+fails on missing PostgreSQL. Existing regression targets:
+`test_ai_usefulness.py::test_investigation_usefulness` plus `test_ai_usefulness_runner.py`:
+**5 passed in32.54s** (`local-data/portfolio-regression-checks.log`), confirming the
+four deterministic fixtures (supported/unsigned/missing/conflict) and launcher guard.
+Ten distinct targeted tests passed across final demo/regression gates; the one-case
+proof is a subset, not another distinct test. Ruff check/format on3 changed Python
+files, Git whitespace and README/demo local-link existence checks PASS.
+
+Only after functional proof, rewrote README with actual output examples, architecture,
+stack, Windows setup, precise demo commands and explicit working/missing boundaries;
+added `docs/PORTFOLIO_DEMO.md` with same-case step expectations. Evaluation section
+records user/operator-supplied frozen255-stage metrics: full snapshot coverage,
+zero API-error observations, conditional matching recall0/315 and review-routing0/255.
+Those external figures were not newly audited/rescored; no frozen artifacts, hidden
+answers, trusted operator or sealed split touched. Four local deterministic fixtures
+passed; two real Gemini attempts failed, latest CONTENT_GENERATION/HTTP_API/400;
+real LLM accuracy remains unestablished. No zero-error/coverage-to-quality inference.
+
+Limitations/future work explicitly include Gemini compatibility, useful reconciliation,
+DocILE/ContractNLI evaluation, sealed blind evaluation, production identity/security
+and real-customer validation. No product feature, financial rule, production claim,
+live Gemini request, infrastructure debugging, full suite, Docker build or restart.
+Persistent external-AI defaults rechecked disabled. No push.
+
+Private synthetic outputs: `local-data/portfolio-demo/{accountant,ingestion,supported,
+missing,conflict}.json`, ignored with logs and credentials. Exact file changes: README,
+`docs/PORTFOLIO_DEMO.md`, `scripts/portfolio_demo.py`,
+`scripts/evaluate_ai_usefulness.py`, `tests/test_portfolio_demo.py`, STATUS.
+Verified local checkpoint recorded in a follow-up status entry.
+
 ## One authorized diagnostic Gemini retry — 2026-10-26 (IST)
 
 Actual retry/report checkpoint: `779075cba529e852820ab428d3137eff157fff1e`.
