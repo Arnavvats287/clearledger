@@ -1,4 +1,121 @@
-# Authorized Gemini extraction smoke — preflight stopped
+# Live Gemini extraction evaluation
+
+## Reduced-budget retry — 2026-10-26 (IST): account-quota gate pending
+
+**One actual Google models.get call succeeded for the configured key. Zero token-
+count or generation calls; zero document transmissions; API generation spend0.**
+No scripted output is presented as live extraction. Live field accuracy, citations,
+hallucination rate, abstention, generation latency and token usage remain NOT EVALUATED.
+The original stopped preflight is preserved below as history.
+
+### Pricing, conversion and reduced reservation verified
+
+Rechecked Google's official standard text rates:USD0.25/million input and
+USD1.50/million output, including thinking. The certificate-verified
+[ECB daily XML](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml) returned
+**2026-10-26**, with INR/USD cross-rate **95.18546657132642116553450125** (INR/EUR
+divided by USD/EUR, using Decimal). For conservative estimation use INR110/USD and
+an additional20% contingency, not a claim about final invoice conversion/tax.
+
+Actual ClearLedger settings for the proposed isolated process:
+
+```dotenv
+EXTRACTION_PROVIDER=gemini
+EXTERNAL_AI_ENABLED=true
+GEMINI_MODEL=gemini-3.1-flash-lite
+INVESTIGATION_PROVIDER=deterministic
+INVESTIGATION_EXTERNAL_ENABLED=false
+PRIVACY_REVIEW_REFERENCE=authorized-synthetic-prose-review-2026-10-26
+LLM_ATTEMPTS=1
+LLM_REQUESTS_PER_MINUTE=1
+LLM_SHARED_REQUESTS_PER_MINUTE=3
+LLM_DAILY_REQUESTS=15
+LLM_MAX_INPUT_TOKENS=2048
+LLM_MAX_OUTPUT_TOKENS=512
+LLM_DAILY_INPUT_TOKENS=10240
+LLM_DAILY_OUTPUT_TOKENS=2560
+LLM_INPUT_PAISE_PER_MILLION_TOKENS=3300
+LLM_OUTPUT_PAISE_PER_MILLION_TOKENS=19800
+LLM_MAX_COST_PAISE_PER_ATTEMPT=17
+```
+
+No GEMINI_ENABLED flag is used. At2048/512 tokens, the USD maximum per attempt is
+0.001280. Converted rates, with both buffers, are3300/19800 paise per million.
+Ceiling((2048×3300+512×19800)/1,000,000)=**17 paise/attempt**; five attempts reserve
+**85 paise**, below100. An uncertain/failed attempt still consumes its full reservation;
+no retry or automatic escalation. The input cap includes system/schema payload, as
+counted by the existing worker before generation; insufficient room must abstain.
+The profile was exercised offline against disposable PostgreSQL, not activated for
+live extraction or installed as global development defaults.
+
+This fixes the local reservation mismatch without changing reservation semantics:
+three HTTP operations fit the shared cap3;15/day covers at most five complete
+attempts. Only one caller, at least61 seconds between attempts, including after
+the standalone metadata lookup. The already-completed standalone lookup is an
+additional HTTP operation outside those15 reservations and must be included in
+account usage checks. Application quotas are company-scoped, not account-wide.
+
+### Exact synthetic-only privacy review completed
+
+The first document is exactly the existing `PROSE` fixture, not regenerated data:
+
+```text
+Invoice I-1: payment INR 9.00; damage INR 1.01 disputed, review required.
+```
+
+The model-visible projected page is exactly:
+
+```text
+Invoice I-1: payment INR 9.00; damage INR 1.01 disputed, ██████ ████████.
+```
+
+Reviewed: no real customer/person names, PAN/GSTIN, bank/account details, contacts,
+real UTR or confidential data. Only approved fixture reference I-1, explicit INR
+amounts, financial vocabulary and masked text survive. Offsets/length are preserved;
+the mapping/originals stay local. The existing worker would send JSON
+`{"untrusted_pages":[<the projected page above>]}`, the static remittance system
+instruction and strict Extraction JSON schema. Tools=[], function calling disabled;
+no originals, DB/session, credentials in model content, finance rules or approval
+authority. The API key travels only as transport authentication. A model response
+would still require independent schema, source/span and semantic validation; no
+amount would be interpreted as approval. Payment total remains unsupported by the
+schema, and the mask's loss of "review required" is a measured projection limitation.
+The system instruction still requires explicit uncertainty and no financial authority.
+
+Google's pricing page discloses different free/paid data-use terms; no account tier
+or confidentiality assurance is assumed. The user explicitly approved sending only
+these synthetic fixtures. This narrow review does not authorize any real documents.
+
+### Actual provider model availability verified, quotas not verified
+
+Official google-genai SDK, explicit key, vertexai=false, trust_env=false,10s timeout,
+one HTTP attempt, logging disabled: `models.get("gemini-3.1-flash-lite")` returned
+`models/gemini-3.1-flash-lite`, generateContent support, input limit1048576 and output
+limit65536. No generation was performed as an availability probe. Key never printed,
+logged or committed. Private sanitized metadata/FX log:
+`local-data/live-unblock-preflight.log`.
+
+[Google's quota documentation](https://ai.google.dev/gemini-api/docs/rate-limits)
+states quotas vary by project/model/tier and active limits are shown in AI Studio;
+RPD resets at midnight Pacific, unlike ClearLedger's UTC-day reservation. Model
+metadata does not expose those active limits or remaining allowance. The available
+AI Studio browser session redirected to sign-in; no account login, credential entry
+or quota change was attempted. A request for safe RPM/TPM/RPD and remaining allowance
+was issued to the user. **No generation until those figures are provided/verified**;
+a successful metadata GET does not establish generation quota or billing entitlement.
+
+Eight targeted offline tests passed in12.57s (new reservation/privacy assertions plus
+existing fail-closed tests); Ruff lint/format passed. Normal TLS verification remained
+enabled: an initial urllib public-FX lookup failed its certificate chain, while the
+existing transport-style httpx trust_env=false path succeeded with normal verification.
+An initial ad-hoc command quoting error was corrected locally, without any API call.
+No persistent application code, financial state, independent benchmark or sealed
+result changed. Generated offline test DBs were disposable; no live-extraction DB
+was provisioned because the account quota gate is still pending. Local external-AI
+and extraction enablement remained disabled throughout and were reverified disabled.
+Only the metadata-only helper used the private key. No full suite/benchmark run.
+
+## Original authorized preflight — historical result
 
 Date:2026-10-26 (IST). **No Gemini API calls were made**, including model lookup,
 token counting or generation. API spend:0 paise. No live extraction, token usage,

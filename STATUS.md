@@ -1,5 +1,49 @@
 # Build status
 
+## Authorized Gemini unblocking — reduced budget verified, account quotas pending
+
+2026-10-26 (IST). Actual metadata-only Google SDK call succeeded for configured key:
+models/gemini-3.1-flash-lite, generateContent support, input1048576/output65536 limits.
+Logging suppressed, retry1, timeout10s, normal TLS/trust_env=false; no key emitted.
+**Generation calls0, token-count calls0, document transmissions0, generation spend0.**
+This is real model-availability verification, not live extraction or mocked accuracy.
+
+Current official pricing rechecked (Google standard text USD0.25 input/1.50 output
+per million). ECB daily XML2026-10-26 verified INR/USD95.18546657132642116553450125.
+Using conservative110 plus20% contingency, reduced2048-input/512-output cap costs
+at most17 paise per attempt,85 paise for five. No budget increase requested. Actual
+settings profile reserves3 HTTP operations/minute,15/day,1 sequential generation/minute,
+one attempt,10240/2560 daily tokens and verified integer rate/cost gates. Profile
+tested offline only; not activated until account quota verification. One standalone
+model lookup additionally counts toward account-level HTTP usage. No ignored flag used.
+
+Synthetic-only privacy review completed: original PROSE fixture and exact length-
+preserving projected page documented in `docs/LIVE_GEMINI_EVALUATION.md`; contains
+only I-1/INR9.00/damage INR1.01 and financial vocabulary, with review-required wording
+masked. Static system/schema and projected page only would enter model content;
+no real customer data, tools, DB or financial authority. No content actually sent.
+
+Remaining mandatory gate: active project Gemini3.1 Flash-Lite RPM/TPM/RPD and remaining
+daily allowance unknown. Google directs active quota checks to AI Studio; metadata
+response has no quotas. Available browser reached Google sign-in, then temporary tab
+closed; no credentials entered/account state changed. Safe quota-only question pending
+with user. Model availability is not proof of generation quota or billing entitlement.
+Stop before generation per instruction until those limits can be verified. No new
+live-extraction database created; only offline disposable PostgreSQL tests ran.
+
+Targeted pytest: `tests/test_live_gemini_preflight.py` plus
+`tests/test_provider_controls.py::test_optional_integer_cost_ceiling_fails_closed`,
+`--require-postgres -q --tb=short`: **8 passed in12.57s**. Includes admission of the
+reduced3-operation profile, rejection within the same minute,85-paise total and exact
+privacy projection. Ruff check/format and whitespace checks PASS. Local logs:
+`local-data/live-unblock-{preflight,targeted}.log`. Initial public urllib TLS check
+failed safely; direct httpx normal-verification check succeeded. Initial ad-hoc command
+quoting failure made no request. No TLS bypass or application worker change occurred.
+
+All extraction/external-investigation settings reverified disabled; no local .env
+changes this task, no key committed. No application/financial/benchmark changes,
+full suite or independent evaluation. Local checkpoint recorded in follow-up; no push.
+
 ## Authorized live Gemini smoke — blocked preflight, 2026-10-26 (IST)
 
 Verified preflight/report checkpoint: `53d56b34e3e3ea9aa7a40443b02485c5c24eb213`.

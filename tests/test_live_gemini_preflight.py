@@ -58,3 +58,54 @@ def test_eight_daily_http_operations_admits_only_two_complete_attempts(environme
     with pytest.raises(ExtractionError, match="PROVIDER_DAILY_BUDGET_EXHAUSTED"):
         reserve(engine, org, "fake", settings)
     assert len(reservations(engine, org)) == 2
+
+
+def test_reduced_profile_reserves_less_than_one_rupee_for_five_attempts():
+    # Official USD prices converted at conservative INR110/USD, plus20% contingency.
+    input_rate = Decimal("0.25") * 110 * 100 * Decimal("1.20")
+    output_rate = Decimal("1.50") * 110 * 100 * Decimal("1.20")
+    assert (input_rate, output_rate) == (3300, 19800)
+    reserved = (2048 * int(input_rate) + 512 * int(output_rate) + 999999) // 1000000
+    assert reserved == 17
+    assert 5 * reserved == 85 < 100
+
+
+@pytest.mark.postgres
+def test_reduced_profile_admits_three_operations_without_relaxing_reservation(environment):
+    engine, org, _, _, _ = environment
+    settings = policy(
+        llm_attempts=1,
+        llm_requests_per_minute=1,
+        llm_shared_requests_per_minute=3,
+        llm_daily_requests=15,
+        llm_daily_input_tokens=10240,
+        llm_daily_output_tokens=2560,
+        llm_max_input_tokens=2048,
+        llm_max_output_tokens=512,
+        llm_input_paise_per_million_tokens=3300,
+        llm_output_paise_per_million_tokens=19800,
+        llm_max_cost_paise_per_attempt=17,
+    )
+    admitted = reserve(engine, org, "fake", settings)
+    assert admitted["reserved_requests"] == 3
+    assert admitted["reserved_input_tokens"] == 2048
+    assert admitted["reserved_output_tokens"] == 512
+    with pytest.raises(ExtractionError, match="PROVIDER_SHARED_RATE_LIMIT"):
+        reserve(engine, org, "fake", settings)
+
+
+def test_approved_prose_has_exact_reviewed_privacy_projection():
+    from test_ai_usefulness import PROSE
+
+    from clearledger.document_privacy import project
+
+    visible = project([PROSE])
+    assert visible.pages == [
+        "Invoice I-1: payment INR 9.00; damage INR 1.01 disputed, "
+        + "\u2588" * 6
+        + " "
+        + "\u2588" * 8
+        + "."
+    ]
+    assert len(visible.pages[0]) == len(PROSE)
+    assert visible.masks
