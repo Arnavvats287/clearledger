@@ -89,7 +89,12 @@ Logs local-data/live-investigator-campaign*.log; original observations four UUID
 listed in docs/AI_INVESTIGATOR.md. No further live authorization inferred. Precise
 next verification is a separately reviewed two-phase v2 enum smoke with reservations
 fitting57 paise; full AI usefulness remains open, alongside production identity/source
-custody and real-customer validation. Local implementation hash recorded separately.
+custody and real-customer validation. Local implementation checkpoint:
+`edd20543cb1912bd8537eae98413c978807d9ff3`
+(`feat: add gated AR investigation phases with safe fallback`). This is an
+implementation checkpoint with live acceptance OPEN, not a completed live-proof or
+milestone claim. Reviewed23 intended files; original tests, credentials, observations,
+datasets and development DB excluded. No push.
 
 ## Real Gemini + automatic correlation/investigation slice — 2026-10-27 IST
 
