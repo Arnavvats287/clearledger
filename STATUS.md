@@ -1,5 +1,40 @@
 # Build status
 
+## Phase2 Free-tier amendment — provider-payload gate — 2026-10-28
+
+From status `5ea71f0`, branch `eval/external-phase-2-free-authorization`. Operator
+explicitly authorizes frozen DocILE/ContractNLI Free-tier processing and accepts
+its data treatment. Rights remain USER-RESOLVED; paid tier is no longer an operator
+requirement. No request to enable billing/create projects/AutoPay/rotate keys.
+Authorization/result documents amended additively; earlier paid gate preserved as
+historical, not treated as current. No dataset-rights investigation reopened.
+
+Frozen plan/provenance/hash check PASS (`a83dc857f3f4ee8d0f6468fd945358504b59173e4ad55f53845bec3c7d00589d`).
+Official Gemini terms rechecked2026-10-28 retain a separate Unpaid Services ban on
+sensitive/confidential/personal inputs. Existing local source screening has contact/
+signatory/payment context candidates and does not establish full payload compliance.
+These are heuristic findings, not a claim every public document is confidential.
+Operator acceptance of data treatment does not establish a provider exception.
+
+STOPPED_AT_PROVIDER_PAYLOAD_TERMS_GATE, not merely Free tier or earlier conservative
+rights/billing policy. No synthetic preflight/model lookup/count/generation, quota/
+tier verification, inference-config freeze, transport, prediction/seal/scoring or
+RecBench attempted. No raw source read/transmission, source repair/redaction/skipping,
+production/UI/DB/Docker/financial/private benchmark change. No model-quality result
+or Free-tier billing status/cost claimed. No provider invoice observation.
+
+Current next step is provider-permitted payload confirmation, not billing setup.
+Exact-v1 source/metrics stay frozen; no redacted v2 is silently introduced. External
+new logs/metadata records preserve the operator authorization and current gate,
+without overwriting previous phase2-v1 files. This is an amendment/gate checkpoint,
+not completed external evaluation.
+
+Checks:89 offline evaluation tests PASS in4.69s; Ruff lint/format PASS; strict mypy
+PASS8 evaluation source files; compilation PASS. Code/test/evaluator-lock Git
+comparison unchanged. Frozen plan checker PASS. No-secret staged checks apply to
+documentation only; existing credentials were not read or changed in this attempt.
+
+
 ## Phase2 authorization recorded — stopped at paid-provider gate — 2026-10-27
 
 Authorization/gate documentation checkpoint: `1c75816`. Not a scored evaluation

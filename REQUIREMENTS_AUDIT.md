@@ -1,5 +1,18 @@
 # ClearLedger requirements-alignment audit
 
+## Phase2 Free-tier authorization / payload terms — 2026-10-28
+
+Operator Free-tier acceptance recorded in authorization/results documents; historical
+paid gate is no longer the operator requirement. Dataset rights stay USER-RESOLVED.
+Current official Unpaid Services content restriction separately remains: prior
+heuristic screening cannot establish unchanged payload compliance. Explicit
+STOPPED_AT_PROVIDER_PAYLOAD_TERMS_GATE; no claim public data is automatically
+confidential or that Free status alone blocks evaluation. No billing setup requested.
+No model preflight/inference/tuning, raw dataset/gold/private access, packet changes,
+scorer changes or financial/product mutation. Frozen hash check PASS. Scored metrics
+remain NOT RUN; no Phase2 completion claim or fabricated zero-cost/billing observation.
+
+
 ## Phase2 dataset authorization / paid-provider stop — 2026-10-27
 
 User-confirmed dataset/API-processing rights recorded in

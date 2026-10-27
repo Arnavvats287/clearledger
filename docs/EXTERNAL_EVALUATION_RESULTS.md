@@ -1,4 +1,43 @@
-# External scored evaluation — pending paid-project verification
+# External evaluation — current status and historical gate records
+
+## 2026-10-28 — Free-tier authorization recorded; no scored results
+
+The operator now explicitly authorizes Free-tier API processing for the frozen
+public DocILE/ContractNLI samples and accepts its data-treatment conditions. Dataset
+rights remain USER-RESOLVED; paid service is no longer an operator requirement.
+See the [additive authorization amendment](EXTERNAL_EVALUATION_AUTHORIZATION.md).
+No billing/AutoPay/project/key changes are requested or made.
+
+Current official [Unpaid Services terms](https://ai.google.dev/gemini-api/terms)
+retain a separate sensitive/confidential/personal-information restriction. Existing
+heuristic source screening does not establish that every unchanged payload complies.
+No provider exception has been established. Status is therefore
+**STOPPED_AT_PROVIDER_PAYLOAD_TERMS_GATE**, not stopped merely for using Free tier.
+The dataset-holder authorization is recorded, not rejected or re-investigated.
+
+| Requested observation | Current result |
+|---|---|
+| Exact model actually used | NONE; intended alias remains gemini-3.5-flash-lite |
+| Free-tier/synthetic preflight | NOT RUN; account tier/quotas/model admission not verified |
+| ContractNLI smoke/final204 pairs | NOT RUN; no classification or evidence metrics |
+| DocILE smoke/final50/native conditional KILE | NOT RUN; no extraction/localization metrics |
+| Model calls/input/output/total tokens |0/0/0/0; none observed from provider |
+| New API charges from this attempt |No calls; no provider invoice/billing check or monetary inference from assumed Free tier |
+| Provider/rate/schema/citation failures |NOT OBSERVED; zero attempts is not a successful test |
+| Prior DocILE input failures |5 retained; no repair/replacement/new model calls |
+| Prediction/config hashes |NOT CREATED; no premature inference freeze or seals |
+| Frozen artifacts/production/financial state |No changes; no application/DB/financial operation executed |
+
+No scored public-performance claim is supported. The strongest demonstrated result
+is preservation of the frozen evaluation and source boundary while recording the
+operator's revised authorization. No model-quality weakness was measured; the
+unresolved issue is payload admissibility under current provider terms.
+
+No billing setup is requested. The frozen v1 Free-tier run needs an applicable
+provider clarification or local confirmation that its complete unchanged payloads
+meet the restriction. Redaction/subsetting is not performed as a workaround.
+
+## 2026-10-27 — historical paid-project verification stop
 
 2026-10-27. **STOPPED_AT_PROVIDER_BILLING_GATE. No model results exist.**
 
@@ -34,15 +73,35 @@ that gate is satisfied, remaining preflights and transport/freeze/smoke/scored w
 must still be completed, within the existing maximum token-charge allocation and
 without retries. No model-quality weakness can be inferred from an unexecuted run.
 
-## SAFE TO CLAIM PUBLICLY
+### Historical SAFE TO CLAIM PUBLICLY — 2026-10-27
 
 - The dataset holder authorized this specifically scoped evaluation.
 - Frozen source-only adapters/scorers were verified offline in prior phases.
 - The paid-provider gate stopped execution before unverified document transmission.
 
-## NOT SUPPORTED BY THIS EVALUATION
+### Historical NOT SUPPORTED BY THIS EVALUATION — 2026-10-27
 
 - Any scored ContractNLI/DocILE model metric or held-out model-performance claim.
 - Production AR accuracy, bank reconciliation accuracy, customer ROI or saved work.
 - Full DocILE/invoice extraction performance, model citation reliability or model-run
   financial safety. No model/application financial operation was executed here.
+
+## SAFE TO CLAIM PUBLICLY
+
+No scored model-performance claim: the current attempt has produced no scored
+ContractNLI/DocILE predictions. Operator authorization and offline gate checks are
+not substitutes for an executed external model evaluation.
+
+## NOT SUPPORTED BY THIS EVALUATION
+
+- Production-ready status.
+- Customer productivity improvement or reduction in manual work.
+- Real-world AR accuracy.
+- Full invoice extraction accuracy.
+- Complete DocILE benchmark performance.
+- Real bank reconciliation accuracy.
+- Financial posting accuracy.
+- Customer ROI.
+- Fully autonomous reconciliation.
+- Model citation reliability, actual Free-tier performance or statistical production
+  reliability. No live run was performed; no score or actual billing is inferred.

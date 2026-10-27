@@ -32,7 +32,7 @@ new explicit instruction, they receive zero model calls and honest input-failure
 dispositions unless an already approved source projection represents them without
 changing semantics. This amendment does not repair or weaken the frozen adapter.
 
-## Current provider-gate disposition
+## Historical provider-gate disposition — 2026-10-27
 
 An existing local `GEMINI_API_KEY` is configured, but its billing status/project
 identity cannot be established from the key's presence. No evaluation-specific key,
@@ -56,3 +56,42 @@ Current official references:
 [billing/status verification](https://ai.google.dev/gemini-api/docs/billing),
 retrieved2026-10-27. These distinguish an active paid project from mere possession
 of an API key; no historical Free-tier quota or current paid status was assumed.
+
+## Free-tier operator amendment — 2026-10-28
+
+The operator explicitly authorizes the frozen ContractNLI/DocILE samples to be
+processed using the existing Gemini API Free tier and accepts its data-treatment
+conditions for this experiment. **Dataset/API-processing rights remain USER-RESOLVED.
+Paid tier is not an operator requirement.** Do not enable billing, create/modify
+projects, establish AutoPay or rotate a working key. The previous paid-setup
+instruction above is historical, not the current requested next action.
+
+Scope remains only these frozen public samples. No production/private/customer/
+sealed ClearLedger data, secrets, unrelated documents, raw source publication or
+Git-committed evidence quotes are authorized. Original sample IDs, prompts,
+schemas, metrics, failure rules, source/gold separation and no-retry policy remain.
+This is an additive authorization change, not a claim Free/Paid terms are identical.
+
+### Independent provider-payload restriction
+
+The [current official Unpaid Services terms](https://ai.google.dev/gemini-api/terms),
+rechecked2026-10-28, separately state: “Do not submit sensitive, confidential, or
+personal information” under Unpaid Services. Acceptance of product-improvement
+use/human review does not establish an exception to that content restriction.
+
+Local Phase1.5 screening reports identifying/contact/signatory/payment-context
+candidates in frozen inputs. Those are heuristic findings, not proof every match
+is personal or confidential. They nevertheless do not establish that all unchanged
+payloads meet the provider restriction. No publisher/license issue is reopened;
+the remaining issue is **provider-permitted payloads**, not Free tier by itself.
+
+Current status: **STOPPED_AT_PROVIDER_PAYLOAD_TERMS_GATE**, not the historical paid
+billing gate. No source was sent, redacted or skipped. Synthetic preflight, model/
+quota/tier verification, transport implementation, configuration freeze and scored
+runs have not occurred. No metric or provider billing observation is fabricated.
+
+To retain the exact unredacted v1/Free-tier experiment, obtain an applicable provider
+clarification permitting these payloads, or establish locally that the complete
+unchanged payloads contain no prohibited information. No billing change is requested.
+If redaction is needed, it requires a separately approved protocol version; this
+task does not silently create one or alter the frozen denominator.
