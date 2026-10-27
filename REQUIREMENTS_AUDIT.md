@@ -1,5 +1,31 @@
 # ClearLedger requirements-alignment audit
 
+## External evaluation Phase1.5 — 2026-10-27
+
+Review-only scope, no inference or production/protocol modification. Traceability:
+`scripts/external_privacy_cost.py` verifies frozen hashes, screens only source text
+and writes IDs/categories/counts (no matched values), current official-reference
+interpretations and Decimal cost scenarios. `tests/test_external_privacy_cost.py`:
+28 tests for candidate detection/no automatic clearance/no source leak, redaction-v2,
+preserved frozen-parser rejection, exact cost/cap math and absence of gold/provider/
+application imports. With61 earlier offline tests:89 PASS; Ruff/type/compile PASS.
+
+External reports cover3 NLI dev +12 test source-only views and50 DocILE val sources.
+No annotation/answer/span use. Five scored OCR sources cannot pass frozen Phase1
+adapter (2empty-page/3invalid-word); privacy-only screening is not an inference fix.
+All IDs retained, no source alteration or weakening. All right/privacy/manual gates
+remain explicit: NLI BLOCKED_PRIVACY, DocILE BLOCKED_RIGHTS; also paid-transport/token
+admission and OCR technical gaps. Published paid model/price/terms verified from
+official Google pages, not actual future account access/quotas or permission to send.
+
+`docs/EXTERNAL_EVALUATION_PHASE1_5.md` distinguishes licensed evaluation, third-party
+rights, privacy, provider treatment and conditional budget caps. Costs are exact
+arithmetic on estimated/capped tokens, not exact model tokenization or an all-in
+invoice. No API/key/project/billing action, product/UI/financial change, private or
+sealed evaluation access, sample/scorer tuning or new model predictions. Phase2 is
+not authorized by this review; existing production/Argon/sealed benchmark gates stay.
+
+
 ## External evaluation Phase1 — 2026-10-27
 
 User-approved evaluation-only preparation, no production/product milestone change.

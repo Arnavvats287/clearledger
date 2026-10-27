@@ -1,5 +1,66 @@
 # Build status
 
+## External evaluation Phase1.5 — privacy/rights/paid cost review — 2026-10-27
+
+Branch `eval/external-phase-1-5-privacy-cost` from verified status `421ef8d`.
+Production/UI, Phase0 plan/checksum/sample IDs, Phase1 code/scorer formulas/evaluator
+lock and private benchmark artifacts unchanged. No billing/project/key, database,
+Docker or settings changes. No model generation/lookup/count-token API calls.
+Only15 public official documentation/rights reference GETs, archived with UTC/title/
+URL/status/hash under `C:\ClearLedgerEval\external-runs\phase1-5-v1`.
+
+`scripts/external_privacy_cost.py` is offline-only: source whitelist, per-document
+candidate-category counts/no matched values, exact Decimal cost arithmetic and
+fail-closed decisions. Uses existing3 dev source packets and projects12 test source
+texts/public hypotheses in memory; no gold label/evidence interpretation. DocILE
+screening uses only50 frozen val OCRs; no train/PDF/gold-field/type access. Frozen
+source digests verified, no raw text printed/transmitted or written into reports.
+
+Observed final ContractNLI decisions:10 manual review/2 proposed-redaction review;
+including dev:13/2. All require local manual confirmation, not regex-based clearance.
+DocILE50 DENY pending dataset grant; original strict adapter accepts45, rejects2
+EMPTY_OCR_PAGE and3 INVALID_OCR_WORD. A privacy-only source view screens all50 and
+matches canonical text on45 accepted inputs; rejected5 are NOT inference packets.
+No fixing/dropping/redacting sources or weakening frozen adapter. Any text redaction
+requires explicit protocol v2.
+
+Current official candidate `gemini-3.5-flash-lite`, Standard USD0.30/M input and
+USD2.50/M output including thinking. Paid terms exclude product-improvement use but
+55-day abuse retention/authorized review/transfers remain; processor DPA does not
+supply dataset rights. India available, no India-residency assurance. Current docs
+omit deprecated sampling parameters; minimal thinking proposed, no production fix.
+Account-specific availability/quotas/paid status unverified. Published minimum
+prepay$5/local equivalent needs future regional UI confirmation; no purchase made.
+
+Scored-only hypothetical74 calls: estimated196514 input/49664 output tokens,
+expected$0.1831142; enforced-cap token-charge maximum$0.7325696. Adapter smoke14 calls:
+expected$0.0628664/max$0.1605632; combined88 calls expected$0.2459806/max$0.8931328.
+All exact USD Decimal strings, excluding tax/FX/card fees. Input estimates use
+UTF8 serialized bytes/3 plus framing/schema/prompt/prior-plan assumptions, not an
+exact tokenizer. Maxima are conditional on a future complete-request counting/
+admission gate and combined output/thinking cap; no transport/enforcement implemented.
+DocILE all50 costs are hypothetical while5 sources are technically rejected. No
+discounts/retries assumed; optional full-run scenarios explicitly NOT authorized.
+
+Outputs: provider-terms-snapshot.json +public reference snapshots, dataset-rights.json,
+screening-contractnli.json(15), screening-docile.json(50), request-cost-specification.json,
+token-cost-model.json, decision-matrix.json, review-summary.json; all external.
+`docs/EXTERNAL_EVALUATION_PHASE1_5.md` records sources, formulas, per-stage estimates,
+fees/funding distinction, minimal isolated paid setup proposal and blockers.
+
+Actual checks:89 offline tests PASS in4.66s (61 frozen Phase0/1 +28 new), using
+`.venv/Scripts/python.exe -m pytest --noconftest tests/test_external_phase0.py tests/test_external_phase1.py tests/test_external_privacy_cost.py --basetemp .local-runtime/phase1-5-tests-final -q`.
+Ruff check/format --check on new helper/test PASS; strict mypy helper PASS; py_compile
+PASS; frozen plan hash/provenance check PASS. Git comparison of original Phase1
+code/lock and Phase0 plan doc PASS unchanged. Logs `external-phase1-5-*.log` ignored.
+No full product/browser/DB/restart gate necessary or run. Earlier tests preserved.
+
+Final decisions: ContractNLI BLOCKED_PRIVACY (+technical), DocILE BLOCKED_RIGHTS
+(+privacy/technical). No unredacted clearance established. Local qualified review,
+actual DocILE third-party processing grant and separately authorized transport/
+schema/count/budget/quota preflight needed. Phase2 paid inference NOT ready; STOP.
+
+
 ## External evaluation Phase1 — offline adapters/scorers — 2026-10-27
 
 Verified implementation checkpoint: `ea0e113` (`feat: add offline external evaluation
