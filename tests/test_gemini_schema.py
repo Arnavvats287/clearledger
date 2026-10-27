@@ -138,3 +138,28 @@ def test_wire_version_does_not_reuse_legacy_semantic_cache_identity():
     assert semantic_cache_key(values) == semantic_cache_key(
         {**values, "provider_schema_version": "strict-domain-v1"}
     )
+    assert semantic_cache_key(
+        {**values, "provider_schema_version": PROVIDER_SCHEMA_VERSION}
+    ) != semantic_cache_key({**values, "provider_schema_version": "gemini-remittance-shape-v5"})
+
+
+def test_explicit_damage_with_unknown_amount_retained_without_invented_money():
+    from clearledger.document_contract import ExtractionError, validate_semantics
+
+    source = "Invoice I-1: damage amount unknown; review required."
+    body = minimal_model_result(source)
+    body["claims"] = [
+        {
+            "category": "damage",
+            "description": {"page": 1, "start": 0, "end": len(source), "quote": source},
+            "amount_paise": None,
+            "amount_span": None,
+            "reason_code": None,
+        }
+    ]
+    result = Extraction.model_validate(body)
+    validate_semantics(result, [source])
+    assert "Do not omit an explicit damage claim" in SYSTEM_INSTRUCTION
+    result.claims[0].amount_paise = 101
+    with pytest.raises(ExtractionError, match="MISSING_AMOUNT_EVIDENCE"):
+        validate_semantics(result, [source])

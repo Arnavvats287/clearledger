@@ -108,6 +108,8 @@ def main():
     parser.add_argument("--correlation-slice", action="store_true")
     parser.add_argument("--investigator-campaign", action="store_true")
     parser.add_argument("--investigator-attempts", type=int, choices=(1, 2, 3, 4), default=4)
+    parser.add_argument("--acceptance-campaign", action="store_true")
+    parser.add_argument("--acceptance-variations", action="store_true")
     args = parser.parse_args()
     # Prices must be re-reviewed on a different day, not blindly replayed later.
     if not args.authorized_live or date.today() != date(2026, 10, 27):
@@ -119,12 +121,29 @@ def main():
         raise SystemExit("Reviewed correlation slice requires Gemini 3.5 Flash-Lite")
     if args.investigator_campaign and (not alternate or args.correlation_slice):
         raise SystemExit("Reviewed investigator campaign requires a separate Gemini 3.5 run")
-    attempt_cost = 30 if args.investigator_campaign else 26 if alternate else 17
+    if args.acceptance_campaign and (
+        not alternate or args.correlation_slice or args.investigator_campaign
+    ):
+        raise SystemExit("Acceptance campaign requires separate Gemini 3.5 scope")
+    if args.acceptance_variations and not args.acceptance_campaign:
+        raise SystemExit("Variation continuation requires the acceptance campaign ledger")
+    attempt_cost = (
+        34
+        if args.acceptance_campaign
+        else 30
+        if args.investigator_campaign
+        else 26
+        if alternate
+        else 17
+    )
     remaining_budget = args.remaining_budget_paise if alternate else 66
     if alternate and (
-        type(remaining_budget) is not int or not attempt_cost <= remaining_budget <= 398
+        type(remaining_budget) is not int
+        or not attempt_cost <= remaining_budget <= (600 if args.acceptance_campaign else 398)
     ):
         raise SystemExit("Explicit remaining alternative-model budget required")
+    if args.acceptance_campaign and remaining_budget != 600:
+        raise SystemExit("This campaign requires its reviewed 600-paise cumulative ledger cap")
     if args.investigator_campaign and remaining_budget < args.investigator_attempts * attempt_cost:
         raise SystemExit("Investigator reservation exceeds authorized budget")
     logging.disable(logging.CRITICAL)
@@ -141,9 +160,14 @@ def main():
         "cases": [],
         "attempt_cost_cap_paise": attempt_cost,
         "remaining_authorized_cap_paise": remaining_budget,
-        "maximum_attempts": args.investigator_attempts if args.investigator_campaign else 1,
-        "maximum_reserved_paise": attempt_cost
-        * (args.investigator_attempts if args.investigator_campaign else 1),
+        "maximum_attempts": 20
+        if args.acceptance_campaign
+        else args.investigator_attempts
+        if args.investigator_campaign
+        else 1,
+        "maximum_reserved_paise": 600
+        if args.acceptance_campaign
+        else attempt_cost * (args.investigator_attempts if args.investigator_campaign else 1),
         "billing_changes": False,
         "operator_confirmed_quotas": vars(args),
     }
@@ -222,6 +246,15 @@ def main():
                 llm_output_paise_per_million_tokens=33000 if alternate else 19800,
                 llm_max_cost_paise_per_attempt=attempt_cost,
             )
+            if args.acceptance_campaign:
+                settings.llm_max_input_tokens = 2048
+                settings.llm_max_output_tokens = 768
+                settings.llm_daily_requests = 60
+                settings.llm_daily_input_tokens = 40960
+                settings.llm_daily_output_tokens = 15360
+                settings.llm_requests_per_minute = 3
+                settings.llm_shared_requests_per_minute = 9
+                settings.privacy_review_reference = "authorized-synthetic-acceptance-2026-10-27"
             app = create_app(settings)
             if args.investigator_campaign:
                 settings.llm_max_input_tokens = 3072
@@ -245,6 +278,19 @@ def main():
                 app.state.extraction_gateway.transport = ObservedTransport()
             try:
                 with TestClient(app) as api:
+                    if args.acceptance_campaign:
+                        from live_acceptance import acceptance
+
+                        report["acceptance_complete"] = acceptance(
+                            api,
+                            engine,
+                            org,
+                            settings,
+                            report,
+                            output,
+                            variations_only=args.acceptance_variations,
+                        )
+                        return 0 if report["acceptance_complete"] else 1
                     if args.investigator_campaign:
                         from live_investigator_smoke import campaign
 
@@ -383,7 +429,7 @@ def main():
             settings.case_auto_investigate_extractions = False
         report["external_settings_disabled"] = True
         if (
-            args.investigator_campaign
+            (args.investigator_campaign or args.acceptance_campaign)
             and settings is not None
             and engine is None
             and "failure_type" not in report

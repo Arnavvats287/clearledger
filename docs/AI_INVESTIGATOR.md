@@ -1,8 +1,10 @@
 # Bounded AR Investigator — ar-investigator-v2
 
-Implementation and offline controls are verified. **Live acceptance has not passed.**
-Real Gemini planning responses were rejected; no live AI synthesis, signed-support
-or conflict result is claimed. Previous successful live extraction remains separate.
+**Bounded synthetic live acceptance passed after the historical failures below.**
+Actual typed planning and missing/support/conflict syntheses passed without fallback
+in the latest same-case sequence. All cumulative attempts/failures, timings, cost,
+automation evidence and limits: [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md).
+This does not establish general model reliability, production or benchmark accuracy.
 This optional mode is off by default and does not grant financial authority.
 
 ## Decisions and boundaries

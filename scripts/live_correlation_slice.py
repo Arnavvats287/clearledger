@@ -1,7 +1,7 @@
 """One application-owned synthetic slice; no live provider or output repair here."""
 
 import json
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import SecretStr
 from sqlalchemy import func, select
@@ -27,7 +27,7 @@ from clearledger.finance_models import (
 RAW = PROSE + "\nCUSTOMER: c\nINVOICE: I-1\nUTR: t\nAMOUNT: 101 paise"
 
 
-def prepare(api, engine, org, settings):
+def prepare(api, engine, org, settings, *, investigation_sources=False):
     for kind, row in (
         ("customers", CUSTOMER),
         (
@@ -53,7 +53,9 @@ def prepare(api, engine, org, settings):
                     "source_system": "test-origin",
                     "key_id": "test-key",
                     "secret": SOURCE_SECRET,
-                    "allowed_kinds": ["REMITTANCE"],
+                    "allowed_kinds": ["REMITTANCE", "WMS", "POD"]
+                    if investigation_sources
+                    else ["REMITTANCE"],
                 }
             ]
         )
@@ -141,10 +143,11 @@ def finish(env, doc, extraction):
         "expected_task_sha256": task["input_sha256"],
         "decision": "CONFIRM",
     }
+    decision_key = uuid4()
     decision = api.post(
         f"/review/correlation-tasks/{task['id']}/decision",
         json=payload,
-        headers=headers("controller"),
+        headers=headers("controller", decision_key),
     )
     assert decision.status_code == 200
     assert not decision.json()["financial_authority"]
@@ -196,6 +199,8 @@ def finish(env, doc, extraction):
         "ready_task": task,
         "decision_payload": payload,
         "decision": decision.json(),
+        "decision_key": str(decision_key),
+        "evidence_record": registered.json(),
         "decision_history": history,
         "canonical_case": merged,
         "association": associations[0],

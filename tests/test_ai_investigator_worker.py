@@ -19,6 +19,7 @@ class Client:
     def count_tokens(self, **kwargs): return N(total_tokens=10)
     def generate_content(self, **kwargs):
         assert 'NumericObservation' in str(kwargs['config'].response_json_schema)
+        assert 'including contextual remittance records' in kwargs['config'].system_instruction
         return N(text='{"plan":null,"synthesis":null}',
                  usage_metadata=N(prompt_token_count=10,candidates_token_count=10,
                                   total_token_count=20,thoughts_token_count=None,

@@ -108,19 +108,23 @@ Limits: at most 2 worker jobs/process; parser wall timeout 10s; Windows Job aggr
 
 Metrics include reported input/output (output includes reported reasoning), total/reasoning/cached counts where supplied, latency_ms, actual attempts and usage_complete. Missing/failed-attempt usage is unknown. Optional configured INR paise-per-million-token rates produce integer ceiling estimated_cost_paise only for complete usage; absent rates/partial retry usage yields null, never invented zero. Estimates are not provider billing/FX facts. No prompt/result body is in telemetry.
 
-Gemini remittance provider contract `gemini-remittance-shape-v5` preserves the internal
+Gemini remittance provider contract `gemini-remittance-shape-v6` preserves the internal
 Extraction fields/types/nulls/enums/closed objects but omits decoder-side numeric,
 array and string bounds. All original bounds and source validations remain in the
 unchanged strict host schema. Schema version is included in input provenance/cache
-identity; legacy entries default to strict-domain-v1. This is a compatibility-risk
+identity; legacy entries default to strict-domain-v1. Version6 clarifies that an explicit
+deduction with unknown amount remains a source-backed claim with null amount/span;
+it invalidates v5 semantic cache reuse without changing the strict internal schema.
+This is a compatibility-risk
 mitigation. The prompt now distinguishes one-based pages/zero-based exclusive Unicode
 offsets and states the existing source-containment rules. Only projected text is
 indexed into at most512 exact token-boundary hints; lookup/count/generation and host
 verification stay bounded, independent and fail closed. Hints never repair a returned
 span or imply authority. Investigation input/schema is unchanged. Gemini3.5 live core
-facts passed source/persistence verification in one synthetic case, with a reason-code
-false positive still requiring review; no general accuracy claim. Detailed actual
-results: [LIVE_GEMINI_EVALUATION.md](LIVE_GEMINI_EVALUATION.md).
+facts passed source/persistence verification; the initial reason-code false positive
+is historical and the corrected semantics have subsequent live coverage. No general
+accuracy claim. Historical results: [LIVE_GEMINI_EVALUATION.md](LIVE_GEMINI_EVALUATION.md);
+current bounded acceptance and limitations: [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md).
 
 Reviewed Gemini3.5 smoke configuration uses GEMINI_MODEL=gemini-3.5-flash-lite,
 LLM_ATTEMPTS=1, LLM_TIMEOUT_MS=30000, input2048/output512, configured conservative

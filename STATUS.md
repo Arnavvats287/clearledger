@@ -1,5 +1,88 @@
 # Build status
 
+## Live AI/automation acceptance — 2026-10-27 IST
+
+From verified7ab2d55 on eval/gemini-final-compatibility. User authorized at most20 new
+Gemini3.5 generations and600 paise new conservative reservations, same Free-tier key/
+project, no billing changes. **Stopped at18 attempts/580 paise**; known-usage estimates
+247 paise at conservative paid-equivalent rates, not provider billing. No further call
+fits the remaining20-paise reservation. No benchmark/operator/dataset/frontend change.
+
+Latest full same-case workflow passed real Gemini extraction -> existing outbox claim/
+missing-proof task -> independent authenticated synthetic remittance -> controller
+CONFIRM/history -> case merge/association -> automatic deterministic LangGraph refresh.
+Explicit external investigation then accepted the real AI plan (damage101, WMS/POD)
+and all3 syntheses: missing/request evidence; supported/human review; conflict/escalate.
+No fallback in that final sequence; verified citations only. Latest ordinary prose,
+unknown amount (retained null), conditional rebate and privacy-contained injection
+variations passed. Human review and financial_authority=false remained mandatory.
+No balance/allocation/settlement/journal/finance approval change observed. Identity and
+signing roots were existing isolated synthetic fixtures, never production authority.
+
+Historical campaign failures retained: support omitted contextual remittance citation
+(strictly rejected); later RESPONSE_DECODING/DECODE at496 output tokens (body/cause
+unknown); missing-amount prose omitted its explicit claim (safe abstention, incomplete).
+Minimal fixes: worker prompt clarifies full support-context citations and null-amount
+claim retention; extraction provider identity v6 prevents v5 semantic cache reuse.
+Strict internal schemas, source/financial validation and finance authorization unchanged.
+Accepted support used578 output tokens, exceeding old512; experiment rebalanced input
+2048/output768,34 paise per call. Global600/20 ledger includes earlier30-paise calls.
+An offline refresh TOKEN_LIMIT came from insufficient demo run limits, not a scheduling
+bug; larger bounded run limits account for deterministic tool decisions as well.
+
+Latest timings: missing/support/conflict end-to-end10.613/11.219/12.594s excluding
+inter-case pacing; transport median4155ms across18 generations (includes worker/model
+lookup/token count). Usage16707 input/5212 output tokens. No transient retries/outage;
+provider/model calls stayed sequential and hidden SDK retries disabled. Full matrix,
+failure counts, latency boundaries, pricing/FX/quota/privacy evidence, raw log locations,
+reproduction and frontend endpoints: docs/LIVE_ACCEPTANCE.md. This is tiny synthetic
+functional acceptance, not general reliability, held-out accuracy or production readiness.
+
+Actual targeted verification (TEST_DATABASE_URL loaded privately from ignored.env;
+all DBs disposable, external transport mocked in pytest):
+
+- pytest original targeted AI/worker/runner/combined acceptance group:32 passed146.19s;
+  local-data/acceptance-offline-final3.log. Initial test file subsequently renamed
+  tests/test_live_acceptance.py. Earlier missing-file invocation ran no tests; earlier
+  refresh assertion failed before the harness token correction; neither counted PASS.
+- pytest tests/test_live_correlation_slice.py tests/test_correlation_workflow.py
+  --require-postgres -q:18 passed103.42s; acceptance-correlation-regressions.log.
+- pytest tests/test_live_acceptance.py tests/test_ai_investigator_worker.py
+  --require-postgres -q at rebalanced preflight:9 passed35.52s;
+  acceptance-rebalanced-offline.log. Citation-only preflight5 passed3.36s.
+- New mixed historical-reservation rehearsal[8]:1 passed33.08s;
+  acceptance-resume-ledger-offline.log.
+- New continuation rehearsal[15] plus tests/test_gemini_schema.py and
+  tests/test_gemini_campaign.py:19 passed8.71s; acceptance-variations-offline.log.
+- Final exhausted-budget/early-return financial measurement rehearsal[20]:
+  1 passed4.68s; acceptance-failure-nonmutation.log.
+- Final safe metadata/budget-report checks:10 passed2.32s with workspace --basetemp;
+  acceptance-final-budget-metadata3.log. First invocation had4 sandbox-temp fixture
+  setup errors (6 passed), not application failures; no test skipped. Metadata now
+  displays the enforced600 cap rather than unconstrained20×34=680. The real ledger
+  always enforced600; old unmodified reports retain their original display field.
+- **75 distinct focused cases passed across these overlapping runs**, not one full
+  suite. No assertions removed/weakened. Existing v5 version expectation advanced to
+  v6 with an added old-cache exclusion check; all financial constraints retained.
+- Ruff check . PASS; Ruff format --check . PASS (236 files); mypy PASS23 typed modules.
+  No full verification/benchmark/isolated restart rerun, per scoped task. No migration,
+  dependency or financial logic change. Fresh DBs upgraded through existing0012 only.
+
+Four actual live invocations reused scripts/live_gemini_smoke.py --acceptance-campaign;
+the final used --acceptance-variations, skipping already proven workflows. Exact actual
+commands/logs and unmodified observations are recorded in docs/LIVE_ACCEPTANCE.md;
+all generated fixture outputs and the cumulative ledger remain ignored locally.
+The harness now also records a final financial fingerprint on early abstention; older
+stopped reports lacked this aggregate, although per-investigation safety passed.
+
+Checked effective local Settings afterward: external_ai_enabled=false,
+investigation_external_enabled=false, both case automation flags=false,
+extraction_provider=disabled. Original ignored key/config preserved. Every disposable
+live DB cleaned; shared development data untouched. Backend feature expansion is now
+frozen; next workstream is the frontend canonical-case/review/evidence/trace workbench.
+Production identity/source custody, real customers and independent/sealed evaluation
+remain unresolved. Local checkpoint recorded below after staged review; no push.
+
 ## Optional AR AI Investigator — 2026-10-27 IST (LIVE ACCEPTANCE NOT PASSED)
 
 From5db9061. Implemented gated ar-investigator-v2 planning and synthesis in the

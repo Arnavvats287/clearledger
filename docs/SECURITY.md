@@ -6,7 +6,8 @@ credentials, DB handles or financial tools. Strict typed plans/syntheses, source
 reverification and deterministic policy reject forged facts/citations/amounts and
 invalid conclusions. Pure schemas preload before the unchanged isolated-worker guard;
 late imports remain denied. Fixed failure/schema diagnostics exclude raw inputs,
-messages and URLs. No external flag enabled by default. Live acceptance remains open:
+messages and URLs. No external flag enabled by default. Bounded synthetic acceptance
+now passed; production identity/source custody and broad reliability remain open:
 [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
 
 Correlation review requires an independently authenticated, current remittance

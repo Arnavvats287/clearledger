@@ -88,19 +88,22 @@ def manifest(
     trusted=True,
     delivered=8,
     damaged=0,
+    shipped=10,
+    unit_value=100,
+    source_invoice_number="i",
     extra="",
     **changes,
 ):
     client = env[3]
-    lines = ["CUSTOMER: c", "INVOICE: i"]
+    lines = ["CUSTOMER: c", f"INVOICE: {source_invoice_number}"]
     values = {"LIMIT": f"{value} paise"} if kind == "CONTRACT" else {"AMOUNT": f"{value} paise"}
     if kind in {"WMS", "POD"}:
         values = {
             "SHIPMENT": "s",
-            "SHIPPED": "10",
+            "SHIPPED": str(shipped),
             "DELIVERED": str(delivered),
             "DAMAGED": str(damaged),
-            "UNIT_VALUE": "100 paise",
+            "UNIT_VALUE": f"{unit_value} paise",
         }
     lines += [f"{label}: {v}" for label, v in values.items()]
     if extra:
@@ -125,10 +128,10 @@ def manifest(
     elif kind in {"WMS", "POD"}:
         fact.update(
             shipment={"value": "s", "span": span("SHIPMENT")},
-            shipped=numeric("SHIPPED", 10),
+            shipped=numeric("SHIPPED", shipped),
             delivered=numeric("DELIVERED", delivered),
             damaged=numeric("DAMAGED", damaged),
-            unit_value=numeric("UNIT_VALUE", 100),
+            unit_value=numeric("UNIT_VALUE", unit_value),
             unit="EACH",
         )
     else:
@@ -147,7 +150,7 @@ def manifest(
         "canonical_sha256": doc["canonical_sha256"],
         "excerpt": {"page": 1, "start": 0, "end": len(raw), "quote": raw},
         "customer_reference": {"value": "c", "span": span("CUSTOMER")},
-        "invoice_reference": {"value": "i", "span": span("INVOICE")},
+        "invoice_reference": {"value": source_invoice_number, "span": span("INVOICE")},
         "categories": [category],
         "effective_from": "2026-01-01",
         "effective_to": "2026-12-31",

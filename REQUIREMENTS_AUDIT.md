@@ -1,6 +1,26 @@
 # ClearLedger requirements-alignment audit
 
-## Optional AR AI Investigator — 2026-10-27 (live gap remains)
+## Current bounded AI/automation acceptance — 2026-10-27
+
+Supersedes the historical live gap immediately below for approved synthetic fixtures
+only. Actual APIs/PostgreSQL/Gemini3.5/existing LangGraph: typed plan accepted, missing
+POD -> request evidence, verified WMS/POD -> supported/human review, conflicting
+delivery -> escalate conflict. Real extraction/source spans, automatic claim/task,
+authenticated synthetic correlation proof, controller decision/immutable history,
+merge and deterministic refresh verified; unchanged replay creates no provider work.
+Traceability: scripts/live_acceptance.py reuses live_correlation_slice and
+live_investigator_smoke; tests/test_live_acceptance.py plus existing AI/correlation/
+worker/schema controls; docs/LIVE_ACCEPTANCE.md contains all live results/limitations.
+75 distinct targeted cases passed across runs; Ruff/format/mypy passed. No full gate
+or benchmark rerun claimed. Three campaign failures remain in the report: omitted
+support-context citation, decoding failure, missing-amount claim omission. Prompt
+clarifications and provider v6 cache invalidation preserve all strict validators.
+18 attempts/580 paise reserved; no further live call. Flags disabled; no financial
+mutation observed. G1 production identity/source custody, independent/sealed benchmark
+accuracy and real-customer/general reliability remain open. Backend expansion frozen;
+frontend/product workbench is next, with existing financial authority boundaries.
+
+## Earlier optional AR AI Investigator — historical live gap, superseded above
 
 Typed EvidencePlan/Synthesis/NumericObservation: investigation_ai_contract.py;
 existing StateGraph phase/conditional review nodes: investigation_ai.install and

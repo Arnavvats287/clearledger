@@ -75,8 +75,9 @@ def test_no_authorization_or_insufficient_quota_never_reads_key_or_calls_provide
 
 
 @pytest.mark.parametrize("provider_status", ["INVALID_ARGUMENT", "FAILED_PRECONDITION"])
+@pytest.mark.parametrize("acceptance", [False, True])
 def test_metadata_failure_reports_only_safe_provider_status(
-    monkeypatch, tmp_path, capsys, provider_status
+    monkeypatch, tmp_path, capsys, provider_status, acceptance
 ):
     from google import genai
     from google.genai.errors import APIError
@@ -150,6 +151,14 @@ def test_metadata_failure_reports_only_safe_provider_status(
             "492",
         ],
     )
+    if acceptance:
+        module.sys.argv += [
+            "--model",
+            "gemini-3.5-flash-lite",
+            "--remaining-budget-paise",
+            "600",
+            "--acceptance-campaign",
+        ]
     assert module.main() == 1
     report = json.loads(
         next((tmp_path / "local-data/live-gemini").glob("*/observations.json")).read_text()
@@ -161,6 +170,7 @@ def test_metadata_failure_reports_only_safe_provider_status(
         "provider_status": provider_status,
     }
     assert report["cases"] == [] and report["external_settings_disabled"]
+    assert report["maximum_reserved_paise"] == (600 if acceptance else 17)
     assert canary not in json.dumps(report) + capsys.readouterr().out
 
 
