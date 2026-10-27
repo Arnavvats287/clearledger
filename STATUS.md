@@ -3279,3 +3279,9 @@ files), compilation/import and frozen-artifact checks passed. No full product,
 database/restart, browser or sealed benchmark run was made for evaluation-only work.
 Known weaknesses: unsupported legal assertions, incomplete citations and poor
 native document localization. No score-driven fixes or further evaluation begun.
+
+Verified results checkpoint: `d2272b2` (`eval: record sealed ContractNLI and
+conditional DocILE results`). Final offline gate:106 tests passed in4.85s, Ruff
+lint/format, strict mypy11 files, compilation/import and frozen-artifact checks
+passed. This follow-up records the completion hash; no prediction/configuration or
+application behavior changed. Local commits only; no push.
