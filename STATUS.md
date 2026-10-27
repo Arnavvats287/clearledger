@@ -76,7 +76,13 @@ not confer identity. Local synthetic identity/source trust is not production aut
 Fake-provider demo not live Gemini/benchmark accuracy. Full posting queue/cash allocation
 and original Argon CASE-204 UI gate remain deferred. Company-wide queue projection,
 broader browsers/assistive-tech/production security and real first-user testing open.
-Checkpoint will be recorded after staged diff/secret review. No push.
+Verified implementation checkpoint: **f23121a5b920388b59ac3b39fcd49f497bc980be**,
+`feat: redesign case UX around the financial story`. Reviewed31 intended staged files;
+whitespace/ignored-runtime/configured-secret/private-key checks passed. No production
+backend/schema/backend-test/dependency diff. No push. Acceptance database cleaned
+with the owned stop-file mechanism; fresh disposable demo started for user review,
+with newly generated ignored credentials and undecided controller tasks. Shared
+PostgreSQL data/process preserved. Documentation follow-up records this hash.
 
 
 ## Frontend evidence-review workstation — 2026-10-27 IST
