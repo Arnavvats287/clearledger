@@ -189,7 +189,14 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
       return v;
     });
   return (
-    <main id="main" className="case-page case-v2">
+    <main
+      id="main"
+      className="case-page case-v2"
+      key={c.id}
+      aria-busy={state.loading}
+      data-stale={c.is_stale}
+      data-view={tab}
+    >
       <div className="case-breadcrumb">
         <Link to="/">
           <ArrowLeft size={14} aria-hidden="true" />
@@ -217,7 +224,7 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
           {state.loading ? "Refreshing…" : "Refresh case"}
         </button>
       </header>
-      <FinancialStory data={data} />
+      <FinancialStory key={`${c.id}:${c.is_stale}`} data={data} />
       {c.is_stale && (
         <ErrorNotice
           error={new ApiError(409, "STALE_CORRELATION_CASE")}
@@ -248,7 +255,7 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
         ))}
       </nav>
       <div className={`folio-grid ${doc ? "inspecting" : ""}`}>
-        <div className="folio-main">
+        <div className="folio-main" key={tab}>
           {tab === "file" && (
             <CaseStory
               api={api}

@@ -1,5 +1,81 @@
 # Build status
 
+## Final frontend visual / motion system — 2026-10-27 IST
+
+From verifiede27dcdf on feat/frontend-final-visual-system. User scope: final visual
+system/motion pass, preserving UXv2 financial-story-first IA; then freeze frontend
+feature/design expansion for independent evaluation. No production backend/API,
+financial logic, role/identity/currentness/idempotency/source contract, migration,
+dependency, data fixture, dataset, benchmark or model change. No Gemini calls.
+
+Added visual-system.css: fog/ink/paper/proof surfaces, paired financial difference
+edge, charcoal assessment, source stack, ochre human action and locked finance
+boundary. Real Geist600 font is loaded alongside400/500/700. Same exact paise values;
+no numeric tween/cash-application animation. Shared semantic palette/text/shapes for
+model/source/rules/human/conflict/missing/locked state. Queue stays a dense table
+with operational row/filter feedback. Desktop/laptop preserve simultaneous proof;
+mobile presents assessment then action then evidence. Technical view retains the
+same amounts in a compact context rail; actual persisted stages form a connected
+selectable flow with model diamonds/rules squares and explicit Demo model labels.
+
+Purposeful150/220/280ms motion for real route/case/tab/filter/source/stage/review
+changes; source close160ms. Verified quote selection drives pressed-value chips and
+highlight, never model text alone. Reduced motion disables ALL animations/transitions
+and bypasses close delay. Focus/semantic/native dialog/contrast behavior retained.
+Review proof/amount context and no-posting boundary preserved. No new business
+workflow. User-initiated source-hash copy reports actual clipboard success or an
+explicit unavailable fallback; no automatic copy, network call or authority.
+
+Browser testing caught a real client race introduced by delayed source close: old
+callback could restore pre-navigation search params after a tab click. Latest-close
+ref now preserves current navigation; unmount clears timer. Initial focused4 failed
+(3 tab races +1 sampling deliberate entrance transform). Repaired4 PASS in28.0s;
+strict geometry comparison now awaits actual finite entrance animations, not weakened.
+Final financial anchor before/after source reveal has identical coordinates/dimensions.
+Existing source/hash/financial assertions and backend tests unchanged.
+
+Actual checks:
+- npm.cmd run lint / typecheck / test / build / format:check: PASS;16 original unit
+  tests retained. TypeScript/build includes the installed local font600; no new deps.
+- CLEARLEDGER_BROWSER_BUILD=1 npm.cmd run test:browser:10 PASS in1.2m against actual
+  Uvicorn/API/PostgreSQL and production4173, fresh disposable cases. All9 prior tests
+  retained plus final source-focus/selection/geometry/execution/four-width/reduced-motion
+  case. Missing/support/conflict, real CONFIRM/REJECT/history/merge, actual draft,
+  role boundary, native dialogs/focus, replay/no duplicates, offline/malformed/empty,
+  financial non-mutation. Happy paths assert no page exceptions/HTTP>=400 responses.
+- Final production copy/source/motion test:1 PASS in8.2s; clipboard read exactly
+  equals the actual displayed original SHA. Dev5173 startup/queue/money/citation/focus
+  smoke:1 PASS in7.6s; prior blank-page repair preserved.
+- Actual authenticated Taste probe/judge/judgeApp/judgeLayout via Playwright:
+  0FAIL/0WARN at1440,1280,768,390 widths. Source lint0FAIL/4 justified WARN: price
+  padding, existing technical Mono, missing-value dashes, shadow ONLY on real modal.
+  Removed flagged ease-in. Screenshots also visually reviewed, not just meter scores.
+- Actual UI video through original synthetic cases, full plan/verification/policy and
+  real controller confirmation: zero page/HTTP errors; invoice/receipt API snapshots
+  unchanged.57.75s trimmed WebM,1280x900,4,467,367bytes. Login trimmed; first frame
+  visually checked as queue. Offline-provider labels visible; no live-AI claim.
+  Viewing pauses are not latency measurements. Raw login recording stays ignored.
+- Final viewport human-review screenshot is an unsent note filled in the actual
+  dialog then CANCELLED, not a fabricated audit event. Other final screenshots
+  come from actual browser acceptance; laptop from authenticated critique capture.
+- Fresh owned host runs existing Alembic head/drift checks. No shared DB reset,
+  downgrade/restart. Backend full-suite/restart checks not rerun/claimed for client-only
+  styling. No independent evaluation or external paid call started. No new dependency.
+
+Logs: local-data/frontend-final-browser.log, focused/focused-repair, build/format,
+Taste source/browser logs, video/video-encode/frame logs. Authenticated measurements:
+local-data/frontend/final-authenticated-taste.json. Media: docs/screenshots (11 states)
+and docs/media/clearledger-workstation.webm. FRONTEND.md records final design language,
+semantic tokens, component/motion/focus system, critique and60–90s interview sequence.
+README links the real synthetic clip; historic live/benchmark reports unchanged.
+
+No reproducible portfolio-blocking defect remains in checked flows. Frontend FEATURE/
+DESIGN EXPANSION FROZEN after this checkpoint. Original M10 posting/CASE-204 gates
+remain deferred; no production-readiness/assistive-tech/all-device claim. Independent
+evaluation is a separate next task, not automatically performed here. Local checkpoint
+and cleanup are recorded after staged review; no remote push.
+
+
 ## Blank development page repair — 2026-10-27 IST
 
 User reported black page on5173. Reproduced in fresh Chromium: body empty and

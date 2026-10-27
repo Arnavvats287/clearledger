@@ -183,7 +183,7 @@ export function Queue({ api }: { api: Client }) {
                   <th scope="col">Next action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody key={`${filter}:${query}:${page}`}>
                 {rows.map((b) => {
                   const c = b.case,
                     a = assessment(b),
@@ -195,7 +195,20 @@ export function Queue({ api }: { api: Client }) {
                     ),
                     f = financialStory(invoices, receipts);
                   return (
-                    <tr key={c.id}>
+                    <tr
+                      key={c.id}
+                      data-state={
+                        a.stale
+                          ? "stale"
+                          : a.conflict
+                            ? "conflict"
+                            : a.supported
+                              ? "supported"
+                              : a.pending
+                                ? "review"
+                                : "missing"
+                      }
+                    >
                       <td>
                         <Link className="case-link" to={`/cases/${c.id}`}>
                           {state.data!.customers.find(

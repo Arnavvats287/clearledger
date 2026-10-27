@@ -1,5 +1,22 @@
 # ClearLedger requirements-alignment audit
 
+## Final frontend visual / motion pass — 2026-10-27
+
+Presentation-only scope preserves UXv2 and every business/API boundary. Traceability:
+visual-system.css tokens/semantic modules/feedback; CaseStory financial rail and
+responsive proof/action composition; Investigation persisted-stage strip; Documents
+verified selected spans and cancellable motion; Queue real filter/row feedback.
+No production backend/schema/dependency/data fixture change. No Gemini or benchmark.
+
+Observed16 unit +10 real production-browser tests PASS; all earlier tests retained.
+New actual four-width/source focus/geometry/execution/reduced-motion test; prior source
+and financial assertions unchanged. A close-animation stale-navigation race was caught
+and fixed, not suppressed. Static checks/build/format pass. Authenticated Taste probes
+0FAIL/0WARN all4 widths; source0FAIL/4 justified warnings. Actual controller-confirm
+video has no page/HTTP errors and unchanged financial snapshots; login trimmed out.
+Frontend feature/design expansion FROZEN at checkpoint. No portfolio blocker observed
+in checked flows. Original M10/production/evaluation deferrals remain open; see FRONTEND.
+
 ## Frontend UXv2 — 2026-10-27
 
 Approved product-UX scope, not a new backend milestone. User specifically permitted

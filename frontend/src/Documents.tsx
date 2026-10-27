@@ -16,6 +16,7 @@ import {
 } from "./api";
 import {
   Badge,
+  CopyValue,
   Disclosure,
   Empty,
   ErrorNotice,
@@ -46,7 +47,27 @@ export function DocumentInspector({
 }) {
   const [highlight, setHighlight] = useState<Span>(),
     [error, setError] = useState<unknown>(),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | undefined>(undefined);
+  const latestClose = useRef(close);
+  useEffect(() => {
+    latestClose.current = close;
+  }, [close]);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+  function dismiss() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      close();
+      return;
+    }
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => latestClose.current(), 160);
+  }
   const load = useCallback(async () => {
     const [doc, canonical, extractions] = await Promise.all([
       api.request<Doc>(`/documents/${selection.document}`),
@@ -160,6 +181,15 @@ export function DocumentInspector({
   if (state.loading) return <Loading label="Loading immutable source…" />;
   if (state.error) return <ErrorNotice error={state.error} />;
   if (!state.data) return null;
+  const sameSpan = (value: unknown) => {
+    const span = record(value);
+    return (
+      !!highlight &&
+      span.page === highlight.page &&
+      span.start === highlight.start &&
+      span.end === highlight.end
+    );
+  };
   const { doc, canonical, extractions, source } = state.data;
   const result = record(extractions.at(-1)?.result);
   const refs = Array.isArray(result.invoice_references)
@@ -172,13 +202,18 @@ export function DocumentInspector({
       ref={panel}
       tabIndex={-1}
       aria-label="Document evidence inspector"
+      data-closing={closing}
     >
       <header className="document-heading">
         <div>
           <FileText size={18} aria-hidden="true" />
           <h3>{doc.source_name}</h3>
         </div>
-        <button onClick={close} aria-label="Close evidence inspector">
+        <button
+          onClick={dismiss}
+          disabled={closing}
+          aria-label="Close evidence inspector"
+        >
           <X size={16} />
         </button>
       </header>
@@ -200,6 +235,7 @@ export function DocumentInspector({
           <button
             key={i}
             disabled={busy}
+            aria-pressed={sameSpan(record(r).span)}
             onClick={() => void verify(record(r).span as Span)}
           >
             <LocateFixed size={14} aria-hidden="true" />
@@ -210,6 +246,9 @@ export function DocumentInspector({
           <button
             key={i}
             disabled={busy}
+            aria-pressed={sameSpan(
+              record(c).amount_span || record(c).description,
+            )}
             onClick={() =>
               void verify(
                 (record(c).amount_span || record(c).description) as Span,
@@ -246,7 +285,12 @@ export function DocumentInspector({
                 {parts ? (
                   <>
                     {parts[0]}
-                    <mark data-testid="source-highlight">{parts[1]}</mark>
+                    <mark
+                      key={`${highlight?.page}:${highlight?.start}:${highlight?.end}`}
+                      data-testid="source-highlight"
+                    >
+                      {parts[1]}
+                    </mark>
                     {parts[2]}
                   </>
                 ) : (
@@ -300,11 +344,23 @@ export function DocumentInspector({
           </div>
           <div>
             <dt>Original SHA-256</dt>
-            <dd className="mono wrap">{canonical.raw_sha256}</dd>
+            <dd>
+              <CopyValue
+                key={canonical.raw_sha256}
+                value={canonical.raw_sha256}
+                label="Copy original SHA-256"
+              />
+            </dd>
           </div>
           <div>
             <dt>Canonical SHA-256</dt>
-            <dd className="mono wrap">{canonical.canonical_sha256}</dd>
+            <dd>
+              <CopyValue
+                key={canonical.canonical_sha256}
+                value={canonical.canonical_sha256}
+                label="Copy canonical SHA-256"
+              />
+            </dd>
           </div>
           <div>
             <dt>Source authentication</dt>

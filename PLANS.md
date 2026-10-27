@@ -79,3 +79,12 @@ does not authorise benchmark generation/modification or transfer Argon's ownersh
 Progressive disclosure preserves source verification, review/currentness/idempotency
 and financial authority gates. Original deferred M10 financial gates remain open.
 Actual implementation/acceptance and60–90s demo: FRONTEND.md and STATUS.md.
+
+## Final frontend visual system and freeze — 2026-10-27
+User authorised a final presentation/motion pass preserving UXv2, real APIs and all
+financial/evidence/review semantics. No backend feature, new product capability or
+external AI call. Actual four-width browser/media/Taste results: FRONTEND.md/STATUS.
+After the verified local checkpoint, frontend feature/design expansion is FROZEN;
+only concrete portfolio-blocking defects justify a separately scoped repair. Next
+workstream is independent evaluation, not automatically started here. Original M10
+posting/CASE-204 deferrals and benchmark/authority boundaries remain unchanged.

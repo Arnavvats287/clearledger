@@ -55,7 +55,7 @@ async function shot(page: Page, name: string) {
       /^\/(\w:)/,
       "$1",
     ),
-    fullPage: true,
+    fullPage: name !== "human-review",
     animations: "disabled",
   });
 }
@@ -449,6 +449,99 @@ test("finance-led intake and accessible reduced-motion controls", async ({
   expect(
     await page
       .getByRole("region", { name: "Document evidence inspector" })
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("none");
+});
+
+test("final visual system: stable financial anchor, execution flow and four viewports", async ({
+  page,
+}) => {
+  await login(page);
+  await openCase(page, "missing");
+  await page.evaluate(() => document.fonts.ready);
+  await page.locator(".case-page").evaluate((e) =>
+    Promise.all(
+      e.getAnimations({ subtree: true }).map((a) =>
+        a.finished.then(
+          () => undefined,
+          () => undefined,
+        ),
+      ),
+    ),
+  );
+  const position = () =>
+    page.locator(".reconciliation-statement").evaluate((e) => {
+      const b = e.getBoundingClientRect();
+      return { top: b.top + scrollY, width: b.width, height: b.height };
+    });
+  const before = await position();
+  await page
+    .getByRole("button", { name: "View evidence", exact: true })
+    .first()
+    .click();
+  await expect(page.getByTestId("source-highlight")).toBeVisible();
+  const after = await position();
+  expect(after).toEqual(before);
+  await expect(
+    page.getByRole("region", { name: "Document evidence inspector" }),
+  ).toBeFocused();
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
+    origin: new URL(page.url()).origin,
+  });
+  await page
+    .getByText("Provenance / technical details", { exact: true })
+    .click();
+  const originalHash = await page
+    .locator(".copy-value code")
+    .first()
+    .innerText();
+  await page
+    .getByRole("button", { name: "Copy original SHA-256", exact: true })
+    .click();
+  await expect(page.getByText("Copied", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    originalHash,
+  );
+
+  expect(
+    await page
+      .getByRole("region", { name: "Document evidence inspector" })
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("cl-drawer");
+  await page.getByRole("button", { name: "Close evidence inspector" }).click();
+  await expect(
+    page.getByRole("region", { name: "Document evidence inspector" }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("link", { name: "Technical trace", exact: true })
+    .click();
+  const plan = page.getByRole("button", { name: /^Investigator plan/ });
+  await plan.click();
+  await expect(plan).toHaveAttribute("data-provenance", "model");
+  const rules = page.getByRole("button", { name: /^Evidence verification/ });
+  await rules.click();
+  await expect(rules).toHaveAttribute("data-provenance", "rules");
+  await plan.focus();
+  await page.keyboard.press("Tab");
+  expect(
+    await page.evaluate(
+      () => getComputedStyle(document.activeElement!).outlineStyle,
+    ),
+  ).not.toBe("none");
+  for (const width of [1440, 1280, 768, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.getByRole("button", { name: /^Investigator synthesis/ }).click();
+    await expect(page.locator(".stage-detail")).toBeVisible();
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await page
+      .locator(".stage-detail")
       .evaluate((e) => getComputedStyle(e).animationName),
   ).toBe("none");
 });

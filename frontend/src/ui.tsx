@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Check,
+  Copy,
   ChevronDown,
   RefreshCw,
 } from "lucide-react";
@@ -306,5 +307,42 @@ export function Saved({ children }: { children: ReactNode }) {
       <Check size={14} aria-hidden="true" />
       {children}
     </p>
+  );
+}
+
+// Read-only, user-initiated provenance utility. Feedback follows the actual browser
+// clipboard result; denied access never pretends to succeed.
+export function CopyValue({ value, label }: { value: string; label: string }) {
+  const [result, setResult] = useState<"IDLE" | "COPIED" | "FAILED">("IDLE");
+  return (
+    <div className="copy-value">
+      <code className="wrap">{value}</code>
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(value);
+            setResult("COPIED");
+          } catch {
+            setResult("FAILED");
+          }
+        }}
+      >
+        {result === "COPIED" ? (
+          <Check size={14} aria-hidden="true" />
+        ) : (
+          <Copy size={14} aria-hidden="true" />
+        )}
+      </button>
+      {result !== "IDLE" && (
+        <span className="copy-feedback" data-result={result} role="status">
+          {result === "COPIED"
+            ? "Copied"
+            : "Copy unavailable. Select the hash to copy it manually."}
+        </span>
+      )}
+    </div>
   );
 }

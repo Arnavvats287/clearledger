@@ -279,6 +279,16 @@ export function Investigation({
               {stages.map((t) => (
                 <button
                   key={t.id}
+                  data-provenance={
+                    t.node === "human_review_or_request_evidence"
+                      ? "human"
+                      : [
+                            "investigator_plan",
+                            "investigator_synthesize",
+                          ].includes(t.node) && t.metadata.fallback !== true
+                        ? "model"
+                        : "rules"
+                  }
                   aria-current={active?.id === t.id ? "step" : undefined}
                   onClick={() =>
                     setParams((v) => {

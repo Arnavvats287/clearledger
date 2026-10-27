@@ -43,6 +43,7 @@ screenshots. Previously verified real-model results are recorded separately in
 [bounded live acceptance](docs/LIVE_ACCEPTANCE.md); small synthetic success is not
 benchmark accuracy. Local reviewer sessions never confer production finance authority.
 
+[Watch the synthetic product walkthrough (58s)](docs/media/clearledger-workstation.webm) ·
 [Complete frontend setup, API boundaries and browser checks](FRONTEND.md) ·
 [Exception queue](docs/screenshots/exception-queue.png) ·
 [Missing evidence](docs/screenshots/missing-evidence-investigation.png) ·
@@ -281,7 +282,7 @@ Frontend checks (run from `frontend/`): `npm run lint`, `npm run typecheck`,
 `npm run test`, `npm run build`, `npm run format:check`. Actual Chromium acceptance:
 `npx playwright install chromium`, then `npm run test:browser` against a **fresh**
 synthetic host. Browser decisions mutate their test tasks; stop/recreate the owned
-disposable host before a full rerun. Nine browser tests and 16 unit tests passed for UX v2.
+disposable host before a full rerun. Ten browser tests and 16 unit tests passed for the frozen final frontend.
 The API-only portfolio gate remains `uv run --frozen python scripts/portfolio_demo.py`.
 Existing broader gates, when appropriate:
 

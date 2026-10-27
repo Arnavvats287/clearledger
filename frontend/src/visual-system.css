@@ -1,0 +1,994 @@
+/* ClearLedger final system: paired financial rails, proof layers and an explicit
+   human decision boundary. Presentation only; no state/authority is inferred here. */
+:root {
+  --ground: #eef1f1;
+  --surface: #ffffff;
+  --raised: #e7eceb;
+  --ink: #192524;
+  --muted: #566463;
+  --line: #d9e1df;
+  --control: #a5b4b0;
+  --blue: #176b61;
+  --selected: #dff0ea;
+  --good: #21624d;
+  --good-bg: #e4f1ea;
+  --bad: #a43d3d;
+  --bad-bg: #faeded;
+  --warn: #785118;
+  --warn-bg: #f6efdf;
+  --model-ink: #315b9b;
+  --model-bg: #eaf0f9;
+  --rule-ink: #4e6370;
+  --human-ink: #76521e;
+  --human-bg: #f3eee2;
+  --assessment: #242a28;
+  --assessment-ink: #f7faf9;
+  --assessment-muted: #c1d2cd;
+  --space-unit: 4px;
+  --gutter-x: 26px;
+  --gutter-y: 22px;
+  --radius-module: 10px;
+  --radius-control: 6px;
+  --radius-state: 4px;
+  --motion-fast: 150ms;
+  --motion-normal: 220ms;
+  --motion-reveal: 280ms;
+  --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+:root[data-theme="dark"] {
+  --ground: #111514;
+  --surface: #1a201e;
+  --raised: #242d29;
+  --ink: #eff5f2;
+  --muted: #acbdb5;
+  --line: #34413a;
+  --control: #687d71;
+  --blue: #99d7c5;
+  --selected: #263f35;
+  --good: #abd9bc;
+  --good-bg: #213b2b;
+  --bad: #f0b5b2;
+  --bad-bg: #3d2525;
+  --warn: #e6cd95;
+  --warn-bg: #332c1e;
+  --model-ink: #b3c9f0;
+  --model-bg: #253347;
+  --rule-ink: #b7cbd4;
+  --human-ink: #e4ce9c;
+  --human-bg: #2e2c23;
+  --assessment: #24332c;
+  --assessment-ink: #f2f8f4;
+  --assessment-muted: #c2d4c8;
+}
+body {
+  font-feature-settings: "ss01";
+}
+button,
+input,
+select,
+textarea {
+  border-radius: var(--radius-control);
+}
+button,
+a,
+summary {
+  transition:
+    color var(--motion-fast),
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    transform var(--motion-fast) var(--ease-out);
+}
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+:is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+}
+.app-header {
+  background: var(--surface);
+  border-bottom-color: var(--line);
+}
+.brand svg {
+  color: var(--blue);
+}
+.brand > span {
+  letter-spacing: -0.7px;
+}
+.app-header nav a::after {
+  border-radius: 2px;
+}
+.case-page,
+.queue-page,
+.intake-page {
+  animation: cl-arrive var(--motion-normal) var(--ease-out);
+}
+.case-heading h1,
+.page-heading h1 {
+  letter-spacing: -0.8px;
+}
+.case-heading p {
+  max-width: 70ch;
+}
+
+/* The comparison is one connected object. The unresolved difference has an open
+   paired ledger edge; neither a settlement nor a completion/progress indicator. */
+.reconciliation-statement {
+  position: relative;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: var(--radius-module);
+  padding: 21px 28px 0;
+  overflow: clip;
+}
+.reconciliation-statement::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--ink);
+}
+.statement-caption {
+  color: var(--muted);
+  font-size: 13px;
+}
+.money-equation {
+  padding: 23px 0 24px;
+  gap: 18px;
+}
+.money-equation > div > span {
+  font-size: 13px;
+  font-weight: 500;
+}
+.money-equation strong {
+  font-weight: 600;
+  font-size: 34px;
+  letter-spacing: -1.5px;
+}
+.money-equation .difference {
+  background: var(--selected);
+  border-left: 3px double var(--blue);
+  padding: 17px 20px;
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+}
+.money-equation .difference strong {
+  font-size: 38px;
+}
+.money-equation .math-sign {
+  font-weight: 400;
+  color: var(--control);
+}
+.flow-invoice,
+.flow-receipt,
+.difference {
+  animation: cl-flow var(--motion-reveal) var(--ease-out) both;
+}
+.flow-receipt {
+  animation-delay: 35ms;
+}
+.difference {
+  animation-delay: 70ms;
+}
+.customer-explanation {
+  background: var(--raised);
+  margin: 0 -28px;
+  padding: 16px 28px;
+  border: 0;
+}
+.customer-explanation > span {
+  color: var(--muted);
+}
+.customer-explanation p {
+  color: var(--ink);
+}
+.customer-explanation p strong {
+  font-weight: 600;
+}
+.statement-next {
+  padding: 15px 0;
+  border: 0;
+}
+.statement-next a {
+  color: var(--blue);
+}
+.statement-next a:hover svg {
+  transform: translateX(3px);
+}
+.statement-next a svg {
+  transition: transform var(--motion-fast);
+}
+
+/* Tabs are navigation, not execution progress. */
+.case-tabs {
+  gap: 27px;
+}
+.case-tabs > a {
+  position: relative;
+  border-bottom-color: transparent !important;
+}
+.case-tabs > a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--motion-normal) var(--ease-out);
+}
+.case-tabs > a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+.folio-main {
+  animation: cl-arrive var(--motion-normal) var(--ease-out);
+}
+.case-page[aria-busy="true"] .case-heading > button svg {
+  transform: rotate(180deg);
+}
+.case-heading > button svg {
+  transition: transform var(--motion-reveal) var(--ease-out);
+}
+
+/* Assessment: interpreted result. Evidence: inspectable source stack. Human
+   action: an explicit decision band. They must not look like interchangeable cards. */
+.case-brief {
+  gap: var(--gutter-y) var(--gutter-x);
+  grid-template-areas: "assessment evidence" "action action" "bounds bounds" "docs docs";
+}
+.assessment-brief {
+  grid-area: assessment;
+}
+.evidence-checklist {
+  grid-area: evidence;
+}
+.action-brief {
+  grid-area: action;
+}
+.decision-boundaries {
+  grid-area: bounds;
+}
+.brief-documents {
+  grid-area: docs;
+}
+.assessment-brief {
+  background: var(--assessment);
+  color: var(--assessment-ink);
+  border: 0;
+  border-radius: var(--radius-module);
+  padding: 24px;
+}
+.assessment-heading {
+  color: var(--assessment-muted);
+}
+.assessment-brief h2 {
+  color: var(--assessment-ink);
+  margin-top: 16px;
+}
+.assessment-brief > p {
+  color: var(--assessment-ink);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.assessment-origin {
+  border-color: #647e745e;
+}
+.assessment-origin strong {
+  color: var(--assessment-ink);
+}
+.assessment-origin div > span {
+  color: var(--assessment-muted);
+}
+.assessment-origin .origin-symbol {
+  color: #b8d5ef;
+}
+.assessment-origin .text-button {
+  color: var(--assessment-ink);
+  border: 0;
+}
+.assessment-origin .text-button:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+.assessment-origin .text-button:focus-visible {
+  outline-color: #b4e4d4;
+}
+.evidence-checklist {
+  padding: 2px 0;
+}
+.brief-section-heading {
+  padding: 0 0 10px;
+}
+.brief-section-heading > span {
+  color: var(--good);
+}
+.evidence-check {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  margin: 0 0 8px;
+  padding: 14px 16px;
+  gap: 11px;
+}
+.evidence-check.verified > svg {
+  color: var(--good);
+}
+.evidence-check.unconfirmed > svg {
+  color: var(--warn);
+}
+.evidence-check button {
+  color: var(--ink);
+}
+.evidence-check button:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--blue);
+}
+.evidence-check:focus-within {
+  outline: 1px solid var(--blue);
+  outline-offset: 2px;
+}
+.evidence-boundary {
+  margin-top: 9px;
+}
+.action-brief {
+  background: var(--human-bg);
+  border-radius: var(--radius-module);
+  border-left: 3px solid var(--human-ink);
+  padding: 19px 22px;
+}
+.human-marker {
+  color: var(--human-ink);
+  font-weight: 500;
+}
+.action-brief h2 {
+  font-size: 20px;
+}
+.action-brief .primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+.action-brief .primary:hover {
+  transform: translateY(-1px);
+}
+.decision-boundaries {
+  padding: 6px 2px 18px;
+  gap: 16px 24px;
+}
+.decision-boundaries > div:nth-child(3) strong {
+  color: var(--rule-ink);
+}
+.decision-boundaries > div:nth-child(3) svg {
+  color: var(--rule-ink);
+}
+.brief-documents .document-row {
+  padding: 14px 0;
+}
+.brief-documents .document-row:hover {
+  background: transparent;
+  color: var(--blue);
+}
+
+/* Operational rows remain compact and comparable; state is in words and shape
+   as well as hue. No bar widths, invented urgency or computed completion scores. */
+.story-register {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.story-register th {
+  padding-bottom: 12px;
+  font-size: 12px;
+}
+.story-register td {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.story-register td:first-child {
+  padding-left: 12px;
+  border-left: 2px solid transparent;
+}
+.story-register tbody {
+  animation: cl-arrive var(--motion-fast) var(--ease-out);
+}
+.story-register tbody tr {
+  transition: background-color var(--motion-fast);
+}
+.story-register tbody tr:hover,
+.story-register tbody tr:focus-within {
+  background: var(--surface);
+}
+.story-register tbody tr:focus-within td:first-child {
+  border-left-color: var(--blue);
+}
+.story-register .queue-equation {
+  font-size: 14px;
+  font-weight: 500;
+}
+.story-register .num strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.story-register .badge {
+  border-radius: var(--radius-state);
+  font-size: 12px;
+  padding: 5px 8px;
+}
+.story-register tr[data-state="missing"] .badge {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.story-register tr[data-state="review"] .badge {
+  background: var(--human-bg);
+  color: var(--human-ink);
+}
+.story-register tr[data-state="conflict"] .badge {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.story-register tr[data-state="supported"] .badge {
+  background: var(--good-bg);
+  color: var(--good);
+}
+.story-register .case-link {
+  font-weight: 500;
+}
+.story-register .action-link {
+  align-items: center;
+}
+.filters {
+  gap: 4px;
+}
+.filters button {
+  border-radius: var(--radius-control);
+}
+.filters button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+/* Persisted graph stages form an inspectable execution strip. Only existing
+   stages are rendered; the strip never pretends to be live provider activity. */
+.investigation-spread {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+.stage-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 0;
+  padding: 4px 4px 12px;
+  scroll-padding-inline: 4px;
+}
+.stage-nav button {
+  position: relative;
+  flex: 1 0 138px;
+  width: auto;
+  min-height: 82px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  align-items: flex-start;
+  padding: 14px 10px;
+}
+.stage-nav button > span:last-child {
+  line-height: 1.4;
+}
+.stage-nav small {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.stage-nav .stage-dot {
+  margin-top: 5px;
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1.5px solid var(--rule-ink);
+  border-radius: 1px;
+}
+.stage-nav button[data-provenance="model"] .stage-dot {
+  transform: rotate(45deg);
+  border-color: var(--model-ink);
+}
+.stage-nav button[data-provenance="model"] small {
+  color: var(--model-ink);
+}
+.stage-nav button[data-provenance="human"] .stage-dot {
+  border-color: var(--human-ink);
+  border-radius: 50%;
+}
+.stage-nav button[data-provenance="human"] small {
+  color: var(--human-ink);
+}
+.stage-nav button[aria-current="step"] {
+  border-color: var(--blue);
+  background: var(--selected);
+}
+.stage-nav button[aria-current="step"] .stage-dot {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.stage-nav button:hover:not([aria-current="step"]) {
+  border-color: var(--control);
+  background: var(--raised);
+}
+.stage-detail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-module);
+  padding: 22px 24px;
+}
+.stage-title {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.provenance.ai,
+.provenance.offline {
+  color: var(--model-ink);
+}
+.provenance.check {
+  color: var(--rule-ink);
+}
+.provenance.human {
+  color: var(--human-ink);
+}
+.provenance.authority {
+  color: var(--muted);
+}
+.run-meta {
+  color: var(--muted);
+}
+.run-select select {
+  background: var(--surface);
+}
+.history-list {
+  border-left-color: var(--line);
+}
+.history-dot {
+  background: var(--rule-ink);
+}
+.review-history,
+.decision-history {
+  border-left: 2px solid var(--human-ink);
+  padding-left: 16px;
+}
+.decision-history strong {
+  font-weight: 500;
+}
+
+/* A source is a paper object inside a docked evidence surface, not an AI result. */
+.document-inspector {
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-module);
+  overflow: clip;
+  animation: cl-drawer var(--motion-reveal) var(--ease-out);
+}
+.document-heading {
+  background: var(--raised);
+  margin: -20px -20px 0;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.document-heading h3 {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.document-status {
+  padding-top: 15px;
+}
+.document-status .source {
+  color: var(--good);
+}
+.span-actions {
+  gap: 7px;
+}
+.span-actions button {
+  border-radius: var(--radius-state);
+  border-color: var(--line);
+  background: var(--ground);
+  font-size: 12px;
+}
+.span-actions button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--selected);
+}
+.canonical-pages {
+  border-radius: var(--radius-control);
+  border-color: var(--line);
+  background: var(--ground);
+}
+.paper {
+  background: var(--surface);
+}
+.paper pre {
+  line-height: 1.85;
+}
+.paper mark {
+  background: var(--selected);
+  color: var(--ink);
+  box-decoration-break: clone;
+  border-bottom: 2px solid var(--blue);
+  animation: cl-citation var(--motion-reveal) var(--ease-out);
+}
+.page-number {
+  color: var(--muted);
+}
+details {
+  border-color: var(--line);
+}
+details > summary:hover {
+  color: var(--blue);
+}
+details > summary svg {
+  transition: transform var(--motion-normal) var(--ease-out);
+}
+details[open] > summary svg {
+  transform: rotate(180deg);
+}
+details[open] > .disclosure-body {
+  animation: cl-arrive var(--motion-normal) var(--ease-out);
+}
+
+/* Consequential review floats; resting evidence and case modules do not. */
+dialog {
+  border: 1px solid var(--control);
+  border-radius: 12px;
+  box-shadow: 0 18px 64px #00000026;
+  padding: 26px;
+}
+dialog::backdrop {
+  background: #101a1866;
+}
+dialog h2 {
+  letter-spacing: -0.5px;
+  font-size: 22px;
+}
+.review-context {
+  background: var(--human-bg);
+  border-radius: var(--radius-control);
+  border-left: 3px solid var(--human-ink);
+}
+.review-context .review-amount {
+  font-weight: 600;
+  letter-spacing: -0.8px;
+}
+.review-note textarea {
+  background: var(--surface);
+  border-color: var(--control);
+}
+.review-note textarea:focus {
+  border-color: var(--blue);
+}
+.saved {
+  background: var(--good-bg);
+  color: var(--good);
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+}
+.review-controls .primary,
+dialog .primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+
+@keyframes cl-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes cl-flow {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes cl-drawer {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes cl-citation {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1200px) {
+  .money-equation {
+    gap: 10px;
+    grid-template-columns: 1fr 30px 1fr 30px 1.1fr;
+  }
+  .money-equation strong {
+    font-size: 30px;
+  }
+  .money-equation .difference strong {
+    font-size: 34px;
+  }
+  .money-equation .difference {
+    padding: 16px 14px;
+  }
+  .stage-nav button {
+    flex-basis: 140px;
+  }
+}
+@media (max-width: 900px) {
+  .case-brief {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "assessment" "action" "evidence" "bounds" "docs";
+  }
+  .assessment-brief {
+    padding: 22px;
+  }
+  .document-heading {
+    margin: -20px -20px 0;
+  }
+  .decision-boundaries {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .reconciliation-statement {
+    padding: 18px 20px 0;
+  }
+  .money-equation {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 17px 0;
+  }
+  .money-equation > div {
+    grid-template-columns: 1fr auto;
+  }
+  .money-equation strong {
+    font-size: 28px;
+  }
+  .money-equation .difference {
+    padding: 14px;
+    border-top: 0;
+    margin-top: 3px;
+  }
+  .money-equation .difference strong {
+    font-size: 30px;
+  }
+  .customer-explanation {
+    margin: 0 -20px;
+    padding: 16px 20px;
+  }
+  .customer-explanation p {
+    font-size: 16px;
+  }
+  .customer-explanation strong {
+    margin-left: 4px;
+  }
+  .statement-next {
+    gap: 10px;
+  }
+  .case-brief {
+    display: grid;
+    grid-template-areas: "assessment" "action" "evidence" "bounds" "docs";
+    gap: 20px;
+  }
+  .assessment-brief {
+    order: 0;
+  }
+  .action-brief {
+    order: 1;
+    padding: 18px 20px;
+  }
+  .evidence-checklist {
+    order: 2;
+  }
+  .decision-boundaries {
+    order: 3;
+  }
+  .brief-documents {
+    order: 4;
+  }
+  .evidence-check {
+    padding: 14px;
+  }
+  .story-register tbody tr {
+    border-left: 2px solid transparent;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .story-register td:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .story-register tbody tr:focus-within {
+    border-left-color: var(--blue);
+  }
+  .story-register td {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .stage-nav button {
+    flex: 0 0 143px;
+    min-height: 82px;
+  }
+  .stage-detail {
+    padding: 18px;
+  }
+  .case-v2 .folio-margin {
+    margin-bottom: 6px;
+  }
+  .document-heading {
+    margin: -16px -16px 0;
+    padding: 15px 16px;
+  }
+  dialog {
+    padding: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.case-v2 .folio-grid.inspecting .case-brief {
+  grid-template-areas: "assessment" "action" "evidence" "bounds" "docs";
+}
+.span-actions button[aria-pressed="true"] {
+  border-color: var(--blue);
+  background: var(--selected);
+  color: var(--blue);
+}
+
+.document-inspector[data-closing="true"] {
+  animation: cl-depart 160ms var(--ease-out) both;
+  pointer-events: none;
+}
+@keyframes cl-depart {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .document-inspector[data-closing="true"] {
+    animation: none;
+  }
+}
+
+.stage-nav button:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -9px;
+  top: 30px;
+  width: 8px;
+  border-top: 1px solid var(--control);
+}
+
+/* The optional execution view keeps the same amounts as a compact context rail,
+   so actual persisted stages are visible without another document-length preamble. */
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .statement-caption {
+  display: none;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .money-equation {
+  padding: 16px 0;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .money-equation
+  strong {
+  font-size: 26px;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .money-equation
+  .difference {
+  padding: 12px 16px;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .customer-explanation {
+  padding-block: 10px;
+  gap: 4px 18px;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .customer-explanation
+  small {
+  display: none;
+}
+.case-page:is([data-view="technical"], [data-view="investigation"])
+  .statement-next {
+  padding: 10px 0;
+}
+.stage-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--control) transparent;
+}
+.run-select select {
+  max-width: 480px;
+}
+@media (max-width: 650px) {
+  .case-page:is([data-view="technical"], [data-view="investigation"])
+    .money-equation
+    > div {
+    grid-template-columns: 1fr auto;
+  }
+  .run-select select {
+    max-width: 100%;
+  }
+}
+
+.stage-detail,
+.saved,
+dialog[open] {
+  animation: cl-arrive var(--motion-normal) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-detail,
+  .saved,
+  dialog[open] {
+    animation: none;
+  }
+}
+
+.copy-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+  align-items: start;
+}
+.copy-value code {
+  font-size: 12px;
+  font-family: "Geist Mono", monospace;
+  user-select: text;
+}
+.copy-value button {
+  min-height: 32px;
+  padding: 7px;
+  border-color: var(--line);
+  background: var(--surface);
+}
+.copy-feedback {
+  grid-column: 1/-1;
+  font-size: 12px;
+  color: var(--good);
+}
+@media (max-width: 650px) {
+  .copy-value button {
+    min-height: 44px;
+  }
+}
+
+.copy-feedback {
+  animation: cl-arrive var(--motion-fast) var(--ease-out);
+}
+.copy-feedback[data-result="FAILED"] {
+  color: var(--warn);
+}

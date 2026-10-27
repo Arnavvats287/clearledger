@@ -1,4 +1,144 @@
-# ClearLedger frontend — Financial story v2
+# ClearLedger frontend — final financial-operations workstation
+
+## Final visual system — frozen after this checkpoint
+
+UX v2's financial story, progressive disclosure, APIs and workflow semantics are
+preserved. This final pass changes presentation and interaction feedback only.
+Frontend feature/design expansion is now **FROZEN**. Independent evaluation is the
+next workstream; it is not started automatically. Fix only concrete blockers under
+separate task scope. Original deferred M10 financial gates remain deferred.
+
+### ClearLedger language: paired rails and proof layers
+
+The invoice minus receipt comparison is one connected financial object. The open
+paired edge on the difference echoes the ledger mark; it is not a completion bar.
+The customer claim is a subordinate strip, visibly distinct from cash received.
+The assessment uses a charcoal interpretation field, evidence uses a paper stack,
+human action uses a restrained ochre band, and the finance boundary stays quiet and
+locked. These are different functional modules, not interchangeable white cards.
+
+`src/visual-system.css` owns final tokens and composition. Geist400/500/600/700 are
+really self-hosted; no synthetic bold, external font CDN or new UI dependency.
+Scale13/14/16/20/24 with26–38px tabular financial figures. Spacing uses a4px base
+with deliberate22px vertical/26px horizontal optical gutters; module/control/state radii10/6/4px. Thin structural edges,
+no resting-card shadows, and one restrained elevation on the actual review dialog.
+The queue keeps comparable rows, tighter spacing, stable numeric alignment, real
+state labels, hover/focus context and a filter-result transition. No giant card queue,
+KPI dashboard, decorative chart, gradient, glass or AI animation.
+
+| Meaning | Light theme token | Shape / text / surface |
+|---|---|---|
+| Financial relationship / selection | Teal #176b61 | Paired ledger edge, full exact amount, explicit comparison-only label |
+| AI interpretation / offline model control | Cobalt #315b9b | Diamond; AI generated or Demo model; never verification authority |
+| Independently verified source | Forest #21624d | Shield/check, source title and verification status |
+| Deterministic rules | Blue-grey #4e6370 | Square/check and Rules check |
+| Human action | Ochre #76521e | Open/circular stage mark, contextual decision band, explicit review action |
+| Conflict | Red #a43d3d | Disagreement text and status; not an invented resolution |
+| Missing proof | Amber #785118 | Question mark and missing/unverified wording |
+| Financial permission | Muted graphite | Lock and Not granted by this review; separate recorded settlement |
+
+Colors never carry meaning alone. Dark mode uses neutral ink surfaces and separately
+contrasted semantic tokens. The brand idea remains: a receipt is a fact, a deduction
+is a claim. It is expressed in the comparison/review boundaries rather than a large
+marketing panel inside the case.
+
+### Composition and motion
+
+Desktop shows assessment and proof together, with a separate human-action band.
+Tablet/mobile recompose the modules: financial story, assessment, human action,
+evidence and finance boundary. The default case content is unchanged. Technical
+trace keeps the same monetary context in a compact rail so the execution flow is
+inspectable without another document-length preamble.
+
+Persisted graph stages form a connected, horizontally scrollable execution strip.
+Model stages have diamonds; rules stages squares; required-human-action has its own
+mark. Clicking reveals only persisted structured fields. Offscreen stages remain
+keyboard reachable. No fabricated stage, hidden thought, agent chatter or live-work
+animation; fake providers remain explicitly Demo scenario / Demo model.
+
+Motion tokens:150ms feedback,220ms content changes,280ms source/financial reveal;
+source close160ms. Only actual route/case mounts, tab/filter changes, selected stages,
+verified citation selections and completed review results animate. Monetary values
+never count up, interpolate or suggest cash application. Full integer-paise values
+are shown throughout. Source chips become selected only after the source verifier
+accepts their exact span. Quote highlight is keyed to the verified selection.
+
+The source pane remains docked/in-flow rather than becoming a second modal system.
+Open/close motion, source header, value chips and expandable provenance make its
+source hierarchy clear. Original/canonical hash-copy controls provide feedback only
+after the browser clipboard succeeds; denial says Copy unavailable rather than
+pretending success. This is a read-only provenance affordance, not a new business
+workflow. Native review dialogs keep claim/payment/proof context,
+focus on cancellation initially, restore focus and explicitly deny posting authority.
+Only the dialog floats; no glass/backdrop blur. A review-note screenshot was captured
+with an unsent client-side note, then cancelled; it is not a fabricated audit record.
+
+All motion, including source closing, is bypassed under prefers-reduced-motion.
+Focus outlines remain visible, source reveal receives focus, closing returns it,
+and keyboard navigation remains usable at every tested width. The financial anchor
+was compared before/after source reveal after entrance transforms settled: identical
+layout coordinates/dimensions. Intentional opacity/transform feedback is not reported
+as an accounting change or model progress.
+
+### Final real-browser acceptance
+
+- 16 unit tests passed, preserving the existing monetary/source/display assertions.
+- 10 production Chromium browser tests passed in 1.2m: all 9 prior tests plus four-width
+  execution/source/motion/financial-anchor coverage. Real Uvicorn/PostgreSQL APIs,
+  strict citations, missing/support/conflict, controller CONFIRM/REJECT, immutable
+  history/merge/replay, auditor boundaries, actual drafts, malformed/offline/empty,
+  source selection/focus, native review, reduced motion and responsive states.
+  Happy paths assert no page/runtime or HTTP>=400 observations. No source/financial
+  assertion weakened. Invoice/receipt snapshots and worker fingerprints unchanged.
+- ESLint, TypeScript, production build and Prettier passed. No production backend,
+  schema/migration, financial rule, new dependency, CSV or benchmark change. Backend
+  full-suite/restart checks were not rerun or claimed for a client-only visual pass.
+- Taste's actual authenticated browser probes/rules:0FAIL/0WARN at1440×1000 desktop,
+  1280×1000 laptop,768×1000 tablet and390×1000 mobile. Source lint0FAIL/4 justified
+  warnings: existing price padding, technical monospace, missing-value dash and
+  shadow on a real modal (explicitly permitted). Desktop/mobile, source/trace and
+  contextual review screenshots were also inspected, beyond the measurements.
+- An initial focused run caught3 navigation failures from the delayed close callback
+  restoring captured old search parameters. It now uses the latest close callback;
+  unmount clears the timer. The fourth failure sampled a deliberate entrance
+  transform. The test now awaits actual finite animations before making the SAME
+  strict geometry comparison. Repaired4/4 passed, then the full 10 passed.
+  Final real-clipboard copy/source/motion case passed separately in8.2s; development
+  URL startup/queue/source smoke passed in7.6s, preserving the earlier blank-page fix.
+
+Detailed logs remain ignored `local-data/frontend-final-*.log`. Browser criterion
+is absence of observed unexpected clipping/overflow/focus/runtime failures in these
+flows, not an unperformed all-device or assistive-technology certification.
+
+### Final media and interview sequence
+
+[58-second actual-API synthetic walkthrough](docs/media/clearledger-workstation.webm)
+(57.75s,1280×900,4.47MB, no audio). Login footage is trimmed out; the first frame was
+visually checked. Viewing pauses help a human inspect fields and are not reported as
+provider latency. The recording includes actual controller confirmation and unchanged
+invoice/receipt API snapshots, with zero page/HTTP errors. Offline providers are
+visible; this is not new live Gemini accuracy evidence.
+
+Screenshots: [queue](docs/screenshots/exception-queue.png),
+[missing](docs/screenshots/missing-evidence-investigation.png),
+[support](docs/screenshots/supported-evidence-investigation.png),
+[conflict](docs/screenshots/conflict-evidence-investigation.png),
+[highlighted source](docs/screenshots/evidence-source-highlighting.png),
+[human review](docs/screenshots/human-review.png),
+[execution trace](docs/screenshots/technical-ai-trace.png),
+[decision history](docs/screenshots/correlation-decision.png),
+[laptop](docs/screenshots/laptop-case.png), [tablet](docs/screenshots/tablet-case.png),
+[dark mobile](docs/screenshots/mobile-dark-case.png).
+
+Suggested60–90s interview:0–12 queue and50,000−47,000=3,000;12–25 missing proof and
+exact remittance quote;25–40 signed support;40–52 conflicting delivery;52–72 inspect
+payment proof, deliberate controller decision/history;72–90 execution plan, verifier,
+policy and financial boundary. Say explicitly: offline replayable fixtures here;
+historical real Gemini acceptance is documented separately. Review does not post.
+
+No reproducible portfolio-blocking defect remains in the tested flows. After this
+commit, further visual/feature expansion is frozen. The earlier UX rationale, setup,
+security limits and original deferred gates below remain applicable.
 
 ## Product direction and scope
 

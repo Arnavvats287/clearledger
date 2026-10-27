@@ -25,7 +25,7 @@ export function FinancialStory({ data }: { data: Loaded }) {
         What happened <span>Linked financial records · INR</span>
       </div>
       <div className="money-equation">
-        <div>
+        <div className="flow-invoice">
           <span>Invoiced</span>
           <strong>{money(f.invoiced)}</strong>
           <small>
@@ -36,7 +36,7 @@ export function FinancialStory({ data }: { data: Loaded }) {
         <span className="math-sign" aria-label="minus">
           −
         </span>
-        <div>
+        <div className="flow-receipt">
           <span>Received</span>
           <strong>{money(f.received)}</strong>
           <small>
@@ -183,9 +183,9 @@ export function CaseStory({
         <p>{a.explanation}</p>
         <div className="assessment-origin">
           <span
-            className={`origin-symbol ${a.origin === "AI assessment" ? "ai" : "check"}`}
+            className={`origin-symbol ${["AI assessment", "Demo scenario"].includes(a.origin) ? "model" : "check"}`}
           >
-            {a.origin === "AI assessment" ? (
+            {["AI assessment", "Demo scenario"].includes(a.origin) ? (
               "◇"
             ) : (
               <Check size={17} aria-hidden="true" />
@@ -205,6 +205,31 @@ export function CaseStory({
             View technical trace <ArrowRight size={14} aria-hidden="true" />
           </button>
         </div>
+      </section>
+      <section
+        className="action-brief"
+        id="required-action"
+        aria-label="Required human action"
+      >
+        <div>
+          <span className="human-marker">Human review</span>
+          <h2>{a.action}</h2>
+          <p>
+            {a.conflict
+              ? "Ask for clarification of the conflicting delivery records before deciding the claim."
+              : a.supported
+                ? "Inspect the cited records and record your review. Any financial adjustment requires separate authority."
+                : "Request the missing proof, then refresh the investigation when new evidence arrives."}
+          </p>
+        </div>
+        {a.pending ? (
+          <p>
+            Open <strong>Match payment to invoice</strong> to review the
+            independent proof.
+          </p>
+        ) : (
+          <ReviewAction api={api} data={data} me={me} refresh={refresh} />
+        )}
       </section>
       <section className="evidence-checklist" aria-label="Sources checked">
         <div className="brief-section-heading">
@@ -260,31 +285,6 @@ export function CaseStory({
             : "Association still needs verification"}
           . Source authenticity does not approve a deduction.
         </p>
-      </section>
-      <section
-        className="action-brief"
-        id="required-action"
-        aria-label="Required human action"
-      >
-        <div>
-          <span className="human-marker">Human review</span>
-          <h2>{a.action}</h2>
-          <p>
-            {a.conflict
-              ? "Ask for clarification of the conflicting delivery records before deciding the claim."
-              : a.supported
-                ? "Inspect the cited records and record your review. Any financial adjustment requires separate authority."
-                : "Request the missing proof, then refresh the investigation when new evidence arrives."}
-          </p>
-        </div>
-        {a.pending ? (
-          <p>
-            Open <strong>Match payment to invoice</strong> to review the
-            independent proof.
-          </p>
-        ) : (
-          <ReviewAction api={api} data={data} me={me} refresh={refresh} />
-        )}
       </section>
       <section
         className="decision-boundaries"
