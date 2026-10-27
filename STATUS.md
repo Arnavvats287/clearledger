@@ -72,8 +72,14 @@ README links the real synthetic clip; historic live/benchmark reports unchanged.
 No reproducible portfolio-blocking defect remains in checked flows. Frontend FEATURE/
 DESIGN EXPANSION FROZEN after this checkpoint. Original M10 posting/CASE-204 gates
 remain deferred; no production-readiness/assistive-tech/all-device claim. Independent
-evaluation is a separate next task, not automatically performed here. Local checkpoint
-and cleanup are recorded after staged review; no remote push.
+evaluation is a separate next task, not automatically performed here. Verified implementation checkpoint:
+**175736ea61c146161ddffdce58cda16dee42fbc8**, `feat: finalize ClearLedger visual
+system and motion`. Reviewed26 intended files; whitespace, configured-secret,
+private-key and ignored-runtime checks passed. Media checked as synthetic-only,
+login removed. No backend/schema/fixture/dependency diff. Owned acceptance DB
+cleaned gracefully; fresh synthetic demo started with new ignored credentials and
+undecided tasks. Shared PostgreSQL untouched. This documentation follow-up records
+the hash. Frontend feature/design expansion FROZEN. No remote push.
 
 
 ## Blank development page repair — 2026-10-27 IST
