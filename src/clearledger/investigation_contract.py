@@ -146,6 +146,10 @@ class Frame(Strict):
     offered: list[OfferedPointer] = Field(default_factory=list)
     searched_tools: list[Tool] = Field(default_factory=list)
     proposal: Proposal | None = None
+    ai_plan: dict[str, object] | None = None
+    ai_synthesis: dict[str, object] | None = None
+    ai_fallback: bool = False
+    ai_rejection: str | None = None
     verification: Verification | None = None
     findings: list[Finding] = Field(default_factory=list)
     error_code: str | None = None

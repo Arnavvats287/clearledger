@@ -28,7 +28,9 @@ def build(runtime, provider):
         def node(state):
             frame = Frame.model_validate(state["frame"])
             try:
-                if function not in (check, advance):
+                if function not in (check, advance) and not getattr(
+                    function, "safe_finalizer", False
+                ):
                     with runtime.transaction() as (session, run, row):
                         runtime.guard(session, run)
                 function(frame)
@@ -186,6 +188,13 @@ def build(runtime, provider):
         return {"frame": frame.model_dump(mode="json")}
 
     graph = StateGraph(State)
+    if getattr(provider, "phased", False):
+        from clearledger.investigation_ai import install
+
+        install(graph, runtime, provider, broker, wrapped, check, advance, emit)
+        return graph.compile(
+            checkpointer=PostgresSaver(runtime), name="clearledger-investigation-v1"
+        )
     for name, function in [
         ("plan", plan),
         ("investigator", investigate),

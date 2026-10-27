@@ -128,6 +128,8 @@ class Runtime:
             result = function()
             value = {"result": result}
         except Exception as error:
+            from clearledger.extraction_provider import ProviderRunError
+
             code = (
                 error.code
                 if isinstance(error, CaseError)
@@ -135,13 +137,49 @@ class Runtime:
                 else "PROVIDER_FAILURE"
             )
             value = {"error": code}
+            if kind == "PROVIDER" and isinstance(error, ProviderRunError):
+                from clearledger.provider_diagnostics import sanitized
+
+                value["metrics"] = {
+                    k: v
+                    for k, v in error.metrics.items()
+                    if k
+                    in {
+                        "input_tokens",
+                        "output_tokens",
+                        "latency_ms",
+                        "estimated_cost_paise",
+                        "usage_complete",
+                    }
+                    and (v is None or type(v) in (int, bool))
+                }
+                if error.metrics.get("diagnostic"):
+                    value["metrics"]["diagnostic"] = sanitized(error.metrics["diagnostic"])
+                if error.metrics.get("schema_errors"):
+                    from clearledger.investigation_ai_contract import schema_errors
+
+                    value["metrics"]["schema_errors"] = schema_errors(
+                        error.metrics["schema_errors"]
+                    )
+            elif kind == "PROVIDER":
+                from clearledger.provider_diagnostics import diagnostic, exception_category
+
+                value["metrics"] = {
+                    "diagnostic": diagnostic("LOCAL_VALIDATION", exception_category(error))
+                }
         with self.transaction() as (session, run, row):
             safe_metadata = {
                 k: v
                 for k, v in (metadata or {}).items()
                 if k in {"tool", "claim_id", "provider", "attempt"}
             }
-            metrics = value.get("result", {}).get("metrics", {}) if kind == "PROVIDER" else {}
+            metrics = (
+                (value.get("result", {}).get("metrics", {}) or value.get("metrics", {}))
+                if kind == "PROVIDER"
+                else {}
+            )
+            from clearledger.provider_diagnostics import sanitized
+
             safe_metrics = {
                 k: v
                 for k, v in metrics.items()
@@ -175,6 +213,16 @@ class Runtime:
                         "cost_paise_reserved": cost,
                         "metadata": safe_metadata,
                         "usage": safe_metrics,
+                        **(
+                            {"schema_errors": metrics["schema_errors"]}
+                            if metrics.get("schema_errors")
+                            else {}
+                        ),
+                        **(
+                            {"diagnostic": sanitized(metrics["diagnostic"])}
+                            if metrics.get("diagnostic")
+                            else {}
+                        ),
                     },
                 )
             )

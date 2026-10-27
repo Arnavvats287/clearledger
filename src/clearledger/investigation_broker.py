@@ -53,7 +53,7 @@ class Broker:
                 self.case_id, SearchInput(**self.scope(objective).model_dump(), tool=tool, limit=20)
             )
 
-    def verify(self, objective, proposal, permitted):
+    def verify(self, objective, proposal, permitted, *, authenticated_only=False):
         if any(pointer not in permitted for pointer in proposal.citations):
             raise CaseError("FORGED_CITATION")
         if objective.invoice_id is None:
@@ -85,9 +85,10 @@ class Broker:
                 from clearledger.evidence_models import EvidenceRecord
                 from clearledger.matching import owned
 
-                pointer = offered(
-                    reader.document_hit(owned(session, EvidenceRecord, self.org, record.id))
-                )
+                hit = reader.document_hit(owned(session, EvidenceRecord, self.org, record.id))
+                if authenticated_only and not hit.source_authenticated:
+                    continue
+                pointer = offered(hit)
                 if pointer is None:
                     raise CaseError("EVIDENCE_PRIVACY_FAILURE")
                 visible.append(pointer)

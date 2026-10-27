@@ -11,7 +11,15 @@ _gateway_lock = Lock()
 
 @lru_cache(maxsize=8)
 def shared_gateway(
-    key, model, timeout_ms, input_tokens, output_tokens, rpm, input_rate, output_rate
+    key,
+    model,
+    timeout_ms,
+    input_tokens,
+    output_tokens,
+    rpm,
+    input_rate,
+    output_rate,
+    task="investigation",
 ):
     from clearledger.extraction_provider import Gateway, GeminiTransport
 
@@ -22,7 +30,7 @@ def shared_gateway(
             timeout_ms,
             max_input_tokens=input_tokens,
             max_output_tokens=output_tokens,
-            task="investigation",
+            task=task,
         ),
         attempts=1,
         requests_per_minute=rpm,
@@ -120,23 +128,25 @@ def configured_provider(runtime):
             settings.llm_requests_per_minute,
             rates[0],
             rates[1],
+            "investigation_ar",
         )
 
     class GeminiInvestigator:
         name = "gemini"
+        phased = True
         reserved_cost_paise = (
             settings.llm_max_input_tokens * rates[0]
             + settings.llm_max_output_tokens * rates[1]
             + 999999
         ) // 1000000
 
-        def generate(self, request):
+        def reason(self, payload):
             with Session(runtime.engine) as session:
-                for identifier in {h.document_id for h in request.hits if h.document_id}:
+                for identifier in payload.get("document_ids", []):
                     if not owned(session, Document, runtime.org, identifier).synthetic_approved:
                         raise CaseError("SYNTHETIC_DOCUMENT_REQUIRED", 403)
             reply, metrics = gateway.generate(
-                [json.dumps(request.model_dump(mode="json"))],
+                [json.dumps(payload)],
                 before_attempt=lambda: reserve(runtime.engine, runtime.org, "gemini", settings),
             )
             self.metrics = {
@@ -149,6 +159,32 @@ def configured_provider(runtime):
                     "usage_complete",
                 )
             }
-            return InvestigatorReply.model_validate(decode_output(reply.json_text))
+            from pydantic import ValidationError
+
+            from clearledger.document_contract import ExtractionError
+            from clearledger.extraction_provider import ProviderRunError
+            from clearledger.investigation_ai_contract import ARReply, schema_errors
+            from clearledger.provider_diagnostics import diagnostic
+
+            try:
+                return ARReply.model_validate(decode_output(reply.json_text))
+            except ValidationError as error:
+                raise ProviderRunError(
+                    "INVALID_INVESTIGATOR_OUTPUT",
+                    {
+                        **self.metrics,
+                        "diagnostic": diagnostic("SCHEMA_VALIDATION", "VALIDATION"),
+                        "schema_errors": schema_errors(
+                            error.errors(
+                                include_input=False, include_context=False, include_url=False
+                            )
+                        ),
+                    },
+                ) from None
+            except ExtractionError:
+                raise ProviderRunError(
+                    "INVALID_INVESTIGATOR_OUTPUT",
+                    {**self.metrics, "diagnostic": diagnostic("RESPONSE_DECODING", "DECODE")},
+                ) from None
 
     return GeminiInvestigator()

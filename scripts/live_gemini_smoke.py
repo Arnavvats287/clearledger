@@ -106,6 +106,8 @@ def main():
     )
     parser.add_argument("--remaining-budget-paise", type=int)
     parser.add_argument("--correlation-slice", action="store_true")
+    parser.add_argument("--investigator-campaign", action="store_true")
+    parser.add_argument("--investigator-attempts", type=int, choices=(1, 2, 3, 4), default=4)
     args = parser.parse_args()
     # Prices must be re-reviewed on a different day, not blindly replayed later.
     if not args.authorized_live or date.today() != date(2026, 10, 27):
@@ -115,12 +117,16 @@ def main():
     alternate = args.model == "gemini-3.5-flash-lite"
     if args.correlation_slice and not alternate:
         raise SystemExit("Reviewed correlation slice requires Gemini 3.5 Flash-Lite")
-    attempt_cost = 26 if alternate else 17
+    if args.investigator_campaign and (not alternate or args.correlation_slice):
+        raise SystemExit("Reviewed investigator campaign requires a separate Gemini 3.5 run")
+    attempt_cost = 30 if args.investigator_campaign else 26 if alternate else 17
     remaining_budget = args.remaining_budget_paise if alternate else 66
     if alternate and (
         type(remaining_budget) is not int or not attempt_cost <= remaining_budget <= 398
     ):
         raise SystemExit("Explicit remaining alternative-model budget required")
+    if args.investigator_campaign and remaining_budget < args.investigator_attempts * attempt_cost:
+        raise SystemExit("Investigator reservation exceeds authorized budget")
     logging.disable(logging.CRITICAL)
     local = dotenv_values(ROOT / ".env")
     key = os.environ.get("GEMINI_API_KEY") or local.get("GEMINI_API_KEY")
@@ -135,8 +141,9 @@ def main():
         "cases": [],
         "attempt_cost_cap_paise": attempt_cost,
         "remaining_authorized_cap_paise": remaining_budget,
-        "maximum_attempts": 1,
-        "maximum_reserved_paise": attempt_cost,
+        "maximum_attempts": args.investigator_attempts if args.investigator_campaign else 1,
+        "maximum_reserved_paise": attempt_cost
+        * (args.investigator_attempts if args.investigator_campaign else 1),
         "billing_changes": False,
         "operator_confirmed_quotas": vars(args),
     }
@@ -216,6 +223,13 @@ def main():
                 llm_max_cost_paise_per_attempt=attempt_cost,
             )
             app = create_app(settings)
+            if args.investigator_campaign:
+                settings.llm_max_input_tokens = 3072
+                settings.llm_daily_requests = 3 * args.investigator_attempts
+                settings.llm_daily_input_tokens = 3072 * args.investigator_attempts
+                settings.llm_daily_output_tokens = 512 * args.investigator_attempts
+                settings.llm_requests_per_minute = 2
+                settings.llm_shared_requests_per_minute = 6
             assert app.state.finance_identity_verifier is None
             if alternate:
                 original_transport = app.state.extraction_gateway.transport
@@ -231,6 +245,11 @@ def main():
                 app.state.extraction_gateway.transport = ObservedTransport()
             try:
                 with TestClient(app) as api:
+                    if args.investigator_campaign:
+                        from live_investigator_smoke import campaign
+
+                        report["campaign_complete"] = campaign(api, engine, org, settings, report)
+                        return 0 if report["campaign_complete"] else 1
                     if args.correlation_slice:
                         from live_correlation_slice import prepare as prepare_slice
 
@@ -363,6 +382,13 @@ def main():
             settings.case_auto_correlate_extractions = False
             settings.case_auto_investigate_extractions = False
         report["external_settings_disabled"] = True
+        if (
+            args.investigator_campaign
+            and settings is not None
+            and engine is None
+            and "failure_type" not in report
+        ):
+            report["disposable_database_cleaned"] = True
         (output / "observations.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         print("Sanitized synthetic observations:", output, flush=True)
     return (

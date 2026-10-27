@@ -1,5 +1,17 @@
 # Live Gemini extraction evaluation
 
+## Optional Investigator campaign — 2026-10-27 IST
+
+Real extraction success below remains unchanged. The subsequent optional AR
+Investigator has NOT passed live acceptance: four conservative transport attempts
+fell back; latest model violated three plan criterion literals. Provider-only v2
+string-enum encoding is fixed offline, not live reverified. No accepted live AI
+planning/synthesis or signed-support/conflict usefulness claimed. New reservations120
+paise; cumulative443,57 remain. No output repair, financial mutation or benchmark
+changes. Actual attempts, controls, future frontend trace and remaining gap:
+[AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+
+
 ## Subsequent v5 real AI + automation verification — 2026-10-27 IST
 
 The separately authorized synthetic vertical slice now completed with real Gemini

@@ -51,5 +51,6 @@ files = [
   "src/clearledger/finance_identity.py",
   "src/clearledger/review_contract.py", "src/clearledger/review_password.py",
   "src/clearledger/correlation_contract.py",
+  "src/clearledger/investigation_ai_contract.py",
 ]
 

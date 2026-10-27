@@ -236,7 +236,7 @@ class GeminiTransport:
             raise ValueError("Invalid Gemini configuration")
         self._key, self.model, self.timeout_ms = api_key, model, timeout_ms
         self.max_input_tokens, self.max_output_tokens = max_input_tokens, max_output_tokens
-        if task not in {"remittance", "investigation"}:
+        if task not in {"remittance", "investigation", "investigation_ar"}:
             raise ValueError("Unsupported isolated task")
         self.task = task
 

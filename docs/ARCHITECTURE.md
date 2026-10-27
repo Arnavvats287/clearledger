@@ -1,5 +1,13 @@
 # Architecture and runtime boundaries
 
+`investigation_ai_contract` and `investigation_ai` add bounded planning/synthesis
+nodes to the existing StateGraph/saver/executor. Existing broker, PostgreSQL
+operation cache, source verification and outbox are reused. Source-free assertion
+plans alone may be reused after revalidation; evidence/conclusions refresh. No
+new infrastructure/dependency/migration or Director LLM. Legacy deterministic
+configuration identity and financial states are preserved. Optional protocol and
+unpassed live acceptance: [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+
 `correlation_contract/models/sources/service/api` add the source-proof review boundary
 using existing PostgreSQL/outbox/reviewer/merge/investigation services. Two additive
 tables retain tasks/decisions; no new framework or worker. Trusted settings are passed

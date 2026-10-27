@@ -1,5 +1,96 @@
 # Build status
 
+## Optional AR AI Investigator — 2026-10-27 IST (LIVE ACCEPTANCE NOT PASSED)
+
+From5db9061. Implemented gated ar-investigator-v2 planning and synthesis in the
+existing StateGraph/executor/saver/outbox, no new agent framework, infrastructure,
+dependency or migration. Director/routing/source predicates/policy/financial states
+remain deterministic. Both external flags and request allow_external are required;
+all originals/cited docs must be approved synthetic. Automatic case scheduling stays
+deterministic. No extraction model call, benchmark/private data/frontend/tax/legal
+work, approvals or financial posting in this task.
+
+Typed plans bind exact claim/invoice/category/paise/question and primary evidence
+requirements/tool allowlist. Typed synthesis proposes three review outcomes/actions,
+source numeric observations, missing types, constrained rationale/confidence/uncertainty.
+No hidden chain-of-thought or raw document instructions are provided/persisted. Broker
+uses read-only DB tools and independently reverifies source signatures, hashes/spans,
+ownership, chronology, versions, completeness and conflicts. Returned citations/facts/
+amounts/outcomes are checked against deterministic truth; invalid AI -> explicit safe
+fallback/insufficient/human review, never approval. Missing proof, conflicts, support
+and failures follow real conditional graph edges. Legacy financial Conclusion values
+are preserved; CONFLICTING_EVIDENCE/ESCALATE_CONFLICT is a typed review trace proposal.
+Source-free assertion plans alone may be reused for same scoped assertion/provider/
+configuration; evidence/conclusions always refresh. Deterministic configuration hash
+keys preserved, AI protocol identity versioned. Round/tool/token/spend/deadline guards
+remain binding. See docs/AI_INVESTIGATOR.md for architecture, frontend and limitations.
+
+Actual live campaign on minimal existing100-paise damage fixture/1000-paise invoice:
+4 transport reservations, all stopped on first-plan rejection. Do NOT call fallback
+WMS/POD selections AI success. No accepted live AI plan/synthesis; supporting-POD and
+conflict cases NOT RUN LIVE. Model3.5 available for same key; official standard rates
+USD0.30/2.50 per million and fresh ECB FX checked, operator Free-tier quotas reused
+with conservative known-usage deductions, not a new real-time account counter.
+3072 input/512 output, rates3960/33000 paise/million (INR110/USD plus20%),30 paise
+per reservation. One sequential caller, SDK/phase attempts1, shared3-HTTP-operation
+admission, no automatic retry or escalation. No billing/project/key change.
+
+Attempt1: offline-proven late schema import after worker guard blocks before token
+count/generate; load pure schema before unchanged guard. Worker mocked-SDK startup
+and continued late-import denial tested. Attempt2: original provider failure/usage
+opaque, cause remains UNKNOWN. Attempt3: returned480/187 tokens, estimated9 paise,
+workflow6.6940002s; broad catch reported schema validation but exact field unavailable.
+Attempt4:486/183 tokens, estimated8 paise, workflow6.1453727s; exact literal_error at
+plan.support_test/contradiction_test/unresolved_test. Strict host rejected the entire
+plan. Provider-only v2 schema encodes string const as documented single-value enum;
+host literals/semantics unchanged. This compatibility correction is NOT live reverified;
+server const handling is an inference, not a proven provider defect. No model output
+patched/reaccepted. Failure diagnostics now retain fixed phase/category/status/field
+codes and safe known usage, never inputs/messages/bodies/keys/URLs. No further calls.
+
+Conservatively counted4 transport attempts against ceiling, including pre-generation
+failure. New reservations120; prior323 ->443 cumulative,57 paise remain of500. Known
+usage-based conservative costs9+8, others UNKNOWN, not a bill or refunded reservations.
+Attempt2's local remainder display used stale177 base; fixed helper to use supplied
+CLI budget. Actual reservations/limits never exceeded; original observations untouched.
+Every fresh disposable DB upgraded/metadata-checked to0012_correlation, then cleaned;
+shared development database never reset/downgraded/upgraded/restarted. All live financial
+fingerprints unchanged; allocation/settlement/journal/line/balance/approval counts0.
+External AI/investigation/extraction/automation disabled in finally, .env unchanged.
+
+Focused offline checks (all PostgreSQL test commands use --require-postgres -q --tb=short,
+.venv/Scripts/python.exe -m pytest, ignored local TEST_DATABASE_URL loaded privately;
+subprocess key cleared/external flags false):
+- tests/test_ai_investigator.py tests/test_investigations.py
+  tests/test_gemini_request_contract.py tests/test_gemini_schema.py:
+ 64 passed343.55s; local-data/ai-investigator-final-focused.log.
+- tests/test_investigation_domain.py tests/test_live_gemini_runner.py:
+ 23 passed2.78s; ai-investigator-provider-checks.log.
+- Final new phase15 passed91.49s; final conditional routing4 passed29.23s;
+  ai-investigator-phase-final.log and ai-investigator-routing-final.log.
+- Updated phase/adapter/worker/domain set:35 passed103.20s;
+  ai-investigator-offline-final.log.
+- Final spend/round, real provider adapter, worker and pre-existing failure tests:
+ 16 passed67.64s; ai-investigator-final-safety.log.
+- 97 distinct collected tests verified across runs (21 new), not a single97-test run.
+  Initial new-test failures exposed trace metadata fixture mismatch and delivery value
+  exceeding tiny invoice; corrected fixture invoice basis, kept financial guard/assertions.
+  No pre-existing tests changed/skipped/weakened. All invalid fact/tool/amount/citation/
+  source-auth, stale and budget assertions retained. Earlier partial logs preserved.
+- Ruff check src/changed scripts/new tests and format --check changed Python PASS;
+  mypy23 source files PASS including new strict AI contract; whitespace/staged review PASS.
+  No full regression suite, Docker rebuild, restart or independent benchmark run claimed.
+
+Live commands reuse scripts/live_gemini_smoke.py --authorized-live --model
+gemini-3.5-flash-lite --confirmed-rpm15 --confirmed-tpm250000 --investigator-campaign;
+actual CLI spaces separate options/values. Remaining-budget177/147/117/87,
+remaining-RPD420/414/408/402, campaign caps4/4/3/2; each stopped after1 reservation.
+Logs local-data/live-investigator-campaign*.log; original observations four UUIDs
+listed in docs/AI_INVESTIGATOR.md. No further live authorization inferred. Precise
+next verification is a separately reviewed two-phase v2 enum smoke with reservations
+fitting57 paise; full AI usefulness remains open, alongside production identity/source
+custody and real-customer validation. Local implementation hash recorded separately.
+
 ## Real Gemini + automatic correlation/investigation slice — 2026-10-27 IST
 
 Complete live synthetic slice verified after separately authorized harness rerun.

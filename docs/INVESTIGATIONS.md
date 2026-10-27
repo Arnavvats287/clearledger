@@ -1,5 +1,12 @@
 # Director–Investigator contract v1
 
+Optional Gemini planning/synthesis now uses `ar-investigator-v2` within the original
+graph/runtime. Director/source/finance controls remain deterministic; no new service.
+Strict numeric/citation/uncertainty validation, conditional review edges and fallback
+are verified offline. Live plans were rejected; live acceptance is **not passed**.
+Protocol, actual attempts, provider-only enum correction (not live reverified),
+frontend trace and limits: [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+
 Correlation confirmation now triggers the existing affected-claim scheduler. In a
 known correlated scope, UNCERTAIN_EXTRACTION may retrieve independent read-only
 evidence and retain rechecked citations; the verifier and consistency layer still

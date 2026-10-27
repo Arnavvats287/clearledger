@@ -1,5 +1,20 @@
 # ClearLedger requirements-alignment audit
 
+## Optional AR AI Investigator — 2026-10-27 (live gap remains)
+
+Typed EvidencePlan/Synthesis/NumericObservation: investigation_ai_contract.py;
+existing StateGraph phase/conditional review nodes: investigation_ai.install and
+investigation_graph.build. Existing broker authenticates/reverifies pointers and
+facts, Director validates plan/tool/amount/contradiction/completeness, cache and all
+resource/currentness limits. Deterministic path/financial states unchanged. Tests:
+test_ai_investigator.py, test_ai_investigator_worker.py plus existing investigation/
+Gemini regressions. Actual campaign: docs/AI_INVESTIGATOR.md. Four transport attempts
+all fell back; latest model violated three plan criterion literals. Pure schema import
+ordering and provider-only const->enum serialization fixed without weakening host
+validation. Enum correction not live reverified. **Live planning/synthesis acceptance,
+signed-support and conflict usefulness remain UNVERIFIED**, not completed by offline
+scripted tests. No new milestone, financial authority or G1 resolution claimed.
+
 ## Live synthetic vertical slice — 2026-10-27
 
 Real Gemini v5 extraction -> outbox ClaimSource/claim -> missing-proof task ->

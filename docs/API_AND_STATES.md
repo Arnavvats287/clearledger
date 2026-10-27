@@ -1,5 +1,10 @@
 # API contracts and state machines (target, evolve via migrations)
 
+Optional AR AI planning/synthesis uses the existing investigation start/findings/trace
+APIs, not a new agent endpoint. Typed review recommendations and validated numeric
+comparisons are stored in trace metadata; legacy financial finding/state enums remain
+unchanged. Live acceptance is still open. See [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+
 Post-M09 correlation review adds immutable pending/source-snapshot tasks and terminal
 CONFIRM/REJECT decisions through existing review roles. No financial state transition
 is inferred. Task/API/currentness and frontend integration: [CORRELATION_REVIEW.md](CORRELATION_REVIEW.md).

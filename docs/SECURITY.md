@@ -1,5 +1,14 @@
 # Security model and threat-driven tests
 
+Optional phased Gemini Investigator receives scoped facts/authenticated numeric
+summaries only. Models select no arbitrary queries and receive no source prose,
+credentials, DB handles or financial tools. Strict typed plans/syntheses, source
+reverification and deterministic policy reject forged facts/citations/amounts and
+invalid conclusions. Pure schemas preload before the unchanged isolated-worker guard;
+late imports remain denied. Fixed failure/schema diagnostics exclude raw inputs,
+messages and URLs. No external flag enabled by default. Live acceptance remains open:
+[AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+
 Correlation review requires an independently authenticated, current remittance
 manifest and exact source-backed UTR/bank/customer/invoice agreement, then a controller
 decision. A local actor, model output or reviewer label cannot supply missing proof.

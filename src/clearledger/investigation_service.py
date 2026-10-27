@@ -21,9 +21,12 @@ from clearledger.models import DocumentExtraction, Invoice
 
 
 def configuration(settings, provider):
+    from clearledger.investigation_ai_contract import VERSION
+
     return digest(
         {
             "algorithm": ALGORITHM,
+            **({"ai_contract": VERSION} if provider == "gemini" else {}),
             "provider": provider,
             "model": settings.gemini_model,
             "enabled": settings.external_ai_enabled,
@@ -72,6 +75,8 @@ def snapshot(session, org, case, body, settings, provider):
         ]
         if linked and not any(a["current"] for a in linked):
             unknowns.append("STALE_INPUTS")
+        if provider == "gemini" and not any(a["current"] for a in linked):
+            unknowns.append("UNVERIFIED_SOURCE")
         if case.customer_id is None:
             unknowns.append("UNKNOWN_CUSTOMER")
         if claim.amount_paise is None:
