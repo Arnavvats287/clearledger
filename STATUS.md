@@ -1,5 +1,72 @@
 # Build status
 
+## External evaluation Phase1 — offline adapters/scorers — 2026-10-27
+
+Branch `eval/external-phase-1-adapters` from status `5a0b50d`. Production backend,
+AR DTOs/Investigator/financial rules/settings/dependencies/UI unchanged. No database,
+Docker/image, private benchmark/operator/schedule/answer access, model generation,
+key/account lookup or model-provider API call. Public documentation/PyPI tooling
+requests only. No test answers/validation annotations inspected; development uses
+only frozen3 NLI dev and8 DocILE train documents. Phase0 JSON/checksum unchanged:
+`a83dc857f3f4ee8d0f6468fd945358504b59173e4ad55f53845bec3c7d00589d`.
+
+Implemented evaluation-only strict DTOs/source packet reader/projections, independent
+quote localization, interval union/overlap/classification scorers, source OCR→native
+KILE conversion, gold-only readers, immutable prediction seals and original-gold
+digest checks. Future scored CLI rejects source/plan/manifest/output changes before
+answer interpretation. NLI final204-pair denominator verified with minimal synthetic
+unit fixtures, not real test answers. RecBench exact typed ledger_processor edges
+only; no payout matcher/scorer, no foreign-unit relabeling or AR performance claim.
+
+External outputs under `C:\ClearLedgerEval\external-runs`:
+- `contractnli-v1/inputs/adapter`:3 packets/51 public hypotheses; empty-output scorer
+  format validation passed on3 selected dev records, no model-quality result.
+- `docile-v1/inputs/adapter`:8 source-only OCR/geometry packets;8/8 independent source
+  geometry roundtrips pass. Native train invoice/document_id view covers2 invoices.
+- `recbench-v1/inputs/sources`: only4 whitelisted source CSVs, exact Phase0 hashes;
+  truth/labels never copied. Adapter/scored output directories exist; no real scores.
+- `phase1-v1`: projection manifest, dev validation reports, scorer-only train view,
+  native format logs/results, install report, package metadata, verification-v1.json
+  with implementation hashes; separate evaluator venv. No model predictions.
+
+Installed official `docile-benchmark==0.3.5` only in evaluation venv; artifact SHA256
+`3440a7d28cbae122edb2598d9ccfaacde1bd586fa8c9588a38fe0dc8f5579019`.
+`evaluation/requirements-docile.lock`:21 evaluator distributions, exact Windows
+CPython3.12 wheel hashes; `pip check` PASS. Product pyproject/uv.lock unchanged.
+Official CLI accepted independently source-derived geometry FORMAT FIXTURES.
+Initial fully empty format set was rejected by official0.3.5; preserved logs/output.
+Future all-abstaining runs must report native tool limitation, never add dummy
+predictions. Conditional document_id KILE is not a full DocILE score.
+
+Actual verification:
+- `.venv/Scripts/python.exe scripts/external_phase1.py prepare` with documented
+  plan/source/runs: PASS; frozen development inputs only, no scored projection.
+- `validate-contract-dev`: PASS3 documents/51 pairs (empty format probes).
+- `validate-docile-dev --evaluator .../docile_evaluate.exe`: PASS8 source roundtrips
+  and official native format acceptance on2 train invoices; no model predictions.
+- `python -m external_eval.tooling ... --check`: PASS source hashes/selection/lock/
+  isolated dependency health; `freeze_external_plan.py ... --check`: PASS unchanged.
+- `.venv/Scripts/python.exe -m pytest --noconftest tests/test_external_phase0.py tests/test_external_phase1.py --basetemp .local-runtime/phase1-tests-final -q`: **61 passed in4.09s**.
+- Ruff check +format --check on `scripts/external_eval`, `scripts/external_phase1.py`,
+  `tests/test_external_phase1.py`: PASS; strict mypy with `--follow-imports=silent` on
+  evaluation package/CLI: PASS7 source files; compileall: PASS.
+
+Tests cover class/evidence arithmetic,204 denominator, ambiguity/forged quotes,
+geometry, extra labels/authority/schema rejection, typed edges/duplicates/one-to-many,
+hash/seal/gold-source tampering, no-overwrite and physical packet leakage. Isolated
+packet-reader test succeeds while outside/gold reads/network/subprocess are denied.
+No full product/restart/browser gate run: no product behavior changed. Local ignored
+logs `external-phase1-*.log`, official logs/metadata external. All original tests remain.
+
+See `docs/EXTERNAL_EVALUATION_IMPLEMENTATION.md` for exact commands/interfaces,
+`docs/EXTERNAL_EVALUATION_PRIVACY.md` for provider review. Public RecBench card
+confirms synthetic CC BY4.0 and missing-report unbundling; exact1047 grouped key
+expansion remains unverified, so frozen payout scoring stays blocked. ContractNLI/
+DocILE transmission DENIED pending document-level rights/PII/provider review and
+separate evaluation-only inference authorization. No public-as-synthetic bypass.
+Stop after Phase1; no model run authorized or attempted.
+
+
 ## External evaluation Phase 0 — 2026-10-27
 
 Verified planning/inspection checkpoint: `e60705e` (`docs: freeze external evaluation

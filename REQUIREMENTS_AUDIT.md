@@ -1,5 +1,38 @@
 # ClearLedger requirements-alignment audit
 
+## External evaluation Phase1 — 2026-10-27
+
+User-approved evaluation-only preparation, no production/product milestone change.
+Traceability: `scripts/external_eval/contracts.py` strict non-AR DTOs;
+`source.py` source whitelist/packet hashes/quote+OCR geometry and CSV-only copies;
+`scorers.py` frozen NLI classification/union-character metrics, secondary conditional
+invoice-ID metrics, exact ledger_processor edge scorer; `gold.py` separate readers,
+seals and Phase0 provenance checks; `tooling.py` native evaluator hash lock/check;
+`scripts/external_phase1.py` preparation/format-validation/sealed future scorer CLI.
+
+`tests/test_external_phase1.py`:47 cases including Hypothesis oracle, class/evidence
+hand calculations, synthetic204 pairs, native geometry/ambiguity, typed failures,
+duplicate/one-to-many edges, source/gold/seal tampering and subprocess packet-only
+read boundary. Together with14 Phase0 tests:61 PASS. Ruff/mypy/compilation/isolated
+dependency check PASS. Actual public dev checks:3 NLI packets/51 hypotheses,8 DocILE
+OCR packets/roundtrips, official0.3.5 format acceptance on2 train invoice records.
+Source CSV copies verified against frozen Phase0 hashes. No real model prediction.
+
+Official DocILE format validation initially rejected empty predictions; this tool
+limitation is explicit, not waived by fabricated scores. Source-word geometry
+fixtures are not invoice predictions/model success. Future all-empty native scores
+are NOT COMPUTABLE; secondary failure/abstention denominators stay complete.
+
+Frozen v1 plan/samples/checksum unchanged. No final test answer/val annotation read,
+private evaluation access, DB/Docker/UI/product/settings changes or model calls.
+Privacy document DENIES current real/public DocILE and NLI Free-tier transmission
+pending review; synthetic-only application gates remain. RecBench public metadata
+now confirms license and missing-report task, but grouped payout expansion and AR
+domain incompatibility remain open. Phase1 is not AR accuracy, source authenticity,
+production identity, sealed benchmark or milestone11 completion. Next inference
+requires explicit payload/privacy/transport/model/quota/budget approval.
+
+
 ## External evaluation Phase 0 — 2026-10-27
 
 User-approved public inspection/planning only, not milestone11 completion or product
