@@ -134,6 +134,7 @@ def configured_provider(runtime):
     class GeminiInvestigator:
         name = "gemini"
         phased = True
+        span_grounded = True
         reserved_cost_paise = (
             settings.llm_max_input_tokens * rates[0]
             + settings.llm_max_output_tokens * rates[1]

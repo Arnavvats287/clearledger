@@ -9,7 +9,7 @@ from clearledger.document_contract import Category
 from clearledger.evidence_contract import Kind, Question, Strict
 from clearledger.investigation_contract import Tool
 
-VERSION = "ar-investigator-v2"
+VERSION = "ar-investigator-v3"
 
 
 class EvidencePlan(Strict):
@@ -38,6 +38,9 @@ class NumericObservation(Strict):
 
 
 class Synthesis(Strict):
+    # Empty default only decodes immutable legacy/fake histories. The live v3
+    # provider schema requires this field and the host validates supplied IDs.
+    evidence_span_ids: Annotated[list[str], Field(max_length=100)] = Field(default_factory=list)
     amount_paise: Annotated[int, Field(strict=True, ge=0)] | None
     state: Literal["SUPPORTED", "INSUFFICIENT_EVIDENCE", "CONFLICTING_EVIDENCE"]
     next_action: Literal["HUMAN_REVIEW", "REQUEST_EVIDENCE", "ESCALATE_CONFLICT"]

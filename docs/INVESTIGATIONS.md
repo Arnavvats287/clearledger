@@ -230,3 +230,11 @@ with the isolated runner, an owned PostgreSQL container restart. All earlier che
 remain required. Actual executed commands, counts and private logs are in STATUS.md.
 
 Every terminal result emits a sanitized trace/event even if admission failed before the first tool call. Checkpoint payloads are limited to 512,000 JSON characters; capacity/integrity failures produce explicit review. Terminal database results remain authoritative if a crash occurs after emission but before the final checkpoint/acknowledgement.
+## Source-ID synthesis hardening
+
+The live v3 synthesis contract references offered canonical evidence span IDs.
+The existing graph verifies ID/record bindings before its unchanged deterministic
+source-fact/amount/currentness/policy gates. Legacy traces decode without rewriting;
+new provider configuration is versioned. No graph nodes, capabilities, finance
+authority or review transitions are added. [SOURCE_GROUNDING.md](SOURCE_GROUNDING.md)
+records the shared layer, limits and tests.

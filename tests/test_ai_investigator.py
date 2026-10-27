@@ -64,6 +64,7 @@ class ScriptedAR:
         }
         i = {"SUPPORTED": 0, "INSUFFICIENT_EVIDENCE": 1, "CONFLICTING_EVIDENCE": 2}[a["state"]]
         value = {
+            "evidence_span_ids": [row["span_id"] for row in payload.get("evidence_spans", [])],
             "amount_paise": payload["objective"]["amount_paise"],
             "state": a["state"],
             "next_action": a["next_action"],

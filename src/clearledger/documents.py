@@ -213,6 +213,10 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
     }
     if settings.extraction_provider == "gemini":
         inputs["provider_schema_version"] = PROVIDER_SCHEMA_VERSION
+        if gateway is not None and getattr(gateway.transport, "task", "") == "remittance_grounded":
+            from clearledger.grounded_extraction import VERSION as GROUNDED_VERSION
+
+            inputs["provider_schema_version"] = GROUNDED_VERSION
     input_hash = digest(inputs)
     if prior:
         row = owned(session, DocumentExtraction, org, prior.extraction_id)
@@ -282,6 +286,18 @@ def extract_document(session, org, doc_id, key, actor, body, settings, store, ga
                     else:
                         reply, usage = gateway.generate(
                             projected.pages,
+                            **(
+                                {
+                                    "source_context": {
+                                        "source_id": f"{org}/{doc.id}",
+                                        "source_hash": doc.canonical_sha256,
+                                        "version": str(doc.version),
+                                    }
+                                }
+                                if getattr(getattr(gateway, "transport", None), "task", "")
+                                == "remittance_grounded"
+                                else {}
+                            ),
                             before_attempt=lambda: reserve(
                                 session.get_bind(), org, settings.extraction_provider, settings
                             ),

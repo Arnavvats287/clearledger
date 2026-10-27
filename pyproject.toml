@@ -52,5 +52,8 @@ files = [
   "src/clearledger/review_contract.py", "src/clearledger/review_password.py",
   "src/clearledger/correlation_contract.py",
   "src/clearledger/investigation_ai_contract.py",
+  "src/clearledger/source_spans.py", "src/clearledger/source_candidates.py",
+  "src/clearledger/source_retrieval.py", "src/clearledger/source_ocr.py",
+  "src/clearledger/grounded_extraction.py",
 ]
 

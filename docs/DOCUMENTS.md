@@ -213,3 +213,10 @@ remain byte-for-field compatible. The model gets projected evidence pointers, ne
 raw reviewer originals, publisher keys or database access. Workflow quotas/resume
 metadata are separate from document extraction results and use existing shared provider
 admission. Both external switches remain disabled. See [INVESTIGATIONS.md](INVESTIGATIONS.md).
+## Grounded provider mode
+
+The configured Gemini gateway now uses `remittance_grounded`: provider-only ID
+selections resolve deterministically into the existing strict extraction DTO.
+Privacy preprocessing, source verification, paise checks, budgets and default-off
+controls are unchanged. Historical explicit v6 adapters/records remain compatible;
+new cache identity is grounded-remittance-1. Contract: [SOURCE_GROUNDING.md](SOURCE_GROUNDING.md).

@@ -88,3 +88,14 @@ After the verified local checkpoint, frontend feature/design expansion is FROZEN
 only concrete portfolio-blocking defects justify a separately scoped repair. Next
 workstream is independent evaluation, not automatically started here. Original M10
 posting/CASE-204 deferrals and benchmark/authority boundaries remain unchanged.
+## Approved final backend hardening — 2026-10-28
+
+The operator authorizes a final, bounded exception to backend feature freeze for
+shared immutable source spans, candidate-first extraction, deterministic source
+localization/OCR fallbacks and grounded investigation. Preserve the existing
+architecture/financial authority. Phase2 v1 remains immutable. Fresh Phase3 uses
+24 unused ContractNLI test documents/408 hypotheses and100 unused DocILE validation
+documents, with IDs frozen before new gold access. No old scorers/formulas/samples
+are changed. No private/sealed AR evaluation, UI, deployment, RecBench or README work
+is started here. Backend freezes after the Phase3 report; the sealed AR run requires
+separate explicit instruction. Contract: docs/SOURCE_GROUNDING.md.

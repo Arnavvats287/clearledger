@@ -30,6 +30,7 @@ class ProviderReply:
     cached_input_tokens: int | None = None
     validated_model: dict[str, object] | None = None
     counted_input_tokens: int | None = None
+    grounding: dict[str, object] | None = None
 
 
 class Transport(Protocol):
@@ -108,6 +109,7 @@ class Gateway:
         pages: list[str],
         *,
         before_attempt: Callable[[], dict[str, object]] | None = None,
+        source_context: dict[str, str] | None = None,
     ) -> tuple[ProviderReply, dict[str, object]]:
         if not self._slot.acquire(blocking=False):
             raise ExtractionError("PROVIDER_BUSY")
@@ -132,7 +134,12 @@ class Gateway:
                         reservations.append(before_attempt())
                     attempts_started += 1
                     phase = "PROVIDER_TRANSPORT"
-                    reply = self.transport.generate(pages)
+                    reply = (
+                        self.transport.generate_for_source(pages, source_context)
+                        if isinstance(self.transport, GeminiTransport)
+                        and source_context is not None
+                        else self.transport.generate(pages)
+                    )
                     if len(reply.json_text.encode()) > 100_000:
                         raise ExtractionError("PROVIDER_OUTPUT_LIMIT")
                     for count in (
@@ -188,6 +195,7 @@ class Gateway:
                         "budget_reservations": reservations,
                         "validated_model": reply.validated_model,
                         "counted_input_tokens": reply.counted_input_tokens,
+                        "grounding": reply.grounding,
                     }
                 except ProviderFailure as error:
                     failure_diagnostic = (
@@ -236,11 +244,16 @@ class GeminiTransport:
             raise ValueError("Invalid Gemini configuration")
         self._key, self.model, self.timeout_ms = api_key, model, timeout_ms
         self.max_input_tokens, self.max_output_tokens = max_input_tokens, max_output_tokens
-        if task not in {"remittance", "investigation", "investigation_ar"}:
+        if task not in {"remittance", "remittance_grounded", "investigation", "investigation_ar"}:
             raise ValueError("Unsupported isolated task")
         self.task = task
 
     def generate(self, pages: list[str]) -> ProviderReply:
+        return self.generate_for_source(pages, {})
+
+    def generate_for_source(
+        self, pages: list[str], source_context: dict[str, str]
+    ) -> ProviderReply:
         from clearledger.document_runtime import run_worker
 
         try:
@@ -253,6 +266,7 @@ class GeminiTransport:
                     "pages": pages,
                     "max_input_tokens": self.max_input_tokens,
                     "max_output_tokens": self.max_output_tokens,
+                    **({"source_context": source_context} if source_context else {}),
                     **({"task": self.task} if self.task != "remittance" else {}),
                 },
                 timeout=self.timeout_ms / 1000 + 3,
@@ -298,6 +312,7 @@ class GeminiTransport:
             result.get("cached_input_tokens"),
             result.get("validated_model"),
             result.get("counted_input_tokens"),
+            result.get("grounding"),
         )
 
 

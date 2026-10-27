@@ -3285,3 +3285,54 @@ conditional DocILE results`). Final offline gate:106 tests passed in4.85s, Ruff
 lint/format, strict mypy11 files, compilation/import and frozen-artifact checks
 passed. This follow-up records the completion hash; no prediction/configuration or
 application behavior changed. Local commits only; no push.
+## Final grounding hardening — implementation checkpoint, 2026-10-28
+
+Approved exception to backend freeze: shared immutable source spans, candidate-first
+grounded remittance extraction, source-only invoice admission and deterministic
+localization/OCR fallback, plus span-bound Investigator synthesis in the existing
+graph. No schema migration, financial/approval/accounting API change, new service,
+Redis/vector database or front-end work. External AI defaults remain off.
+
+Phase2 v1 immutable. Fresh Phase3 source-ID plan frozen before new gold/inference:
+SHA256 `73fd2a85c27c2c7708d9a61590089a8c4e43385f28d6a72f5625a375894a1057`,
+24 unused test documents/408 ContractNLI pairs and100 unused DocILE validation docs.
+Source-only packets prepared, no annotation interpretation or model call yet.
+Pre-inference gold checksumming was rejected by approval review and omitted.
+
+Initial full frozen gate:1019 passed,2 failed (old scripted v2 acceptance responses
+omitted v3 IDs). All existing assertions retained; scripted response now includes
+offered IDs. Affected acceptance/graph/new actual-API PostgreSQL group:13 passed
+in121.65s; source/worker unit checks passed; Ruff and strict typing passed. Final
+full gate currently running. This is an implementation checkpoint, not milestone
+completion or a claim of fresh held-out performance. Details: SOURCE_GROUNDING.md
+and EXTERNAL_EVALUATION_PHASE3.md. Private sealed AR evaluation remains explicitly
+unstarted and requires a later operator instruction.
+
+Verification-runner clarification: preserve the1,800-second timeout artifact
+`local-data/verification/20261027T215603058544Z.log`. This was orchestration, not
+product/runtime failure. Replacement already launched with3,600 seconds; persistent
+runner now2,700 seconds, with sanitized partial-output capture on future timeout.
+No application/provider/DB timeouts, financial safety limits, retries, individual
+test semantics or Phase3 limits changed. Product performance work is deferred;
+suite runtime and deliberate evaluation pacing must not be described as product
+latency. Full regression must pass before fresh held-out inference.
+
+Frozen inference configuration SHA256
+`dbe02bfcc4485a8751f7971650282bc4593883d561e439a12c684b5780880109`.
+Synthetic preflight3/3 generation successes. Completed dev/train smoke: legal1/3
+accepted,2/3 invalid offered-ID selections rejected; invoice7/8 accepted,1 input
+cap rejection/zero generation. No tuning, retries or new gold access.
+
+Full gate completed successfully before held-out inference:
+`uv run --frozen python scripts/verify.py` — **1,029 passed in1,833.27s**;
+lock/dependency, lint/format, typing, matching bounds and PostgreSQL migration checks
+PASS. Log `local-data/verification/20261027T222742635195Z.log`.
+`uv run --frozen python scripts/verify_isolated_restart.py` — **4 passed in48.15s**,
+isolated owned PostgreSQL restart; shared development data and frozen image untouched.
+Log `local-data/verification/isolated-restart-20261027T220756414376Z.log`.
+Focused grounding/evaluation130 passed, current source/worker24 passed, affected
+acceptance/actual-API group13 passed. Ruff repo lint/format PASS; strict mypy28
+domain and5 evaluation files PASS; compile/import and frozen/original hash checks
+PASS. Suite duration is verification time, not product latency.
+Fresh24/100 held-out inference is now running, with no gold access, retries, tuning
+or sample replacement. Evaluation outcome remains pending, not inferred from tests.

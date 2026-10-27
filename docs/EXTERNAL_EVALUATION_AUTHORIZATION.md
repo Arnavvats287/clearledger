@@ -128,3 +128,14 @@ approximately 2,350 TPM, 30 RPD) is a UI observation, not an asserted exact dail
 counter. Six operations/minute remains conservatively below 15 RPM and avoids
 unnecessary runtime. This changes pacing only; original plan/checksum, samples,
 prompts, schemas, model, token ceilings, no-retry policy and scoring stay unchanged.
+## Fresh Phase 3 task authorization — 2026-10-28
+
+The operator explicitly requests final source-grounding hardening and a fresh
+held-out evaluation on24 unused ContractNLI TEST and100 unused DocILE VALIDATION
+documents from the same public copies, holding Gemini3.5 Flash-Lite constant.
+This is a new evaluation scope, not alteration or rerunning of Phase2 v1. Existing
+Free-tier project/key are retained; no billing/project/key change is made. This
+does not authorize production/customer/private/sealed benchmark transmission or
+publication of source text/quotes. Source-only workers and post-seal gold separation
+remain mandatory. Exact sample plan/code/configuration/results are recorded in
+EXTERNAL_EVALUATION_PHASE3.md and outside-Git run artifacts.

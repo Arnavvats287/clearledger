@@ -610,3 +610,23 @@ Verified hardening checkpoint: **`71059c5098d30eb4d7ad4baca47d259a61dbf383`** on
 03: bounded multi-invoice/subset and explicitly instructed partial search, top-K/exhaustiveness, configurable count/size/work/time limits and worst-case-cap benchmark. 04: immutable documents and isolated extraction. 05: cases/claims/events/outbox as needed. 06: generalized read-only evidence retrieval/validator. 07: bounded deterministic Director/optional investigator. 08: conditional tax review and balanced idempotent authorized accounting simulator. 09: user roles/maker-checker/recovery drafts. 10: real API-backed UI/E2E. 11: three-arm evaluation against Argon's frozen ground truth. All original future tests/exit gates remain required; no dataset ownership change waives them. No live tax compliance is claimed.
 
 The original audit changed specifications/status only. This separately authorized hardening adds tests/support infrastructure without changing application architecture/schema/financial behavior. G2/G3 are now evidenced; deferred findings are not silently marked complete. Stop after hardening; milestone 03 remains unimplemented.
+## Final authorized grounding hardening traceability — 2026-10-28
+
+This additive section supersedes earlier backend-freeze scope only for the current
+operator-approved source-grounding task. Historical milestones/gaps are not rewritten.
+
+| Requirement | Code / verification |
+|---|---|
+| Stable source/hash/version/page/token/box identity | source_spans.py; test_source_grounding.py |
+| Candidate IDs, exact token sequences and admission | source_candidates.py, grounded_extraction.py; source/actual API tests |
+| Shared read-only retrieval and synthesis binding | source_retrieval.py, investigation_grounding.py; grounded investigation API tests |
+| No invented coordinates, stale or forged citations | Source.resolve/selection gates; duplicate/hash/unknown and isolated-worker tests |
+| OCR fallback with explicit missing geometry/provenance | source_ocr.py; fallback tests and source-only external projection |
+| Existing financial, privacy, review and graph boundaries | unchanged original validators/routers/outbox; existing regressions plus actual API non-mutation assertions |
+| V1 preservation / fresh held-out selection | Phase3 metadata/seals; source-ID plan SHA256 73fd2a85c27c2c7708d9a61590089a8c4e43385f28d6a72f5625a375894a1057 |
+
+Complete frozen verification passed1,029 tests plus all required static/migration
+checks; separate isolated restart4 passed. Actual commands/logs are in STATUS and
+docs/EXTERNAL_EVALUATION_PHASE3.md. Fresh held-out evaluation remains pending until
+sealed and scored. No aspirational metric is treated as completed, and no authority
+gap is resolved by a source hash or model.

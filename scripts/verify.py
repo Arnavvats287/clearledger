@@ -51,17 +51,27 @@ def main():
     )
     with log_path.open("w", encoding="utf-8") as log:
         for name, command in commands:
-            result = subprocess.run(
-                command,
-                cwd=ROOT,
-                env=env,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                # Retain the entire growing suite, including disposable schemas/restarts.
-                timeout=1800 if name == "tests/migrations" else 300,
-            )
+            try:
+                result = subprocess.run(
+                    command,
+                    cwd=ROOT,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    # Full 1,000+ test PostgreSQL suite outgrew 30 minutes on Windows Docker.
+                    # No test assertion or application/financial deadline changes.
+                    timeout=2700 if name == "tests/migrations" else 300,
+                )
+            except subprocess.TimeoutExpired as error:
+                partial = [
+                    item.decode("utf8", errors="replace") if isinstance(item, bytes) else item or ""
+                    for item in (error.stdout, error.stderr)
+                ]
+                result = subprocess.CompletedProcess(
+                    command, 124, partial[0] + "\nVERIFICATION_RUNNER_TIMEOUT\n", partial[1]
+                )
             output = result.stdout + result.stderr
             for secret in redactions:
                 output = output.replace(secret, "<redacted>")

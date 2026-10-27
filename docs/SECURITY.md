@@ -138,3 +138,18 @@ server snapshot, READ role and exact tenant/task/document membership; they do no
 widen general Investigator evidence access. Tests: test_correlation_proof.py and
 frontend/e2e/workstation.spec.ts. Source signatures in demo are explicit synthetic
 test trust, never production authority.
+## Canonical span selection hardening
+
+Canonical IDs prove a binding to a specific immutable representation, not source
+authenticity, human identity, legal truth or financial authorization. Product
+catalogs are built only after existing tenant/case/original/version/authentication
+checks and privacy projection. Unknown/stale IDs or wrong record bindings fail
+closed. The configured live provider selects IDs; trusted code resolves positions
+and independently applies the unchanged factual, numeric, chronology and financial
+policy checks. Legacy history decoding never grants current v3 authority.
+
+The final Phase3 external worker uses public source-only packets, fixed Google
+transport, no gold readers, DB credentials or financial tools. Gold interpretation
+is a separate post-seal process. No source hash or high model confidence bypasses
+maker-checker, production identity, human review or default-off external AI.
+Details: [SOURCE_GROUNDING.md](SOURCE_GROUNDING.md).

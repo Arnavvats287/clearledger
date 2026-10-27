@@ -174,3 +174,9 @@ fresh disposable actual-HTTP application with minimal existing fake-provider fix
 and an existing outbox executor. It does not populate development data or call Gemini.
 See FRONTEND.md for reproducibility, boundaries, original M10 deferrals and browser
 acceptance. Sole production backend addition: snapshot-bound correlation proof read.
+## Final grounding hardening
+
+[SOURCE_GROUNDING.md](SOURCE_GROUNDING.md) defines the shared in-process immutable
+span/candidate/retrieval layer used by grounded extraction and evidence synthesis.
+The original PostgreSQL/outbox/Director/LangGraph topology, financial authority and
+state machines are unchanged. No schema migration or new service is required.

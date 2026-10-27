@@ -11,6 +11,7 @@ from clearledger.investigation_ai_contract import VERSION, ARReply, EvidencePlan
 from clearledger.investigation_broker import offered
 from clearledger.investigation_contract import Proposal
 from clearledger.investigation_director import SEARCH
+from clearledger.investigation_grounding import evidence_catalog, validate_span_selection
 from clearledger.investigation_models import Investigation, InvestigationResult, InvestigationTrace
 from clearledger.matching import digest
 
@@ -73,6 +74,7 @@ def rejection(error, default):
         "STALE_INPUTS",
         "PROVIDER_FAILURE",
         "INVALID_AI_SOURCE_FACT",
+        "INVALID_AI_SOURCE_SPAN",
         "AI_CONFLICT_FACTS_REQUIRED",
         "AI_NUMERIC_PROOF_REQUIRED",
         "INVALID_AI_MISSING_EVIDENCE",
@@ -313,6 +315,7 @@ def install(graph, runtime, provider, broker, wrapped, check, advance, emit):
             for h in frame.hits
             if h.id in ids and h.source_authenticated and h.source_integrity and h.is_current
         ]
+        sources, span_catalog = evidence_catalog(frame.hits, finding.citations, o, runtime.org)
         try:
             reply = call(
                 "investigator_synthesize",
@@ -332,6 +335,7 @@ def install(graph, runtime, provider, broker, wrapped, check, advance, emit):
                         ),
                     },
                     "evidence": summaries,
+                    "evidence_spans": span_catalog,
                     "record_ids": [str(p.record_id) for p in finding.citations],
                     "document_ids": [str(p.document_id) for p in finding.citations],
                 },
@@ -339,6 +343,12 @@ def install(graph, runtime, provider, broker, wrapped, check, advance, emit):
             )
             if reply.synthesis is None or reply.plan is not None:
                 raise CaseError("INVALID_AI_SYNTHESIS")
+            validate_span_selection(
+                reply.synthesis,
+                sources,
+                span_catalog,
+                required=getattr(provider, "span_grounded", False),
+            )
             validate_synthesis(reply.synthesis, o, finding, summaries)
             frame.ai_synthesis = reply.synthesis.model_dump(mode="json")
             note(

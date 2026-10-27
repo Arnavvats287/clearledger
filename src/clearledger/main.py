@@ -58,6 +58,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 config.llm_timeout_ms,
                 max_input_tokens=config.llm_max_input_tokens,
                 max_output_tokens=config.llm_max_output_tokens,
+                task="remittance_grounded",
             ),
             attempts=config.llm_attempts,
             requests_per_minute=config.llm_requests_per_minute,
