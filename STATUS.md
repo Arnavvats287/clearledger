@@ -2,6 +2,9 @@
 
 ## External evaluation Phase1.5 — privacy/rights/paid cost review — 2026-10-27
 
+Verified review checkpoint: `703907b` (`docs: record external privacy review and
+bounded paid cost`). This follow-up records its identifier; no inference authorized.
+
 Branch `eval/external-phase-1-5-privacy-cost` from verified status `421ef8d`.
 Production/UI, Phase0 plan/checksum/sample IDs, Phase1 code/scorer formulas/evaluator
 lock and private benchmark artifacts unchanged. No billing/project/key, database,
