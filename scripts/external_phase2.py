@@ -163,6 +163,7 @@ def configuration(runs: Path, *, final: bool, admission_revision: int = 1) -> Pa
     manifest = load_json(root / "config" / "source-manifest.json")
     code_files = [
         ROOT / "scripts" / "external_gemini_worker.py",
+        ROOT / "scripts" / "external_phase2_score.py",
         Path(__file__),
         *sorted((ROOT / "scripts" / "external_eval").glob("*.py")),
     ]
