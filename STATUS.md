@@ -2,6 +2,9 @@
 
 ## External evaluation Phase 0 — 2026-10-27
 
+Verified planning/inspection checkpoint: `e60705e` (`docs: freeze external evaluation
+phase 0 protocol`). This follow-up records its identifier; no inference performed.
+
 Branch `eval/external-phase-0-plan` from verified `a4a8f0b`. Frontend/backend
 feature expansion stays frozen. Only public DocILE, ContractNLI and RecBench-small
 roots named by the user were inspected offline. No application/provider/DB/Docker
