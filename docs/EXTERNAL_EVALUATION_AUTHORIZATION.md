@@ -95,3 +95,36 @@ clarification permitting these payloads, or establish locally that the complete
 unchanged payloads contain no prohibited information. No billing change is requested.
 If redaction is needed, it requires a separately approved protocol version; this
 task does not silently create one or alter the frozen denominator.
+
+## Explicit operator payload attestation — 2026-10-28
+
+The operator personally reviewed the relevant dataset conditions, Gemini Free-tier
+terms and the unchanged frozen payloads, and explicitly attests that they are
+suitable and authorized for this AI/NLP evaluation through Gemini Free tier.
+For this experiment, dataset rights and API processing are USER-RESOLVED/AUTHORIZED;
+Free-tier payload admissibility is OPERATOR-REVIEWED/AUTHORIZED; paid billing is not
+required. The preceding provider-payload stop is **resolved by that explicit review**.
+No generic caution or previous heuristic finding reopens this decision. Stop only
+if a concrete contradictory local artifact or payload condition is discovered.
+
+Scope remains exclusively frozen DocILE/ContractNLI evaluation inputs. No production,
+customer, private/internal company, credential, database, sealed benchmark or
+unrelated data is authorized. No raw source/evidence quotes in Git or public reports.
+No billing, AutoPay, project creation, key rotation, source redaction/replacement,
+sample/scorer changes, retry or score-driven tuning is authorized. Free/Paid data
+treatment is not represented as identical. Historical entries remain historical.
+
+Resume synthetic-only authentication/model/schema/control preflight, current tier/
+quota verification, configuration freeze and the original smoke→final→seal→score
+sequence. All five DocILE input failures remain zero-call denominator entries.
+
+## Pacing-only operator amendment — 2026-10-28
+
+Before final inference configuration freeze, the operator authorized six total
+provider HTTP operations per minute, one sequential caller and deterministic
+10-second minimum request-start spacing. Current operator-confirmed AI Studio
+limits are 15 RPM, 250,000 input TPM and 500 RPD. Displayed usage (3 RPM,
+approximately 2,350 TPM, 30 RPD) is a UI observation, not an asserted exact daily
+counter. Six operations/minute remains conservatively below 15 RPM and avoids
+unnecessary runtime. This changes pacing only; original plan/checksum, samples,
+prompts, schemas, model, token ceilings, no-retry policy and scoring stay unchanged.

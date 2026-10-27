@@ -3217,3 +3217,21 @@ Detailed ignored local logs (UTC filenames):
 Compared the shared development container's ID, StartedAt and RestartCount with the snapshot taken before any isolated run: **unchanged throughout hardening**. After final cleanup, Docker container/volume listings filtered by this verification-purpose label were empty. No shared data, existing portable PostgreSQL installation or Argon/demo fixture was modified. Tests use only minimal existing isolated row inputs; no demonstration/evaluation datasets were generated or downloaded.
 
 Changed files: new two test modules and isolated Docker runner, administrative fixture reconnection/private runner option in conftest, README instructions, REQUIREMENTS_AUDIT disposition and this STATUS. No product matching/import changes, new dependencies or migrations were required. G2/G3 are closed with the specific evidence above; authentication, remote Actions execution and Argon benchmark limitations remain deferred. Verified checkpoint: **`71059c5098d30eb4d7ad4baca47d259a61dbf383`**, message `test: close financial restart and different-key matching verification gaps`, branch `test/milestone-01-02-hardening`. Reviewed/staged exactly 7 intended files; staged whitespace, actual local-password exclusions and unchanged application/schema/dependency/fixture checks passed. All required checks passed before commit (129 full tests plus 2 isolated restart tests). This documentation-only follow-up records the hash; no push occurred. STOP after hardening; do not automatically start milestone 03.
+## External Phase 2 transport checkpoint — 2026-10-28
+
+Operator explicitly resolved frozen-payload Free-tier processing and approved
+pacing-only six HTTP operations/minute (one caller, ten-second request spacing).
+Historical payload gate remains recorded; frozen plan SHA256 still
+`a83dc857f3f4ee8d0f6468fd945358504b59173e4ad55f53845bec3c7d00589d`.
+Evaluation-only worker uses source packets, no gold/application imports, one-shot
+HTTP with retries/redirects disabled, per-attempt reservations and no-retry
+in-flight markers. Five strict OCR input failures retain the all-50 denominator
+through a scorer-only algebraically equivalent missing-output bridge, verified
+against frozen scorer semantics. No production behavior changed.
+
+Actual offline checks: focused Phase0/1/privacy-cost/Phase2 pytest **105 passed**;
+Ruff lint and format passed; strict mypy passed (10 source files); compileall passed.
+Source packet preparation passed; authentication/model GET passed with existing
+key, credentials never logged. No generation or document transmission yet at this
+checkpoint. Live synthetic admission and frozen scored runs remain pending.
+
