@@ -1,5 +1,19 @@
 # ClearLedger requirements-alignment audit
 
+## Phase2 dataset authorization / paid-provider stop — 2026-10-27
+
+User-confirmed dataset/API-processing rights recorded in
+`docs/EXTERNAL_EVALUATION_AUTHORIZATION.md`, with additive Phase1.5 decision transition.
+Provider terms independently binding; no production/unrelated-data/publication grant.
+Existing local Gemini key does not establish paid-project billing. Scoped key-presence
+checks found no evaluation-specific paid configuration or authenticated billing
+verification; status UNKNOWN. SectionB requires stopping here. `EXTERNAL_EVALUATION_RESULTS.md`
+records NOT RUN, no fictitious metrics or completed Phase2 claim. No transport or
+synthetic call before this gate. User's five DocILE input-failure dispositions are
+retained, not repaired/dropped. Frozen IDs/formulas/artifacts and all earlier tests
+unchanged; no source/gold/private benchmark/account mutation or model calls.
+
+
 ## External evaluation Phase1.5 — 2026-10-27
 
 Review-only scope, no inference or production/protocol modification. Traceability:

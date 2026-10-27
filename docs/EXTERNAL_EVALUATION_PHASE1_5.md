@@ -260,6 +260,24 @@ money inputs, output/thinking reservations and fixed sample/call caps. No infere
 API billing/key interaction, full app suite, DB, Docker or browser checks required.
 No Phase2 execution is authorized by this report.
 
+## Subsequent user authorization — additive transition,2026-10-27
+
+The user has now explicitly confirmed reviewed dataset permissions and authorized
+DocILE/ContractNLI evaluation/API processing where provider terms permit it. See
+[authorization amendment](EXTERNAL_EVALUATION_AUTHORIZATION.md). The earlier
+screening/rights findings above remain historical observations; they are not
+rewritten as if clearance existed then. No source was redacted or altered.
+
+| Dataset | Current dataset rights | Current API-processing scope | Provider gate | Current execution status |
+|---|---|---|---|---|
+| ContractNLI | USER-RESOLVED / AUTHORIZED FOR THIS EVALUATION | User-confirmed, only exact requests permitted by provider terms | Suitable paid project/key not verified | STOPPED_AT_PROVIDER_BILLING_GATE |
+| DocILE | USER-RESOLVED / AUTHORIZED FOR THIS EVALUATION | Same restriction; prior research-grant blocker resolved by user attestation | Suitable paid project/key not verified | STOPPED_AT_PROVIDER_BILLING_GATE;5 known input failures retained with zero calls |
+
+This resolves dataset rights, not provider policy, production consent, unrelated
+data use or public redistribution. Existing pattern-screen categories remain
+findings. The Phase2 instruction explicitly preserves the five DocILE failures
+without requiring their repair or replacement. There has been no model call.
+
 Observed verification: **89 offline tests passed in4.66s** (61 frozen Phase0/1
 regressions +28 review tests); Ruff lint/format, strict mypy and compilation pass.
 Frozen plan hash/provenance check passes; Git comparison confirms Phase1 code,

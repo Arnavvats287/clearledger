@@ -1,5 +1,43 @@
 # Build status
 
+## Phase2 authorization recorded — stopped at paid-provider gate — 2026-10-27
+
+Branch `eval/external-phase-2-authorization` from `9c52045`. User explicitly confirms
+dataset permissions/API processing for the frozen DocILE/ContractNLI experiment:
+rights USER-RESOLVED/AUTHORIZED subject to provider terms. Recorded in
+`docs/EXTERNAL_EVALUATION_AUTHORIZATION.md`; appended transition in Phase1.5 report
+preserves history, sample IDs/scorers/source/failure rules and local-only publication
+restrictions. Prior manual privacy findings remain observations, not a renewed
+unresolved dataset-rights veto. No production consent or unrelated data permission.
+
+SectionB STOP: only an existing development Gemini key is present. Scoped `.env*`
+and process-environment checks reveal no evaluation-specific key/project identity/
+application-default credential reference; `gcloud` is not on PATH. Billing cannot
+be proved from a key. Status UNKNOWN, not falsely declared Free. No API/key/account
+values printed, no credential copied or configuration changed. Current official
+Gemini Paid Services/billing docs rechecked; no suitable paid access established.
+
+No transport implementation, inference-config freeze, synthetic admission, smoke,
+scored inference, token count, model lookup, prediction/seal or scoring attempted.
+Calls0/tokens0/new token charges USD0. No gold/source reads, database, Docker,
+production/UI/settings change, private benchmark or remote push. Known5 DocILE
+failures will remain zero-call dispositions in any later authorized execution.
+
+`docs/EXTERNAL_EVALUATION_RESULTS.md` explicitly says NOT RUN rather than inventing
+accuracy; includes safe/unsupported public claims. External `phase2-v1` contains
+authorization amendment, additive decision transition and provider-gate metadata.
+Frozen Phase0/1 and Phase1.5 machine reports remain unchanged. This is a blocked-gate
+documentation checkpoint, NOT Phase2 completion. Single user setup action: connect
+a paid evaluation project/key locally via ignored `.env.external-evaluation`,
+then confirm the same project's Paid/usable-credit status. No key in chat.
+
+Checks: frozen plan/provenance checker PASS; original Phase1.5 machine-artifact
+hashes PASS unchanged; authorization/transition/gate JSON consistency PASS; ignored
+config filename check PASS; protected code/test/evaluator-lock Git comparison PASS;
+`git diff --check` PASS. No code changed, so pytest/lint/type/compile/model preflights
+were not rerun and no scored completion is claimed.
+
+
 ## External evaluation Phase1.5 — privacy/rights/paid cost review — 2026-10-27
 
 Verified review checkpoint: `703907b` (`docs: record external privacy review and
