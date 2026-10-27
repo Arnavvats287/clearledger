@@ -2,6 +2,9 @@
 
 ## External evaluation Phase1 — offline adapters/scorers — 2026-10-27
 
+Verified implementation checkpoint: `ea0e113` (`feat: add offline external evaluation
+adapters and scorers`). This follow-up records its identifier; no inference performed.
+
 Branch `eval/external-phase-1-adapters` from status `5a0b50d`. Production backend,
 AR DTOs/Investigator/financial rules/settings/dependencies/UI unchanged. No database,
 Docker/image, private benchmark/operator/schedule/answer access, model generation,
