@@ -2,6 +2,9 @@
 
 ## Phase2 authorization recorded — stopped at paid-provider gate — 2026-10-27
 
+Authorization/gate documentation checkpoint: `1c75816`. Not a scored evaluation
+completion checkpoint; this follow-up records the identifier.
+
 Branch `eval/external-phase-2-authorization` from `9c52045`. User explicitly confirms
 dataset permissions/API processing for the frozen DocILE/ContractNLI experiment:
 rights USER-RESOLVED/AUTHORIZED subject to provider terms. Recorded in
