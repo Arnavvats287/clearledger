@@ -271,3 +271,77 @@ code/prompt/schema/model hashes before final predictions. No production syntheti
 gate bypass, key/project/billing change or new authority. RecBench stays offline
 and domain-incompatible with current AR imports; grouped payout semantics remain
 out of scope. Phase0 samples/checksum and private evaluation remain untouched.
+## Phase 2 continuation — 2026-10-28
+
+The historical Phase1/1.5 gates above are retained. The additive operator
+attestation in `EXTERNAL_EVALUATION_AUTHORIZATION.md` resolves dataset/API/Free-tier
+payload authorization for this experiment only. No production synthetic-data gate
+is bypassed. Phase0 plan and request-specification remain unchanged; pacing alone
+is amended to six total HTTP operations/minute, one caller.
+
+### Prediction process
+
+`scripts/external_phase2.py` prepares whitelisted source packets, freezes hashes,
+launches `scripts/external_gemini_worker.py` through isolated Python with an
+environment allowlist, and seals final outputs. The key travels through an
+anonymous stdin pipe, never CLI arguments, files or logs. The worker imports only
+source DTOs, source-only quote functions and the evaluation HTTP transport. It
+does not import gold scorers or application modules and has no database, finance
+tools or credentials. A Python audit boundary restricts reads/writes, process
+launches and outbound sockets; this is defense in depth, not an OS/container
+security claim. Only the fixed Gemini host on public port 443 is permitted.
+
+The transport uses HTTPX directly: zero retries, no redirects, no SDK retry layer,
+no proxy-environment middleware. Frozen system prompts/schema are sent unchanged;
+sampling parameters are omitted and thinking is MINIMAL. Each generation is
+preceded by an official `countTokens` of its complete generation request. Count
+and generation operations share ten-second minimum start spacing. At six
+operations/minute and maximum 32,768 input tokens/operation, even conservatively
+counting every operation remains below 250,000 input TPM. Daily call ceilings are
+bounded separately. UI usage is not falsely treated as exact remaining quota.
+
+Attempt markers are written before requests; an interrupted unknown attempt
+cannot be retried. Full cap reservation occurs before generation; observed usage
+releases unused reservation, unavailable usage retains the full cap. Typed
+responses, independently located quotes, metadata and errors remain local. No
+response is manually repaired; missing answers remain missing. HTTP/status codes
+are allowlisted; raw provider error bodies and complete prompts are not logged.
+
+### Scoring process and five rejected inputs
+
+`scripts/external_phase2_score.py` is a separate post-seal command. It verifies
+both final seals, configuration, source manifest and frozen code before reading
+gold. It uses the original ContractNLI scorer unchanged. The DocILE
+`failure_denominator.py` bridge applies the original scorer to valid packets and
+adds the frozen missing-output contributions for rejected inputs: missed gold
+invoice IDs, abstention/missing counts and full document denominator. No fake OCR
+packet or annotation-based repair is constructed. Synthetic equivalence testing
+checks the bridge against the original scorer with absent predictions. Invalid
+documents cannot earn an empty-set exact-match success. Original formulas,
+normalization and quote/localization requirements are unchanged.
+
+Native output remains conditional tax-invoice `document_id` KILE only, using
+the pinned 0.3.5 tool and original gold boxes in a scorer-only view. Entirely empty
+native output remains NOT COMPUTABLE, with no dummy prediction.
+
+### Reproduction (authorized one-shot execution only)
+
+These commands create exclusive artifacts; do not replay failed scored examples
+or overwrite sealed outputs. A new scored run requires separate authorization.
+
+```powershell
+.venv/Scripts/python.exe scripts/external_phase2.py prepare --runs C:/ClearLedgerEval/external-runs --source C:/ClearLedgerEval/external
+.venv/Scripts/python.exe scripts/external_phase2.py preflight-config --admission-revision 2 --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2.py preflight --admission-revision 2 --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2.py freeze --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2.py smoke --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2.py final --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2.py seal --runs C:/ClearLedgerEval/external-runs
+.venv/Scripts/python.exe scripts/external_phase2_score.py --runs C:/ClearLedgerEval/external-runs --source C:/ClearLedgerEval/external
+```
+
+Preflight revision 1 failed locally before HTTP: Windows environment filtering
+omitted uppercase SYSTEMROOT, preventing TLS-context construction. An offline
+reproduction and Windows regression test proved the correction. Original config
+is retained; revision 2 passed all three synthetic generations. This was not a
+scored retry. Final configuration was frozen only after that correction.

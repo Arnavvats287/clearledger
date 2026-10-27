@@ -3235,3 +3235,47 @@ Source packet preparation passed; authentication/model GET passed with existing
 key, credentials never logged. No generation or document transmission yet at this
 checkpoint. Live synthetic admission and frozen scored runs remain pending.
 
+## External Phase 2 completed — 2026-10-28
+
+Transport checkpoints: `87d7ffe` (isolation/no-retry transport), `fc276e2`
+(offline-proven Windows SYSTEMROOT/TLS launch fix, before HTTP), `4b6b461`
+(post-seal scoring/configuration checkpoint). All subsequent inference used frozen
+configuration SHA256 `7b11a670df8852455a7b19e9ae035e6f438bb3384afc9b5b6c0e00455c450a60`.
+
+Exact model `gemini-3.5-flash-lite`; Free tier and quotas operator-confirmed;
+authentication/model lookup and three synthetic structured generations passed.
+Frozen smoke passed transport/schema admission: ContractNLI 3 dev /51 hypotheses
+(6 calls; two documents had quote failures), DocILE 8 train (8 calls). No tuning.
+Final ContractNLI 12 test /204 pairs (24 calls): accuracy **167/204 =81.8627%**,
+macro F1 **0.758843**, evidence overlap F1 **0.535477**, joint evidence F1
+**0.498954**; literal quotes **117/136**, unsupported assertions **35/128**.
+This is legal/NDA reasoning, not AR accuracy.
+
+Final DocILE all-50: 45 calls and five zero-call strict OCR failures (2 empty page,
+3 invalid word) retained in denominator. Unique source-grounded invoice-ID P/R/F1
+**0.535714/0.500000/0.517241**; exact sets 30/50, coverage25/50, one non-invoice
+false emission, 21/28 valid localized unique fields (7 ambiguous). Official pinned
+0.3.5 conditional document_id KILE on36 mapped tax invoices: AP **0.04704944**,
+P/R/F1 **0.25/0.131579/0.172414**; location+exact-text AP **0.02923217**,
+P/R/F1 **0.20/0.105263/0.137931**. Not full DocILE or complete invoice extraction.
+
+Both final artifacts were sealed before any gold access. No retries or repairs.
+Total **86 generations**, **182,519 input /52,969 candidate output /235,488 total
+provider tokens**; thinking/cache categories unavailable, not asserted zero.
+No provider/rate/timeout/parse/schema failures. Free tariff is published as zero;
+actual billed USD not invoice-verified/UNKNOWN. No billing changes. No application
+imports/DB/finance tools in worker: zero financial operations/mutations/authority;
+no independent production-DB audit is claimed. Production/UI/migrations, private
+benchmark/operator/image, RecBench and original datasets remained untouched.
+
+Commands executed: `external_phase2.py prepare`, `preflight-config`/`preflight`
+revision2, `freeze`, `smoke`, `final`, `seal`; `external_phase2_score.py` against
+the sealed outputs; official `docile_evaluate` KILE completed. Exact commands,
+hashes, per-class metrics, failures, latency, tokens and limitations are in
+`docs/EXTERNAL_EVALUATION_RESULTS.md` and implementation documentation. Machine
+artifacts remain outside Git in `C:/ClearLedgerEval/external-runs/phase2-v1/`.
+Focused verification: **106 tests passed**, Ruff lint/format, strict mypy (11 source
+files), compilation/import and frozen-artifact checks passed. No full product,
+database/restart, browser or sealed benchmark run was made for evaluation-only work.
+Known weaknesses: unsupported legal assertions, incomplete citations and poor
+native document localization. No score-driven fixes or further evaluation begun.
