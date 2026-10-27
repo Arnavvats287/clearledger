@@ -83,6 +83,14 @@ frozen; next workstream is the frontend canonical-case/review/evidence/trace wor
 Production identity/source custody, real customers and independent/sealed evaluation
 remain unresolved. Local checkpoint recorded below after staged review; no push.
 
+Verified implementation/report checkpoint: **2892bc44561ed260e2ab84b04c8139ef60a209d4**,
+`test: verify live Gemini and exception automation acceptance`. Reviewed exactly18
+intended files, staged whitespace/private-value exclusions and clean-tree check;
+no generated outputs, credentials, benchmark data or financial changes committed.
+Final Ruff check/format PASS236 files and mypy PASS23 modules;75 distinct focused
+test cases passed across recorded runs. This documentation-only follow-up records
+the checkpoint; live campaign closed, external flags disabled, no push.
+
 ## Optional AR AI Investigator — 2026-10-27 IST (LIVE ACCEPTANCE NOT PASSED)
 
 From5db9061. Implemented gated ar-investigator-v2 planning and synthesis in the
