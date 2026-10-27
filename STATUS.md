@@ -76,7 +76,13 @@ Actual checks (verbose logs local-data/frontend-*.log):
 Docs: FRONTEND.md, README screenshots, architecture/security/API/correlation contracts,
 requirements traceability and explicit scope crosswalk. Screenshots: exception queue,
 missing/support/conflict investigation, correlation decision, mobile dark. Full original
-backend regression assertions retained. Local checkpoint recorded after staging review.
+backend regression assertions retained. Verified implementation checkpoint: **2dfac50f3c00d10ba0bf2af21067964b90eb82ae**,
+`feat: build evidence-driven finance review workstation`. Reviewed48 intended files,
+staged whitespace/ignore/private-key/configured-secret checks passed. No remote push.
+The acceptance host shut down gracefully and confirmed its owned disposable DB removed;
+a fresh synthetic host is started separately for user review, with new local-only
+credentials and untouched controller tasks. No shared PostgreSQL restart/reset.
+This documentation follow-up records the implementation hash.
 
 
 ## Live AI/automation acceptance — 2026-10-27 IST
