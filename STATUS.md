@@ -1,5 +1,84 @@
 # Build status
 
+## Frontend evidence-review workstation — 2026-10-27 IST
+
+From verified3d8af58, branch feat/frontend-case-folio. Backend expansion frozen;
+sole production API addition addresses a demonstrated pre-association proof-reader
+blocker (see below). User approved React/TypeScript/Vite over original Next.js
+preference, installed Taste guidance and Playwright library equivalent (MCP absent).
+Explored ledger / case folio / evidence map; chose annotated folio, not KPI dashboard.
+Original M10 financial posting queue, cash allocation controls and Argon CASE-204
+journey remain explicitly DEFERRED in prompts/10-ui.md, PLANS and audit. This is not
+blanket completion of those original gates. No benchmark/dataset/private input change.
+
+Delivered real HTTP queue/filter, financial comparison, canonical source/verified span
+inspector/original download, case claims, structured seven-stage investigation trace,
+model/source/deterministic/human provenance, current/stale/error states, correlation
+proof/CONFIRM/REJECT/immutable decisions/canonical merge, draft-only evidence requests,
+readable audit, actual CSV/document intake, memory-only local review session, light/
+dark responsive UI. BigInt + lossless JSON preserves int64 paise; no float financial
+math. Stable request keys and exact current server versions/task/context hashes;
+no client-created evidence or financial authority. API types generated from actual
+OpenAPI, centralized client. No frontend posting/approval action, new agent/service,
+new migration, financial rule or CSV1.0 change. Production identity remains G1.
+
+Proven API blocker: pending case has no verified customer. Old generic evidence read
+returned422 for missing customer, or404 with the proper customer because existing
+Investigator scope correctly requires a verified case association. Added only GET
+/review/correlation-tasks/{id}/proof?expected_task_sha256=... with READ role, company
+lock, exact owned/current task snapshot/document/source membership and current trusted
+RecordView. Old case/customer scope stays fail-closed.5 PostgreSQL tests include
+wrong tenant/actor, stale basis, unsigned/revoked trust and financial non-mutation.
+
+Reproducible host scripts/serve_frontend_demo.py uses a generated disposable DB,
+existing API fixtures, real import/document/evidence/review APIs, Uvicorn HTTP and
+existing outbox/LangGraph. Five tiny code fixtures: missing/support/conflict/confirm/
+reject. Fake extraction/Investigator explicitly labelled offline control. External
+AI defaults restored false before serving; no key/model configured, no network model
+calls. Local synthetic source signing and reviewer identity confer NO finance authority.
+Each worker drain checks financial fingerprint. All screenshots use these fixtures.
+Random login details/originals/logs stay ignored under local-data/frontend; no secret
+or customer dataset committed. README/FRONTEND describe exact two-terminal setup.
+
+Actual checks (verbose logs local-data/frontend-*.log):
+- npm.cmd run lint; npm.cmd run typecheck; npm.cmd run test; npm.cmd run format:check
+  from frontend: PASS;9 unit cases (integer/Unicode/errors/replay key/pagination).
+- Python scripts/export_frontend_contract.py; npm.cmd --prefix frontend run contract;
+  npm.cmd --prefix frontend run build: PASS. Strict TS + production Vite build;
+  JS331.08KB/103.49KB gzip, no invented performance benchmark.
+- CLEARLEDGER_BROWSER_BUILD=1 npm.cmd run test:browser:8 PASS in49.2s against actual
+  Uvicorn/PostgreSQL and production preview, pinned Chromium. Log frontend-browser-final.log.
+  Covers queue, exact source highlight, missing/support/conflict, task proof, deliberate
+  dialog/cancel/confirm/reject/history/merge, auditor boundary, repeat refresh/no visual
+  duplicate, draft/human audit, keyboard focus,390dark/768responsive, empty/malformed/
+  offline errors. Happy scenarios assert zero page exceptions or HTTP>=400 responses.
+  Tests explicitly compare financial API snapshots; all invariants held.
+- TEST_DATABASE_URL privately loaded from ignored.env; pytest tests/test_correlation_proof.py
+  tests/test_correlation_workflow.py tests/test_review_access.py -q --require-postgres:
+  initial29 PASS/1 FAIL (new cross-tenant test fixture lacked READ, got403 instead404).
+  Added READ to OTHER-tenant fixture, preserved404 assertion. Final new proof module:
+  5 PASS in23.88s. Thus30 distinct targeted backend cases passed across runs, not a
+  falsely claimed single30-pass run. No production permission relaxation.
+- Python -m ruff check and ruff format --check on correlation_api, new proof tests,
+  export_frontend_contract and serve_frontend_demo: PASS. Python -m mypy: PASS23 files.
+- npm audit during dependency install:0 vulnerabilities. Pinned lockfile, no force
+  peer override. Latest TS7 peer conflict resolved by supported pinned TS5.9.3.
+- Taste source lint0FAIL/3WARN (financial zero padding, intentional Mono values/IDs,
+  missing-value dash). Production inspector0FAIL/0WARN at1440/768/390 on login.
+  Authenticated workbench reviewed in real Playwright and final screenshots visually.
+  Rejected first oversized/raw trace; compact stage selector + focused panel replaced it.
+- New disposable boot runs Alembic upgrade head/check via existing initialize. No shared
+  DB reset/restart/downgrade. No full backend gate or isolated restart run requested or
+  claimed for this frontend pass; targeted regressions only. Remote CI, other browsers,
+  assistive-technology/production-security audits and large-company queue performance
+  remain unverified. No live Gemini or independent benchmark run.
+
+Docs: FRONTEND.md, README screenshots, architecture/security/API/correlation contracts,
+requirements traceability and explicit scope crosswalk. Screenshots: exception queue,
+missing/support/conflict investigation, correlation decision, mobile dark. Full original
+backend regression assertions retained. Local checkpoint recorded after staging review.
+
+
 ## Live AI/automation acceptance — 2026-10-27 IST
 
 From verified7ab2d55 on eval/gemini-final-compatibility. User authorized at most20 new

@@ -16,12 +16,53 @@ from clearledger.correlation_service import decide, decision_view, refresh, task
 from clearledger.document_contract import ExtractionError
 from clearledger.document_runtime import LocalOriginals
 from clearledger.evidence_api import EvidenceRoute
+from clearledger.evidence_contract import RecordView
 from clearledger.matching import owned
 from clearledger.matching_api import Key
 from clearledger.review_identity import ReviewIdentity
 from clearledger.review_models import ReviewAudit
 
 router = APIRouter(prefix="/review", tags=["correlation-review"], route_class=EvidenceRoute)
+
+
+@router.get("/correlation-tasks/{task_id}/proof", response_model=list[RecordView])
+def task_proof(
+    task_id: UUID,
+    session: DB,
+    identity: ReviewIdentity,
+    request: Request,
+    expected_task_sha256: str = Query(pattern=r"^[0-9a-f]{64}$"),
+):
+    """Review before association; never widen the Investigator's case/customer scope."""
+    from clearledger.case_domain import CaseError
+    from clearledger.evidence_ingestion import record_view
+    from clearledger.evidence_models import EvidenceRecord
+    from clearledger.matching import lock_company
+
+    identity.require("READ")
+    org = identity.organization_id
+    lock_company(session, org)
+    task = owned(session, CorrelationTask, org, task_id)
+    root(session, org, task.case_id)
+    settings = request.app.state.settings
+    store = LocalOriginals(settings.document_root)
+    if (
+        expected_task_sha256 != task.input_sha256
+        or task_view(session, org, task, settings, store).is_stale
+    ):
+        raise CaseError("STALE_CORRELATION_EVIDENCE")
+    records = []
+    for item in task.snapshot["evidence"]:
+        if not item["trusted"]:
+            continue
+        row = owned(session, EvidenceRecord, org, UUID(item["id"]))
+        if row.document_id != task.document_id:
+            raise CaseError("CORRELATION_PROOF_OUTSIDE_DOCUMENT", 404)
+        view = record_view(session, org, row, settings)
+        if not view.is_current or not view.source_authenticated:
+            raise CaseError("STALE_CORRELATION_EVIDENCE")
+        records.append(view)
+    return records
 
 
 @router.get("/cases/{case_id}/correlation-tasks", response_model=list[TaskView])

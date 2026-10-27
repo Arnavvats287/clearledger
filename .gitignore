@@ -37,6 +37,11 @@ htmlcov/
 .tox/
 .nox/
 node_modules/
+.agents/
+.taste-skill/
+frontend/playwright-report/
+frontend/test-results/
+frontend/.env.local
 artifacts/
 *.csv
 *.xlsx

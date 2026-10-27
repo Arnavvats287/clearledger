@@ -162,3 +162,15 @@ also by demo mode. Existing DB/company dependencies recheck grants under their l
 legacy case/document/evidence access accepts only this server-created identity context.
 No credential headers are synthesized. Finance keeps its independent M08 authority
 port. Default legacy compatibility is local-only and does not resolve G1 deployment.
+
+
+## Local evidence-review workstation
+`frontend/` is React/TypeScript/Vite with one generated-OpenAPI typed API client.
+Same-origin loopback proxy -> existing FastAPI services -> PostgreSQL/outbox/LangGraph.
+No BFF, new orchestration system or domain rules in JavaScript. The UI separates
+model recommendations, source verification, deterministic policy and human decisions;
+no finance/posting authority is exposed. `scripts/serve_frontend_demo.py` starts a
+fresh disposable actual-HTTP application with minimal existing fake-provider fixtures
+and an existing outbox executor. It does not populate development data or call Gemini.
+See FRONTEND.md for reproducibility, boundaries, original M10 deferrals and browser
+acceptance. Sole production backend addition: snapshot-bound correlation proof read.

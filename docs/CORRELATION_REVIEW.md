@@ -130,3 +130,15 @@ LangGraph with fake extraction and independent **test-only** signing/identity ro
 It covers complete/uncertain, missing/conflicting/ambiguous, rejected, late/revised
 evidence, replay/concurrency, authority/tenant/immutability, migration and budget cases.
 No Gemini call or new live-accuracy claim;229 paise authorization remains unchanged.
+
+
+## Task-bound proof inspection before association
+GET `/review/correlation-tasks/{task_id}/proof?expected_task_sha256=<server hash>`
+returns `RecordView[]` only for authenticated/current records already captured in
+that owned task's snapshot and exact document. Review READ identity is required;
+company lock and current task/context validation reject stale basis409. Unknown/
+other-tenant tasks404; actor labels do not authenticate. Revoked/unsigned source
+records never become trusted proof. This enables reviewer inspection before a
+customer association exists without relaxing the Investigator's verified-customer
+scope or seven evidence tools. No mutation, financial authority or schema change.
+Frontend sends the exact server-provided hash; mismatch requires refresh/review.

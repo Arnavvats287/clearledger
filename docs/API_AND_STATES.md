@@ -86,3 +86,12 @@ closure/recovery and broader reviewer workflow remain M09. Unknown claims remain
 ## Milestone 09 implemented contract
 
 [REVIEW_RECOVERY.md](REVIEW_RECOVERY.md) defines demo login/logout and safe role-based reads, reviewer comments, draft-evidence-request/request-evidence/record-response and explicit close/reopen commands. Financial submission and approve/reject reuse M08 version/hash-bound endpoints with no authorization relaxation. Late responses invalidate unposted work and reopen affected claims/cases without reversing settled money. CLOSED requires verified current controller authority, zero financial outstanding, resolved current claims and completed mandatory actions/work. Local tokens/actor labels cannot close or grant financial permission.
+
+
+## Frontend consumption
+The local React workstation consumes existing case/document/investigation/review
+contracts without changing state machines. New read-only task proof inspection:
+GET `/review/correlation-tasks/{task_id}/proof` with required `expected_task_sha256`;
+response `RecordView[]`, READ role, tenant/snapshot/document scoped, stale409.
+Financial CSV1.0 and source evidence semantics are unchanged. FRONTEND.md documents
+all operational routes, error handling, local identity limitations and test commands.

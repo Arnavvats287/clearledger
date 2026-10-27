@@ -60,3 +60,13 @@ not M10 or full M11 completion. Preserve original 420-receipt/426-stage chronolo
 single manual export cutoff cannot supply it. No hidden truth, benchmark generation,
 financial authority or dataset modifications are authorized. Measurements and unverified
 capabilities are in docs/POST_M09_APPLICATION_EVALUATION.md and STATUS.md.
+
+
+## Approved frontend workstation pass — 2026-10-27
+User-approved React/TypeScript/Vite local UI consumes actual API states, with Taste
+critique and Playwright library acceptance (MCP unavailable). Queue/case/source spans/
+structured investigations/correlation/human draft review/audit are delivered. This is
+not blanket completion of original M10: posting/approval UI, complete cash allocation
+controls and full Argon CASE-204 journey remain deferred. Original checklist retained
+in prompts/10-ui.md; contracts/verification/limitations: FRONTEND.md. No later feature
+or benchmark work is authorised by presentation work.

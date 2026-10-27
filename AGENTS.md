@@ -34,7 +34,7 @@ If docs conflict, stop and explicitly document the conflict. Do not invent polic
 ## Engineering preferences
 - Backend: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, PostgreSQL.
 - Worker: Redis + RQ when asynchronous events are needed; avoid adding infrastructure in milestone 00 without use.
-- Frontend: Next.js, TypeScript, Tailwind, shadcn/ui (when UI phase begins).
+- Frontend: TypeScript. User-approved 2026-10-27 workstation uses React + Vite and custom CSS; original Next.js/Tailwind/shadcn preference is superseded for this pass. Preserve original deferred M10 financial acceptance gates.
 - Tests: pytest, Hypothesis for financial invariants, Playwright for the completed UI. Prefer pure functions and explicit DB transactions.
 - Compose: local PostgreSQL; reproducible setup and contract-based imports of Argon-provided data. Use pinned version ranges/lockfiles; do not assume exact library versions without verifying installs.
 - Dataset ownership: Argon researches and constructs demonstration/evaluation data. Codex must not generate, download, curate or seed that data. Only minimal isolated application test fixtures are permitted; consume Argon data through the versioned data contract.

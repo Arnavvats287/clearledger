@@ -126,3 +126,15 @@ without demo users for a reviewed trusted host. Missing/old service credentials 
 bypass auditor restrictions. Source mutations revalidate grants under the company lock
 and preserve canonical actor/role audit; evidence POST queries remain DB READ ONLY.
 Both flags false is the old local-only compatibility profile, never production-ready.
+
+
+## Local frontend boundary
+React stores ReviewDemo session credentials in memory only, uses the existing
+loopback review API and displays LOCAL_DEMO_ONLY. No Gemini key, finance adapter or
+posting UI exists in the browser. BigInt/lossless JSON preserves financial amounts;
+untrusted source strings render as text. This local workstation is not a production
+identity/security deployment. Task-bound correlation proof reads require current
+server snapshot, READ role and exact tenant/task/document membership; they do not
+widen general Investigator evidence access. Tests: test_correlation_proof.py and
+frontend/e2e/workstation.spec.ts. Source signatures in demo are explicit synthetic
+test trust, never production authority.

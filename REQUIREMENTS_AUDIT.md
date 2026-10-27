@@ -1,5 +1,30 @@
 # ClearLedger requirements-alignment audit
 
+## Frontend workstation traceability — 2026-10-27
+
+Approved scope: React/Vite real-API exception-review product; original M10 financial
+posting/CASE-204 gates remain deferred, not silently waived. No benchmark change.
+
+| Requirement | Implementation / evidence |
+|---|---|
+| Real queue / financial state / filters | Queue.tsx, api.ts; browser queue + unit int64 tests |
+| Case/source-linked claims / exact canonical spans | CaseFile.tsx, Documents.tsx; browser span and3 evidence-state tests |
+| Structured graph / honest model provenance | Investigation.tsx; missing/support/conflict Playwright checks |
+| Controller confirmation/rejection / immutable merge history | Correlation.tsx;2 browser decision cases, existing25 PostgreSQL regressions |
+| Proof before verified customer association | new task_proof route;5 PostgreSQL tests, actual browser proof |
+| Human evidence request / audit | ReviewAction.tsx, History.tsx; real draft/history browser test |
+| Idempotency / stale / permission / errors | server basis rechecks, stable keys, presentation stale guard; unit/API/browser controls |
+| Financial non-mutation | worker fingerprints, browser before/after API snapshots, proof test SQL snapshots |
+| Accessible/responsive actual controls | native dialog/focus/keyboard;390/768/1440 browser,6 screenshots |
+
+Observed:9 unit +8 browser tests;5 new backend tests and25 existing targeted cases
+passed across focused runs; Ruff/mypy/frontend lint/types/build/format passed. No
+full-backend-suite, remote CI, screen-reader audit or production readiness claim.
+Demo uses explicit fake-model controls; historical live proof stays separate in
+LIVE_ACCEPTANCE.md. Original M10 cash candidate controls, posting queue and Argon
+end-to-end CASE-204 not implemented in this pass. Production identity G1 remains open.
+Details/commands/log boundaries: FRONTEND.md, STATUS.md.
+
 ## Current bounded AI/automation acceptance — 2026-10-27
 
 Supersedes the historical live gap immediately below for approved synthetic fixtures
