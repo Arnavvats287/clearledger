@@ -157,7 +157,7 @@ def prepare(source: Path, runs: Path) -> None:
     print("Frozen source-only inputs prepared; no annotations read and no model calls.")
 
 
-def configuration(runs: Path, *, final: bool) -> Path:
+def configuration(runs: Path, *, final: bool, admission_revision: int = 1) -> Path:
     root = runs / "phase2-v1"
     spec = load_json(runs / "phase1-5-v1" / "request-cost-specification.json")
     manifest = load_json(root / "config" / "source-manifest.json")
@@ -166,7 +166,10 @@ def configuration(runs: Path, *, final: bool) -> Path:
         Path(__file__),
         *sorted((ROOT / "scripts" / "external_eval").glob("*.py")),
     ]
-    path = root / "inference-config.json" if final else root / "preflight" / "config.json"
+    admission_name = (
+        "config.json" if admission_revision == 1 else f"config-v{admission_revision}.json"
+    )
+    path = root / "inference-config.json" if final else root / "preflight" / admission_name
     if final:
         for phase in ("preflight_contract", "preflight_docile"):
             report = load_json(root / "logs" / "metadata" / f"{phase}-summary.json")
@@ -240,10 +243,12 @@ def configuration(runs: Path, *, final: bool) -> Path:
     return path
 
 
-def launch(runs: Path, phase: str) -> None:
+def launch(runs: Path, phase: str, admission_revision: int = 1) -> None:
     root = runs / "phase2-v1"
     path = (
-        root / "preflight" / "config.json"
+        root
+        / "preflight"
+        / ("config.json" if admission_revision == 1 else f"config-v{admission_revision}.json")
         if phase == "preflight"
         else root / "inference-config.json"
     )
@@ -262,7 +267,9 @@ def launch(runs: Path, phase: str) -> None:
         phases = ["contract_final", "docile_final"]
     payload = {"key": key(), "config_path": str(path), "phases": phases}
     environment = {
-        k: v for k, v in os.environ.items() if k in {"SystemRoot", "WINDIR", "PATH", "TEMP", "TMP"}
+        k: v
+        for k, v in os.environ.items()
+        if k.upper() in {"SYSTEMROOT", "WINDIR", "PATH", "TEMP", "TMP"}
     }
     child = subprocess.Popen(
         [sys.executable, "-I", "-B", str(ROOT / "scripts" / "external_gemini_worker.py")],
@@ -312,17 +319,20 @@ def main() -> None:
     )
     parser.add_argument("--runs", type=Path, required=True)
     parser.add_argument("--source", type=Path)
+    parser.add_argument("--admission-revision", type=int, default=1)
     args = parser.parse_args()
     if args.action == "prepare":
         if args.source is None:
             raise ValueError("SOURCE_REQUIRED_FOR_TRUSTED_PROJECTION")
         prepare(args.source, args.runs)
     elif args.action in {"preflight-config", "freeze"}:
-        configuration(args.runs, final=args.action == "freeze")
+        configuration(
+            args.runs, final=args.action == "freeze", admission_revision=args.admission_revision
+        )
     elif args.action == "seal":
         seal(args.runs)
     else:
-        launch(args.runs, args.action)
+        launch(args.runs, args.action, admission_revision=args.admission_revision)
 
 
 if __name__ == "__main__":

@@ -159,3 +159,31 @@ def test_worker_has_no_gold_or_product_imports():
         n.startswith(("clearledger", "external_eval.gold", "external_eval.scorers"))
         for n in modules
     )
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows TLS environment contract")
+def test_windows_tls_context_with_sanitized_environment():
+    import os
+    import subprocess
+
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k.upper() in {"SYSTEMROOT", "WINDIR", "PATH", "TEMP", "TMP"}
+    }
+    assert "SYSTEMROOT" in env
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-B",
+            "-c",
+            "import ssl;ssl.create_default_context();print('TLS_OK')",
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert result.stdout.strip() == "TLS_OK"
