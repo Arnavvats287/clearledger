@@ -247,3 +247,13 @@ Screenshots: [queue](docs/screenshots/exception-queue.png),
 [technical trace](docs/screenshots/technical-ai-trace.png),
 [decision](docs/screenshots/correlation-decision.png),
 [mobile](docs/screenshots/mobile-dark-case.png), [tablet](docs/screenshots/tablet-case.png).
+
+## Development blank-page troubleshooting
+
+The27 October dev server was observed serving an empty cached CaseFile module while
+source exports and production4173 remained valid. Vite's Windows watcher now waits
+200ms for stable writes before invalidating/transformation. If an already open tab
+retains a failed startup, refresh it. Restart `npm run dev` if necessary; do not reset
+PostgreSQL. `npm run build` then `npm run preview` on4173 is the verified production
+preview alternative. Both use the same real API proxy. This repairs development
+module loading, not accounting, authentication or case data.

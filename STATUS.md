@@ -1,5 +1,29 @@
 # Build status
 
+## Blank development page repair — 2026-10-27 IST
+
+User reported black page on5173. Reproduced in fresh Chromium: body empty and
+SyntaxError: requested CaseFile module does not provide export CaseFile. Both
+/src/CaseFile.tsx and the timestamped module returned only167 bytes (empty sourcemap),
+while the actual source contained the valid exported component. Production4173
+rendered login without page/network errors. Thus a stale empty Vite transform was
+proven; the precise filesystem-event sequence that populated it remains unknown.
+A partial Windows file rewrite is a plausible trigger, not falsely asserted as proven.
+
+Added only Vite dev watcher awaitWriteFinish stability200ms/poll25ms (supported by
+the installed Vite types). Config restart cleared cached transforms. This reduces
+partial-write exposure; it does not alter production or financial behavior. No new
+dependencies, backend changes, data reset or Gemini calls. Browser smoke after restart:
+both5173/4173 render login with zero page errors and HTTP>=400 observations. Actual
+DEV5173 Playwright queue/money/citation/focus acceptance:1 passed (log below).
+Frontend ESLint and TypeScript PASS. No full suite/rebuild/restart checks needed for
+this watcher-only repair; existing product tests unchanged. Generated queue screenshot
+from the test was restored to its reviewed committed version, not committed as a fix.
+
+Log: local-data/frontend-blank-browser.log. FRONTEND troubleshooting documents refresh
+and production-preview alternative. Local checkpoint follows staged review; no push.
+
+
 ## Frontend UXv2 — financial story and progressive disclosure — 2026-10-27 IST
 
 Branch feat/frontend-financial-story-v2 from verified921335a (implementation2dfac50).

@@ -14,6 +14,9 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: true,
+    // Windows editors/scripts may briefly truncate a file before rewriting it.
+    // Wait for a stable write before Vite invalidates and transforms modules.
+    watch: { awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 25 } },
     proxy,
   },
   preview: { host: "127.0.0.1", port: 4173, strictPort: true, proxy },
