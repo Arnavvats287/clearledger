@@ -1,5 +1,54 @@
 # Build status
 
+## External evaluation Phase 0 — 2026-10-27
+
+Branch `eval/external-phase-0-plan` from verified `a4a8f0b`. Frontend/backend
+feature expansion stays frozen. Only public DocILE, ContractNLI and RecBench-small
+roots named by the user were inspected offline. No application/provider/DB/Docker
+operation, model lookup, paid call, benchmark run or private/operator/schedule/answer
+access. No dataset contents or sample IDs in Git; external outputs stay under
+`C:\ClearLedgerEval\external-runs`.
+
+Completed inventory: `inventory/complete-v1/inventory.json`; structural aggregates:
+`inventory/recbench-structure-v1.json`. Frozen `evaluation-plan-v1.json` SHA-256:
+`a83dc857f3f4ee8d0f6468fd945358504b59173e4ad55f53845bec3c7d00589d`.
+See `docs/EXTERNAL_EVALUATION_PLAN.md` for mappings, counts, normalization, leakage
+boundaries, formulas, exact reproduction commands and unresolved gates.
+
+Observed: DocILE5180 train/500val, mixed document types; frozen8train/50val
+(36 scored invoices,14 other types) supports only conditional invoice-ID extraction,
+not totals/dates/parties/line items. ContractNLI423train/61dev/123test,17hypotheses;
+frozen3dev/12test=51/204pairs. Requires separate evaluation-only NLI DTO/document
+adapter; production AR Investigator cannot represent arbitrary legal hypotheses.
+RecBench999005 ledger/1014955 processor/73955 payout/75138 bank rows; genuine
+ledger→processor gold edges have complete FK coverage, but1047 payout→bank gold
+keys lack a source payout record; group semantics need clarification. No INR;
+do not relabel foreign processor transactions as AR invoices. Frozen16/128 bank
+IDs; application matching NOT EVALUABLE. No native scorer present locally for any
+dataset; scorer command explicitly blocked/null rather than invented.
+
+Model workload performed:0. Future bounded plan: up to58 DocILE +30 NLI generations,
+0RecBench, no retries; maximum1458176 input/182272 output token reservations.
+Public real documents are not approved synthetic fixtures: explicit privacy/provider
+review required. DocILE/RecBench local license provenance unknown. Historical quota
+screenshots are not current verification. No new authorization is implied.
+
+Actual checks:
+- `.venv/Scripts/python.exe scripts/external_inventory.py --source-root C:/ClearLedgerEval/external --output C:/ClearLedgerEval/external-runs/inventory/complete-v1`: PASS.
+- `.venv/Scripts/python.exe scripts/external_recbench_structure.py --root C:/ClearLedgerEval/external/recbench-small --output C:/ClearLedgerEval/external-runs/inventory/recbench-structure-v1.json`: PASS; all11CSV counts agree with manifest.
+- `scripts/freeze_external_plan.py` with documented inventory/structure/output args: exclusive creation PASS; same args plus `--check`: PASS, hash/provenance/selections verified.
+- `.venv/Scripts/python.exe -m pytest --noconftest tests/test_external_phase0.py --basetemp .local-runtime/phase0-check-20261027c -q`: **14 passed in1.50s**.
+- `.venv/Scripts/python.exe -m ruff check` and `ruff format --check` on three new scripts + test module: PASS; `python -m py_compile` on three scripts: PASS.
+
+Initial inventory stopped on an empty monetary cell; fixed inspection to count
+missing/invalid integer cells explicitly, preserved partial outputs, completed new
+directory. Initial pytest default sandbox temp unavailable (7pass/3setup errors);
+fresh workspace basetemp resolved this; no test skipped/weakened. Logs:
+`external-inventory-complete.log`, `external-structure.log`, `external-tests-final.log`
+(Git ignored). Full application suite/migrations/restart/browser checks intentionally
+not run: no application or database behavior changed. STOP after Phase0, no inference.
+
+
 ## Final frontend visual / motion system — 2026-10-27 IST
 
 From verifiede27dcdf on feat/frontend-final-visual-system. User scope: final visual

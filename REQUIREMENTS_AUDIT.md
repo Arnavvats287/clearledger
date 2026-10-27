@@ -1,5 +1,27 @@
 # ClearLedger requirements-alignment audit
 
+## External evaluation Phase 0 — 2026-10-27
+
+User-approved public inspection/planning only, not milestone11 completion or product
+tuning. Traceability: `scripts/external_inventory.py` explicit public roots, bounded
+metadata output, schema/count/hash inventory, label-independent IDs; public
+scorer-side `scripts/external_recbench_structure.py` FK/duplicate/degree and integer
+sum diagnostics; `scripts/freeze_external_plan.py` exclusive freeze + hash/input/
+selection checks. `tests/test_external_phase0.py`:14 offline isolated tests, including
+no-overwrite, linked-root refusal, invalid/missing money, gold-value-free schemas,
+disjoint selection, group-key gaps and tamper detection. Ruff/compile/plan checks PASS.
+
+`docs/EXTERNAL_EVALUATION_PLAN.md` documents semantically restricted mappings,
+scorer-only gold/labels/spans, frozen external IDs, workloads and failure denominators.
+No inference or model lookup, product changes, DB/Docker/benchmark operation, private
+evaluation access or dataset content in Git. Existing tests/requirements unchanged.
+Public-real-document privacy review, DocILE/RecBench license/release verification,
+native scorers, evaluation-only adapters and RecBench grouped payout semantics stay
+OPEN. AR accuracy, real NLI results, official DocILE metrics and external model quotas
+are NOT VERIFIED. Authentication/production/Argon/sealed benchmark gates remain open;
+public source text cannot grant evidence authenticity or financial authority.
+
+
 ## Final frontend visual / motion pass — 2026-10-27
 
 Presentation-only scope preserves UXv2 and every business/API boundary. Traceability:
