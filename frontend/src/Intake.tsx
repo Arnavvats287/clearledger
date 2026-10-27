@@ -21,7 +21,7 @@ import {
 } from "./ui";
 
 export function Intake({ api, readOnly }: { api: Client; readOnly: boolean }) {
-  const [kind, setKind] = useState("customers"),
+  const [kind, setKind] = useState("invoices"),
     [file, setFile] = useState<File>(),
     [synthetic, setSynthetic] = useState(false),
     [busy, setBusy] = useState(false),
@@ -104,8 +104,7 @@ export function Intake({ api, readOnly }: { api: Client; readOnly: boolean }) {
         <div>
           <h1 tabIndex={-1}>Import & documents</h1>
           <p>
-            CSV contract v1.0. Immutable originals. Replays retain their
-            identity.
+            Imports remain traceable and never overwrite the original source.
           </p>
         </div>
         <Link to="/">
@@ -114,10 +113,10 @@ export function Intake({ api, readOnly }: { api: Client; readOnly: boolean }) {
         </Link>
       </div>
       <div className="intake-grid">
-        <Section title="Add source records">
+        <Section title="Bring your records together">
           <form onSubmit={(e) => void submit(e)}>
             <label>
-              Record type
+              What are you importing?
               <select
                 name="record-type"
                 value={kind}
@@ -126,13 +125,17 @@ export function Intake({ api, readOnly }: { api: Client; readOnly: boolean }) {
                   setFile(undefined);
                 }}
               >
-                <option value="customers">Customers CSV</option>
+                <option value="customers">Customer master</option>
                 <option value="payer-aliases">
-                  Verified payer aliases CSV
+                  Advanced: verified payer aliases
                 </option>
-                <option value="invoices">Invoices CSV</option>
-                <option value="bank-transactions">Bank transactions CSV</option>
-                <option value="documents">Remittance document</option>
+                <option value="invoices">Invoices</option>
+                <option value="bank-transactions">
+                  Bank statement / receipts
+                </option>
+                <option value="documents">
+                  Remittances / supporting documents
+                </option>
               </select>
             </label>
             <p className="form-help">

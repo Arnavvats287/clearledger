@@ -70,3 +70,12 @@ not blanket completion of original M10: posting/approval UI, complete cash alloc
 controls and full Argon CASE-204 journey remain deferred. Original checklist retained
 in prompts/10-ui.md; contracts/verification/limitations: FRONTEND.md. No later feature
 or benchmark work is authorised by presentation work.
+
+## Approved UXv2 pass — 2026-10-27
+Financial story first, evidence second, AI/automation explanation third and technical
+trace on demand. Backend remains frozen. The user specifically approved recognisable
+synthetic labels/amounts for the five existing application-owned UI fixtures; this
+does not authorise benchmark generation/modification or transfer Argon's ownership.
+Progressive disclosure preserves source verification, review/currentness/idempotency
+and financial authority gates. Original deferred M10 financial gates remain open.
+Actual implementation/acceptance and60–90s demo: FRONTEND.md and STATUS.md.

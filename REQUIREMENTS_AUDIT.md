@@ -1,5 +1,31 @@
 # ClearLedger requirements-alignment audit
 
+## Frontend UXv2 — 2026-10-27
+
+Approved product-UX scope, not a new backend milestone. User specifically permitted
+recognisable synthetic labels/amounts in the five existing UI code fixtures. Argon
+ownership and independent datasets/benchmark remain untouched. Original M10 financial
+posting/CASE-204 gates stay deferred; no backend business/API/schema changes.
+
+| Requirement | Code / executed evidence |
+|---|---|
+| Financial story before implementation details | CaseStory.tsx, story.ts; explicit invoice/receipt/difference/claim and above-fold next-action browser assertions |
+| Unknown vs zero, integer paise, stale support | story.test.ts:7 new cases plus9 retained api tests |
+| Operational queue / proposed association labels | Queue.tsx; actual references/task candidates, no invented verified identity; browser filter/case path |
+| Source facts separate from model, rules and human roles | CaseStory, Documents, Investigation, ReviewContext; missing/support/conflict browser cases |
+| Exact quote/citation with provenance on demand | Existing verifier APIs; source highlight browser checks, no relaxed hashes/spans |
+| Contextual controller decisions and immutable history | Correlation + ReviewContext; real CONFIRM/REJECT/dialog/cancel/focus/history/merge/replay tests |
+| Technical AI trace on demand | Existing persisted graph stages; browser plan/tool/verification/synthesis/policy navigation retained |
+| Human next step / draft request | CaseStory + ReviewAction; actual draft and audit browser case; no send/approve/post button |
+| Accessibility / errors / motion | Keyboard/focus, native required form, reduced motion,390/768/1440, dark, empty/malformed/offline browser coverage |
+
+Observed16 unit +9 production Chromium tests passed; frontend lint/type/build/format,
+Ruff for changed fixture host, real disposable migration/check, financial invariants.
+Taste's authenticated browser probes/rules0FAIL/0WARN all3 widths after critique;
+source lint0FAIL/3 justified warnings. No external AI, full backend gate, restart,
+remote CI or empirical first-time-user timing study claimed. FRONTEND.md records
+all8 comprehension questions, directions, limitations and60–90s demo sequence.
+
 ## Frontend workstation traceability — 2026-10-27
 
 Approved scope: React/Vite real-API exception-review product; original M10 financial

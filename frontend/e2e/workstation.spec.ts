@@ -30,7 +30,12 @@ async function login(page: Page, username = access.username) {
     page.getByRole("heading", { name: "Exception register", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Test", exact: true }).first(),
+    page
+      .getByRole("link", {
+        name: "Meridian Retail Pvt Ltd",
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
   return { Authorization: `ReviewDemo ${token}` };
 }
@@ -38,7 +43,7 @@ async function openCase(page: Page, mode: string, tab?: string) {
   const f = access.fixtures.find((f) => f.mode === mode)!;
   await page.locator(`a[href="/cases/${f.case_id}"]`).first().click();
   await expect(
-    page.getByRole("heading", { name: "The asserted discrepancy" }),
+    page.getByRole("region", { name: "Invoice, payment and difference" }),
   ).toBeVisible();
   if (tab)
     await page.getByRole("link", { name: new RegExp(`^${tab}`) }).click();
@@ -51,6 +56,7 @@ async function shot(page: Page, name: string) {
       "$1",
     ),
     fullPage: true,
+    animations: "disabled",
   });
 }
 
@@ -78,7 +84,7 @@ test("queue, precise money, canonical span and keyboard focus", async ({
   page.on("pageerror", (e) => errors.push(e.name));
   await login(page);
   await expect(
-    page.getByText("Offline control · Completed").first(),
+    page.getByText("Demo scenario", { exact: true }).first(),
   ).toBeVisible();
   await shot(page, "exception-queue");
   await page.getByRole("button", { name: "Conflict", exact: true }).click();
@@ -87,16 +93,46 @@ test("queue, precise money, canonical span and keyboard focus", async ({
     .getByRole("button", { name: "All exceptions", exact: true })
     .click();
   await openCase(page, "missing");
-  await expect(page.locator(".financial-comparison")).toContainText("₹10.01");
-  await expect(page.locator(".financial-comparison")).toContainText("₹9.00");
-  await expect(page.locator(".financial-comparison")).toContainText("₹1.01");
-  await page.getByRole("button", { name: "Invoice I-1", exact: true }).click();
-  await expect(page.getByTestId("source-highlight")).toHaveText("I-1");
+  await expect(page.locator(".money-equation")).toContainText("₹50,000.00");
+  await expect(page.locator(".money-equation")).toContainText("₹47,000.00");
+  await expect(page.locator(".money-equation")).toContainText("₹3,000.00");
+  await expect(page.locator(".customer-explanation")).toContainText(
+    "Damage deduction",
+  );
+  await expect(page.locator(".statement-next")).toContainText(
+    "Request signed POD",
+  );
+  await expect(page.locator(".statement-next")).toContainText(
+    "Case settlement ₹0.00",
+  );
+  await expect(page.locator(".assessment-brief")).toContainText(
+    "Demo scenario",
+  );
+  await expect(page.locator(".evidence-checklist")).toContainText(
+    "Required proof missing or unverified",
+  );
+  await expect(page.locator(".stage-nav")).toHaveCount(0);
+  const aboveFold = await page.locator(".statement-next").boundingBox();
+  expect(aboveFold!.y + aboveFold!.height).toBeLessThan(900);
+  await page.locator(".statement-next a").click();
   await expect(
-    page.getByText("Span consistent", { exact: true }),
+    page.getByRole("region", { name: "Required human action" }),
+  ).toBeInViewport();
+  await page
+    .getByRole("button", { name: "View evidence", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Invoice INV-2026-1042", exact: true })
+    .click();
+  await expect(page.getByTestId("source-highlight")).toHaveText(
+    "INV-2026-1042",
+  );
+  await expect(
+    page.getByText("Quote verified in source", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "damage · ₹1.01" }).click();
-  await expect(page.getByTestId("source-highlight")).toHaveText("INR 1.01");
+  await page.getByRole("button", { name: "damage · ₹3,000.00" }).click();
+  await expect(page.getByTestId("source-highlight")).toHaveText("INR 3000.00");
   await page.getByRole("button", { name: "Close evidence inspector" }).click();
   await expect(
     page.getByRole("region", { name: "Document evidence inspector" }),
@@ -112,9 +148,13 @@ test("queue, precise money, canonical span and keyboard focus", async ({
 });
 
 for (const [mode, outcome, action] of [
-  ["missing", "Insufficient evidence", "Request evidence"],
-  ["supported", "Supported", "Human review"],
-  ["conflict", "Conflicting evidence", "Escalate conflict"],
+  ["missing", "Signed POD is missing", "Request signed POD"],
+  ["supported", "Evidence supports the claim", "Review supported deduction"],
+  [
+    "conflict",
+    "Delivery records disagree",
+    "Resolve conflicting delivery records",
+  ],
 ]) {
   test(`${mode}: persisted plan, verification, synthesis and citations`, async ({
     page,
@@ -126,9 +166,27 @@ for (const [mode, outcome, action] of [
     const receipts = await (
       await page.request.get("http://127.0.0.1:8010/receipts", { headers })
     ).text();
-    await openCase(page, mode, "Investigation");
+    await openCase(page, mode);
+    await expect(page.locator(".assessment-brief h2")).toHaveText(outcome);
+    await expect(page.locator(".statement-next a")).toContainText(action);
     await expect(
-      page.getByText("Offline control · fake", { exact: true }),
+      page.getByRole("region", { name: "Review and financial status" }),
+    ).toContainText("Not granted by this review");
+    await shot(page, `${mode}-evidence-investigation`);
+    await page
+      .getByRole("button", { name: "View evidence", exact: true })
+      .first()
+      .click();
+    await expect(page.getByTestId("source-highlight")).toBeVisible();
+    if (mode === "missing") await shot(page, "evidence-source-highlighting");
+    await page
+      .getByRole("button", { name: "Close evidence inspector" })
+      .click();
+    await page
+      .getByRole("link", { name: "Technical trace", exact: true })
+      .click();
+    await expect(
+      page.getByText("Demo scenario", { exact: true }).first(),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: /^Investigator plan/ }),
@@ -148,8 +206,7 @@ for (const [mode, outcome, action] of [
       "Source facts only",
     );
     await page.getByRole("button", { name: /^Investigator synthesis/ }).click();
-    await expect(page.locator(".next-action strong")).toHaveText(action);
-    await expect(page.locator(".case-heading .badge")).toHaveText(outcome);
+    await expect(page.locator(".statement-next a")).toContainText(action);
     await page
       .getByRole("button", { name: /Inspect source/ })
       .first()
@@ -158,7 +215,7 @@ for (const [mode, outcome, action] of [
       page.getByText("Source verified", { exact: true }),
     ).toBeVisible();
     await expect(page.getByTestId("source-highlight")).toBeVisible();
-    await shot(page, `${mode}-evidence-investigation`);
+    if (mode === "missing") await shot(page, "technical-ai-trace");
     await page
       .getByRole("button", { name: "Close evidence inspector" })
       .click();
@@ -187,12 +244,15 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
   const before = await (
     await page.request.get("http://127.0.0.1:8010/invoices", { headers })
   ).text();
-  await openCase(page, "confirm", "Correlation review");
+  await openCase(page, "confirm", "Match payment to invoice");
   await expect(
-    page.getByRole("heading", { name: "Ready for review", exact: true }),
+    page.getByRole("heading", {
+      name: "Independent proof ready for review",
+      exact: true,
+    }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: /Inspect authenticated source/ })
+    .getByRole("button", { name: /Inspect independent payment proof/ })
     .click();
   await expect(
     page.getByText("Source verified", { exact: true }),
@@ -211,6 +271,11 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
   await page
     .getByRole("button", { name: "Review & confirm association", exact: true })
     .click();
+  await expect(dialog).toContainText(
+    "This action does not post a financial adjustment",
+  );
+  await expect(dialog).toContainText("INV-2026-1045");
+  await shot(page, "human-review");
   await dialog
     .getByRole("button", { name: "Confirm association", exact: true })
     .click();
@@ -221,8 +286,8 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
     .getByRole("button", { name: "Refresh proof", exact: true })
     .click();
   await expect(page.locator(".decision-history")).toHaveCount(1);
-  await expect(page.locator(".financial-comparison")).toContainText("₹10.01");
-  await expect(page.locator(".financial-comparison")).toContainText("₹9.00");
+  await expect(page.locator(".money-equation")).toContainText("₹50,000.00");
+  await expect(page.locator(".money-equation")).toContainText("₹47,000.00");
   expect(
     await (
       await page.request.get("http://127.0.0.1:8010/invoices", { headers })
@@ -234,7 +299,7 @@ test("reject and auditor boundary, responsive dark mode and offline error", asyn
   page,
 }) => {
   await login(page);
-  await openCase(page, "reject", "Correlation review");
+  await openCase(page, "reject", "Match payment to invoice");
   await page
     .getByRole("button", { name: "Review & reject", exact: true })
     .click();
@@ -245,11 +310,13 @@ test("reject and auditor boundary, responsive dark mode and offline error", asyn
   await expect(page.getByText("Rejected", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await login(page, "auditor");
-  await openCase(page, "missing", "Investigation");
+  await openCase(page, "missing", "Technical trace");
   await expect(
     page.getByRole("button", { name: "Run current investigation" }),
   ).toBeDisabled();
   await expect(page.locator(".stage-detail")).toBeVisible();
+  await page.getByRole("link", { name: "Case overview", exact: true }).click();
+  await expect(page.locator(".assessment-brief")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Use dark mode" }).click();
   expect(
@@ -264,6 +331,7 @@ test("reject and auditor boundary, responsive dark mode and offline error", asyn
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
+  await shot(page, "tablet-case");
   await page.context().setOffline(true);
   await page.getByRole("button", { name: "Refresh case", exact: true }).click();
   await expect(
@@ -276,7 +344,7 @@ test("real draft evidence request and readable human audit", async ({
   page,
 }) => {
   await login(page);
-  await openCase(page, "missing", "Investigation");
+  await openCase(page, "missing", "Technical trace");
   await page
     .getByRole("button", { name: "Draft evidence request", exact: true })
     .click();
@@ -292,7 +360,7 @@ test("real draft evidence request and readable human audit", async ({
   await expect(
     page.getByText("Evidence request saved as a draft. Nothing was sent."),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Audit trail", exact: true }).click();
+  await page.getByRole("link", { name: "History", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Case history" }),
   ).toBeVisible();
@@ -326,6 +394,61 @@ test("fault injection: malformed API data, empty search and recoverable errors",
   await page.unroute("**/api/cases?*");
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(
-    page.getByRole("link", { name: "Test", exact: true }).first(),
+    page
+      .getByRole("link", {
+        name: "Meridian Retail Pvt Ltd",
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
+});
+
+test("finance-led intake and accessible reduced-motion controls", async ({
+  page,
+}) => {
+  await login(page);
+  await page
+    .getByRole("link", { name: "Import & documents", exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      "Imports remain traceable and never overwrite the original source.",
+    ),
+  ).toBeVisible();
+  const types = page.getByLabel("What are you importing?");
+  await expect(types).toHaveValue("invoices");
+  await expect(types.locator("option")).toHaveText([
+    "Customer master",
+    "Advanced: verified payer aliases",
+    "Invoices",
+    "Bank statement / receipts",
+    "Remittances / supporting documents",
+  ]);
+  await types.selectOption("bank-transactions");
+  let imports = 0;
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().includes("/api/imports/")) imports++;
+  });
+  await page
+    .getByRole("button", { name: "Validate & import CSV", exact: true })
+    .click();
+  expect(
+    await page
+      .getByLabel("Source file", { exact: true })
+      .evaluate((e: HTMLInputElement) => e.validity.valueMissing),
+  ).toBe(true);
+  expect(imports).toBe(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.getByRole("link", { name: "Exceptions", exact: true }).click();
+  await openCase(page, "missing");
+  await page
+    .getByRole("button", { name: "View evidence", exact: true })
+    .first()
+    .click();
+  await expect(page.getByTestId("source-highlight")).toBeVisible();
+  expect(
+    await page
+      .getByRole("region", { name: "Document evidence inspector" })
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("none");
 });

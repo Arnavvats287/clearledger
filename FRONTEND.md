@@ -1,52 +1,114 @@
-# ClearLedger frontend
+# ClearLedger frontend — Financial story v2
 
-## Direction exploration, before implementation
+## Product direction and scope
 
-| Direction | Analyst job / composition | Strength | Cost |
-|---|---|---|---|
-| Reconciliation register | Dense ledger, expandable financial rows | Fast comparison and scanning | Evidence investigation becomes secondary |
-| Annotated case folio — chosen | Exception register opens a dossier: money comparison, claim/source spread, structured investigation record | Proof stays beside the assertion and human action; strong financial hierarchy, inspectable decisions | Requires careful responsive collapse |
-| Evidence relationship map | Claim at centre, source relationships around it, review on a second plane | Relationship exploration | Spatial navigation adds keyboard/mobile complexity; no graph needed for these bounded cases |
+A short-payment **reconciliation statement** is the organising idea: invoice minus
+receipt equals difference, with the customer's explanation directly beneath it.
+Evidence follows, then the assessment/review action. Engineering trace is opt-in.
+No backend business behavior, migration, financial authority or benchmark was changed.
 
-Taste installed project-locally using the user-approved skills command. Read SKILL.md
-and the complete app-screen guidance; app draw offered two finance styles, pastel
-consumer and achromatic ledger. Chose achromatic ledger, seed1233984799, because
-long-session evidence review needs ink and alignment rather than coloured containers.
-The user's creative brief supersedes the sheet's sidebar/template composition. No
-redraw: use its quiet surfaces, Geist typography, one blue source-selection accent,
-and no resting shadows. No invented charts, KPI cards, chat or agent animations.
+Three materially different UX directions were compared before implementation:
 
-Signature: the **unsettled financial comparison** stays visibly separate from the
-**asserted deduction**, followed by independently verified evidence and a human
-decision. Money is never presented as applied merely because a source/AI supports it.
+| Direction | Strength | Why selected / rejected |
+|---|---|---|
+| Reconciliation statement — selected | The money, discrepancy and next action can be read together; sources explain the result | Directly answers the AR analyst's first question; works with existing typed APIs |
+| Guided decision brief | Stepwise questions make review approachable | Slows repeated scanning; forces navigation to understand one case |
+| Evidence desk / spatial source map | Strong source-to-assertion inspection | Asks newcomers to reconstruct the financial story; keyboard/mobile cost; resembles the v1 comprehension problem |
 
-Questions: queue — what needs attention? Case — what is asserted and what proves it?
-Evidence — exactly where did this fact come from? Investigation — who proposed what,
-what did the deterministic validator establish, and what must the human do next?
+Taste is critique guidance, not a wireframe. Existing achromatic-ledger direction
+(seed 1233984799) is retained; no new visual draw or template adoption. The new
+signature is **invoice − received = short payment**, not a KPI row or graph diagram.
+The same real values drive queue and case. No decorative chart, chatbot or marketing
+panel occupies case-workspace space. Current Vercel Web Interface Guidelines were
+reviewed for interaction/accessibility quality.
 
-Implementation/commands, real-browser results and final critique are recorded below
-after verification. This task follows the user's React/Vite preference, and does not
-claim the original milestone10 financial posting/CASE-204 journey is complete.
+The user explicitly approved changing only the five application-owned UI fixtures
+into recognisable, synthetic business examples. Meridian Retail Pvt Ltd,
+INV-2026-1042–1046, invoice ₹50,000, receipt ₹47,000 and damage claim ₹3,000 are
+persisted through actual APIs, not substituted labels in the browser. Missing,
+supported, conflicting and undecided association states retain the same strict
+source and review contracts. Independent benchmark/pilot files were not accessed
+or modified. This permission does not transfer Argon's dataset ownership.
 
-## Proven API blocker, documented before the fix
+## Information hierarchy
 
-Actual Playwright browser: pending READY_FOR_REVIEW task -> Inspect authenticated
-source -> existing /cases/{id}/evidence/records/{record_id} returned422
-INVALID_EVIDENCE_REQUEST because the unassociated case has customer_id=null.
-EvidenceReader.scope intentionally also requires a verified case customer and scoped
-invoice. Relaxing that boundary would be unsafe. Small additive solution: a read-only
-review-task proof read, restricted to its exact immutable document/source IDs, current
-task snapshot and existing authenticated reviewer/tenant. General evidence tools,
-financial authority and existing customer-scope validation remain unchanged.
+1. **What happened:** a connected equation with a larger difference figure. The
+   customer-claimed damage amount sits beneath the equation, explicitly unapproved.
+2. **What to do:** a specific next step and recorded settlement appear immediately
+   beside the financial story, even before scrolling to the full review action.
+3. **What was checked:** source-authenticated remittance, warehouse and signed POD
+   status. Missing proof and conflicting facts are explicit; citations open originals.
+4. **What ClearLedger found:** concise result, uncertainty and provenance. A supported
+   source predicate is translated into evidence support, never financial permission.
+5. **Human review:** draft-only evidence request, review note or deliberate controller
+   association decision. Review context stays in the dialog with amount and proof.
+6. **On demand:** Technical trace, provider/model, structured plan/synthesis, tools,
+   verification/policy, usage/errors, hashes, versions, IDs and precise offsets.
 
+Queue rows explain the short payment, claimed category, evidence problem and next
+step. Pending association references are labelled **Proposed**, never presented as
+verified customer/payment intent. Unknown linked amounts remain unknown, not zero;
+the case financial equation waits for verified associations. Filters/search/pagination
+use real records and clearly state loaded-page scope; no invented totals or urgency.
 
-## Run the actual workstation (Windows)
+### State and provenance language
 
-Prerequisites: Python3.12/uv, Node22.12+ (tested Node24), Docker PostgreSQL and an
-ignored `.env` with `TEST_DATABASE_URL` for a local CREATEDB role. Follow README's
-Compose setup first. No changes to the shared development schema/data are needed.
+| Layer | Visual and wording | Boundary |
+|---|---|---|
+| Model suggestion | Distinct origin mark and explanatory line; AI assessment only for persisted Gemini output | Recommendation, never evidence authenticity |
+| Offline model fixture | Demo scenario, explicitly says no live AI in this demo | Cannot be counted as live model success |
+| Source verified | Shield check, evidence row and clickable source | Authenticated/current source; not approval |
+| Rules check | Check mark and separate technical verification stage | Deterministic validation; not AI reasoning |
+| Human decision | Diamond marker, contextual review and immutable decision history | Association/draft/note only |
+| Conflict / missing | Explicit disagreement or missing-proof wording, restrained status color and icon | Abstention; no guessed resolution |
+| Financial permission | Lock, separate authorization status and recorded settlement | Not granted by this review; no posting controls |
 
-From the repository root, terminal1:
+Evidence, human review, financial authorization and settlement are separate states.
+The UI says **not granted by this review**, rather than inventing a production-wide
+approval status it has not fetched. No screen action posts an adjustment. Open AR
+and unapplied cash remain actual backend values; the equation is comparison only.
+
+## Source and investigation experience
+
+An extracted field/citation reveals an in-flow inspector with exact original-source
+text. Highlighting calls the actual span verifier, checks quote/offsets, hashes and
+versions, and counts Unicode code points consistently with Python. Quote verified in
+source proves location, not legitimacy. Existing citation record IDs may supply
+source context; a document with no such record does not gain invented authentication.
+Hashes/offsets/version details are in expandable provenance, not default case copy.
+Original download remains authenticated. Untrusted source text renders as text.
+
+The source checklist follows persisted plan evidence types, missing-proof facts and
+verified source kinds; it does not invent warehouse/POD requirements for rebate or
+other claim categories. Default overview says what was checked and the specific action: request signed POD,
+review supported deduction or resolve conflicting delivery records. Technical trace
+opens the existing persisted Director/plan/tools/verifier/synthesis/policy/human stages.
+No hidden chain-of-thought, simulated progress or relabelled fallback as AI. A pending
+payment task keeps independent payment proof distinct from deduction findings; its
+review dialog does not incorrectly describe zero findings as zero payment proof.
+
+## Motion and accessibility
+
+180–200ms opacity/transform feedback for source reveal, selected persisted stage,
+dialog and saved result. No typing, artificial loops, synthetic work or provider-call
+animation. `prefers-reduced-motion` removes animations; actual browser coverage verifies
+it. Screenshots disable animations to capture completed states, not translucent frames.
+
+Native semantic tables/links/buttons/forms, visible focus, skip link, labelled inputs,
+URL tabs/filters, native modal focus trap/cancel/restore and inline failures. Submit
+remains enabled for native required-file validation; no request is sent without a file.
+Source reveal receives focus; closing returns to its trigger. Tablet/mobile preserve
+financial hierarchy without horizontal page overflow; dark mode remains available.
+Keyboard, dialog Escape/cancel,390/768/1440 widths and reduced motion were exercised.
+Screen-reader/other-browser acceptance remains unverified, not claimed complete.
+
+## Run locally — Windows
+
+Prerequisites: Python 3.12, uv, Node 22.12+ (tested 24.22), Docker PostgreSQL. Configure
+ignored `.env` with `TEST_DATABASE_URL` for a local CREATEDB role; follow README Compose
+setup. No shared development migration/reset/restart is needed by this UI demo.
+
+Terminal1 from repository root:
 
 ```powershell
 uv sync --frozen
@@ -54,145 +116,134 @@ npm.cmd --prefix frontend ci
 uv run --frozen python scripts/serve_frontend_demo.py
 ```
 
-Wait for `Synthetic UI API ready`. Terminal2:
+Wait for Synthetic UI API ready. Terminal2:
 
 ```powershell
 npm.cmd --prefix frontend run dev
 ```
 
-Open http://127.0.0.1:5173. Read the randomly generated local credentials in
-`local-data/frontend/access.json` privately; controller, analyst and auditor share
-this run's password. Never commit/share that file. Sessions are memory-only, so
-reload requires signing in again. This is LOCAL_DEMO_ONLY identity, not SSO or
-production financial authority. API docs are http://127.0.0.1:8010/docs.
+Open http://127.0.0.1:5173. Privately read the generated controller password in ignored
+`local-data/frontend/access.json`. Analyst/auditor use the same run's password. The
+loopback API uses port 8010; API docs `/docs`. Sessions are memory-only; reload requires login.
+The Local synthetic session badge remains visible on desktop. No production authority.
 
-The host migrates a fresh generated disposable PostgreSQL DB through0012, creates
-five minimal application test cases, then serves real Uvicorn HTTP and the existing
-outbox/graph executor. Synthetic signed sources and fake extraction/Investigator
-controls are explicitly labelled **Offline control**. They exercise real persistence,
-source validation and graph orchestration; they are not live Gemini results. No
-external call, benchmark input or production finance adapter is used. All external
-AI flags are disabled before HTTP is served. Automation is confined to this host.
+The host creates/migrates only a fresh generated disposable DB through 0012, imports
+actual records/documents, registers explicit synthetic source trust, processes the
+existing outbox and runs the actual LangGraph executor. Provider responses are existing
+fake controls, clearly labelled. External AI is disabled before serving; no Gemini key
+or real provider configured. This is a repeatable product demo, not live-model evidence.
 
-### Walk through
-
-1. Queue: open Test / I-1 (missing). Inspect ₹10.01 open AR, ₹9.00 unapplied receipt,
-   ₹1.01 asserted damage and ₹0.00 settlement. Nothing has been applied or approved.
-2. Case file: open remittance, click invoice/claim. Highlight uses the server's exact
-   canonical offsets and independently verified span. Expand provenance if needed.
-3. Investigation: navigate Director, plan, tools, verification, synthesis, policy and
-   required human action. Missing WMS/POD -> REQUEST_EVIDENCE. Draft an evidence
-   request (never sent); see its immutable human action in Audit.
-4. I-2: authenticated supporting WMS/POD -> SUPPORTED / HUMAN_REVIEW, with clickable
-   citations. I-3: conflicting sources -> CONFLICTING_EVIDENCE / ESCALATE_CONFLICT.
-   The screen separates model control, source verification and deterministic policy.
-5. I-4/I-5: pending correlation task. Inspect independent proof and proposed financial
-   association. Controller deliberately CONFIRMs I-4 or REJECTs I-5 in a dialog.
-   History remains; confirmation follows canonical case merge and automatic refresh.
-   Auditor can inspect but cannot make the decision. Refresh does not duplicate work.
-6. Import & documents accepts real CSV1.0 and parser inputs. It cannot manufacture
-   authenticated evidence or enable external AI. Uploads requiring semantic extraction
-   return the actual disabled/review state, not a fake successful result.
-
-After browser acceptance these mutable tasks have already been decided. Stop/restart
-this owned host for fresh controls, not the shared development PostgreSQL container.
-Ctrl+C in terminal1 disposes/drops only its generated DB. An equivalent graceful stop:
+Ctrl+C cleans its owned database. Equivalent graceful stop from repository root:
 
 ```powershell
 uv run --frozen python -c "import json; from pathlib import Path; a=json.loads(Path('local-data/frontend/access.json').read_text()); p=Path(a['stop_file']).resolve(); assert p.parent==Path('local-data/frontend').resolve(); p.touch()"
 ```
 
-Wait for `Owned disposable UI database removed.` Originals/access output remains
-ignored locally. Never use Docker down/volume deletion or reset a development DB.
+Wait for Owned disposable UI database removed. Restart that host for fresh undecided
+review tasks; do not reset shared PostgreSQL. Credentials/originals/logs remain ignored.
 
-## Architecture and contracts
+## Recommended interview demo — 60–90 seconds
 
-React + TypeScript + Vite is the approved smallest local FastAPI UI. No SSR/BFF,
-Tailwind/shadcn dependency or new agent service. One typed client in `src/api.ts`
-uses generated actual OpenAPI types; regenerate with:
+| Time | Show | Explain |
+|---|---|---|
+|0–12s|Queue, open INV-2026-1042|50,000 billed,47,000 received,3,000 claimed damage; no adjustment posted by review|
+|12–25s|Missing evidence overview and View evidence|Remittance quote is real; required warehouse/signed POD proof is absent; draft only|
+|25–40s|INV-2026-1043 supported case|Verified source facts support ₹3,000; analyst review and financial authorization remain separate|
+|40–52s|INV-2026-1044 conflict|Delivery sources disagree; escalate instead of choosing a convenient answer|
+|52–72s|Payment match filter, Proposed INV-2026-1045|Inspect independent proof, deliberate controller confirm; history/merged case/refresh; no cash applied|
+|72–90s|Technical trace on any case|Actual persisted plan, read-only tools, source verification and policy; this repeatable demo uses offline controls, historical real Gemini proof is separate|
+
+## Actual acceptance — 2026-10-27
+
+Commands from `frontend/`:
+
+```powershell
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run test
+npm.cmd run build
+npm.cmd run format:check
+npx.cmd playwright install chromium
+$env:CLEARLEDGER_BROWSER_BUILD='1'
+npm.cmd run test:browser
+```
+
+Use fresh disposable cases before repeating the full browser suite; controller tests
+intentionally decide their tasks. Production preview on4173 proxies the same API8010.
+Pinned installed Chromium; no Playwright MCP exposed, library equivalence authorised.
+
+- 16 unit tests passed, preserving all 9 original cases. Seven new display invariants:
+  exact/large integer paise, unknown versus zero, excess receipts, specific missing
+  proof, fallback provenance, incomplete payment proof and stale-support override.
+- 9 production-browser tests passed in 1.0m: all 8 earlier workflows retained with new
+  visible labels, plus finance-led intake/native validation/reduced-motion coverage.
+  Real queue/case/citation APIs, missing/support/conflict, complete technical stages,
+  controller confirm/reject/decision history/merge, auditor boundary, contextual draft,
+  financial non-mutation, replay without visual duplication, focus, dark/mobile/tablet,
+  explicit empty/malformed/offline fault injection. Happy paths assert no page errors
+  or HTTP>=400 responses. No mocked UI success states populate the screenshots.
+  After final copy/type refinements, the4 focused queue/story/source regressions
+  passed again in 25.4s, including actual primary next-action navigation.
+- ESLint, strict TypeScript, Vite build, Prettier and Ruff check/format for the only
+  changed Python fixture host passed. No production Python/API/schema change; backend
+  suite/restart checks were not rerun or claimed. Each owned host boot runs real
+  Alembic upgrade/drift checks. Existing backend regression tests remain untouched.
+- Taste source lint:0FAIL,3 explained warnings (price zero-padding; existing technical
+  Mono; missing-value dash). Actual authenticated production case using Taste's own
+  probes/rules via Playwright:0FAIL/0WARN at1440/768/390 after typography revision.
+  Inspector metrics are a floor; desktop/mobile/dialog/source screenshots also reviewed.
+- Initial expanded browser run had8PASS/1FAIL due to the newly added test assuming a
+  disabled Submit. Corrected to native required-file/no-request validation; final 9 pass.
+  JSX edit and minimal unit-fixture typing errors were fixed before acceptance.
+
+Detailed logs: ignored `local-data/frontend-v2-*.log`; authenticated critique report
+`local-data/frontend/v2-authenticated-taste.json`. No full backend gate, remote CI,
+live Gemini, benchmark rerun or empirical first-time-user timing study is claimed.
+
+### First-time comprehension audit
+
+| Question | Default screen answer / browser assertion |
+|---|---|
+|What happened?|Invoiced minus received equals short payment, connected in one statement|
+|How much?|50,000 −47,000 =3,000 INR, actual integer-paise API values|
+|Why?|Customer's damage explanation directly beneath the financial equation|
+|What evidence?|Remittance/warehouse/signed-POD checklist, explicit missing/conflicting source status|
+|What did AI contribute?|Demo scenario explicitly labelled offline; real provider/plan/synthesis inspectable on demand|
+|What was independently checked?|Authenticated/current source status; exact quote checked separately on click|
+|What must I do?|Specific next step visible in the statement before 900px, contextual human action below|
+|Was anything financially approved/posted?|Claim not equated to approval, authorization not granted by review, actual case settlement0; financial snapshots unchanged|
+
+These are structural/browser/author critiques, not measured 5–10s research with new
+finance users. That human usability study remains open. Worst issues fixed after
+critique: action too low -> immediate next step; small text -> raised labels and fewer
+sizes; dialog lost source context/translucent screenshot -> explicit payment proof,
+financial pairing and completed-motion captures. No major static marketing panel.
+
+## Architecture / limits
+
+React/TypeScript/Vite, centralized generated-OpenAPI client, BigInt/lossless JSON;
+no BFF/new dependency/framework. Backend owns all authorization, snapshot hashes,
+versions, idempotency and domain transitions. Existing task-bound proof read fromv1
+is reused unchanged. API generation remains:
 
 ```powershell
 uv run --frozen python scripts/export_frontend_contract.py
 npm.cmd --prefix frontend run contract
 ```
 
-`/api` is a same-origin local dev/preview proxy to loopback8010; deployment/auth
-hardening is not supplied by Vite preview. ReviewDemo credentials stay in memory;
-only light/dark preference is persisted in localStorage. No key is shipped to JS.
-BigInt/lossless JSON preserves integer paise (including int64); decimal financial
-inputs and unsafe numeric conversions are rejected. Unicode offsets count code
-points, matching Python, rather than UTF-16 units. Source text is rendered as React
-text, not HTML. Server-supplied task/context hashes and versions are echoed exactly;
-the browser does not derive proof, amounts or authority.
-
-Routes: `/` operational exception register; `/cases/:id` case file with URL tabs and
-stage selection; `/intake` contract-based imports/document parsing. Case/claim/run/
-findings/trace/event/review APIs supply all displayed records. No invented priority,
-portfolio total or financial action. Bounded pagination loads financial references;
-limits fail explicitly instead of inventing missing balances. Queue loads20 cases
-at a time with bounded concurrency. This per-case fan-out suits the current local
-API; large-company bulk queue projections remain future performance work.
-
-Review writes re-read server basis, use stable request keys and show stale/permission
-errors. Only CONTROLLER gets correlation decisions; backend still enforces authority.
-Evidence request is draft-only. There are no approval, settlement or posting buttons.
-Task proof uses the additive GET `/review/correlation-tasks/{id}/proof` with exact
-`expected_task_sha256`; only authenticated/current records already in that task's
-snapshot/document are returned. No generic pre-association evidence search is added.
-
-## Actual verification — 2026-10-27
-
-| Check | Observed result |
-|---|---|
-| `npm run lint`, `typecheck`, `build`, `format:check` (frontend cwd) | PASS |
-| `npm run test` | 9 unit tests PASS: int64/paise, Unicode/span, errors, replay key, pagination |
-| `CLEARLEDGER_BROWSER_BUILD=1 npm run test:browser` | 8 actual Chromium/API tests PASS,49.2s, production preview |
-| Five new PostgreSQL proof tests | 5 PASS,23.88s |
-| Existing correlation/review-access regression tests | 25 PASS in initial focused run; new cross-tenant fixture corrected then all5 new tests rerun |
-| Ruff check/format on4 changed Python modules; scoped mypy | PASS;23 typed modules |
-| npm dependency audit at install | 0 vulnerabilities |
-| Taste source critique | 0 FAIL,3 explained warnings: price zero padding, Mono financial values/IDs, missing-value dashes |
-| Taste production inspector,1440/768/390 | 0 FAIL,0 WARN on unauthenticated login surface |
-
-Authenticated workbench acceptance uses Playwright library (MCP unavailable, user
-approved equivalent): real links/buttons; exact highlight; missing/support/conflict;
-proof/confirm/reject/history/merge; draft audit; repeated refresh; auditor boundary;
-keyboard focus/dialog cancel/restore;390 dark and768 layouts; no horizontal page
-overflow; empty/malformed/offline states via explicitly labelled fault injection.
-Happy paths assert zero page exceptions or HTTP>=400 responses. Browser tests compare
-financial API snapshots and the worker checks financial fingerprints per drain.
-Screenshots contain only these approved synthetic records. No model quota spent.
-Detailed logs are ignored `local-data/frontend-*.log`, not copied into Git.
-No full backend suite/restart rerun claimed: no lifecycle/storage/schema change;
-this task uses the requested narrow backend regressions and fresh DB migration/drift
-checks on each demo boot. Remote CI and other browsers/assistive technologies unverified.
-
-### Final design critique
-
-Rejected first4,378px trace: raw fields made the analyst hunt for an action. Replaced
-with seven compact persisted stages, one focused panel and adjacent canonical source.
-Moved hashes/numeric observations to disclosures; replaced source UUID-only links
-with evidence-type labels. Fixed nonfunctional close/reopen, offscreen skip-link
-screenshot artifact and pending-proof authorization dead end before final acceptance.
-Desktop hierarchy and390 dark case were visually reviewed after the final browser
-run. No decorative charts, resting shadows, agent animation or KPI dashboard.
+Queue fan-out/pagination stays bounded/local; no bulk company-wide search or invented
+analytics. PDF original downloads; inline inspector is canonical text, not PDF/OCR
+annotation. Production SSO/finance authority/deployment hardening remain open. Original
+M10 cash-allocation controls, posting queue and Argon CASE-204 journey remain deferred.
+Full benchmark failures and sealed evaluation remain unchanged. Fake demo scores are
+not live Gemini or benchmark accuracy. No backend feature expansion was undertaken.
 
 Screenshots: [queue](docs/screenshots/exception-queue.png),
 [missing](docs/screenshots/missing-evidence-investigation.png),
-[support](docs/screenshots/supported-evidence-investigation.png),
+[supported](docs/screenshots/supported-evidence-investigation.png),
 [conflict](docs/screenshots/conflict-evidence-investigation.png),
-[correlation](docs/screenshots/correlation-decision.png),
-[mobile dark](docs/screenshots/mobile-dark-case.png).
-
-## Limits / explicitly deferred
-
-This delivers the user-approved evidence-review workstation, not every original
-M10 financial screen. Original Cash Inbox candidate-allocation controls, simulator/
-posting queue and complete Argon CASE-204 financial journey remain deferred. Review
-supports local synthetic identity; no production SSO/finance authority is fabricated.
-PDFs download as immutable originals; canonical extracted text is the inline source
-viewer (no full PDF annotation canvas/OCR). No live models run for screenshots.
-Large queue aggregation, manual screen-reader audit, broader browser coverage and
-production hosting/CSP/identity integration remain unverified/future work. Existing
-benchmark failures and sealed evaluation are unchanged. No backend feature expansion
-beyond the demonstrated task-proof read defect.
+[source highlighting](docs/screenshots/evidence-source-highlighting.png),
+[human review](docs/screenshots/human-review.png),
+[technical trace](docs/screenshots/technical-ai-trace.png),
+[decision](docs/screenshots/correlation-decision.png),
+[mobile](docs/screenshots/mobile-dark-case.png), [tablet](docs/screenshots/tablet-case.png).

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, FileText, LocateFixed, X } from "lucide-react";
 import {
   ApiError,
@@ -150,6 +150,13 @@ export function DocumentInspector({
       setBusy(false);
     }
   }
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (state.data) {
+      panel.current?.focus({ preventScroll: true });
+      panel.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [state.data]);
   if (state.loading) return <Loading label="Loading immutable source…" />;
   if (state.error) return <ErrorNotice error={state.error} />;
   if (!state.data) return null;
@@ -162,6 +169,8 @@ export function DocumentInspector({
   return (
     <section
       className="document-inspector"
+      ref={panel}
+      tabIndex={-1}
       aria-label="Document evidence inspector"
     >
       <header className="document-heading">
@@ -177,16 +186,15 @@ export function DocumentInspector({
         {source?.source_authenticated && source.is_current ? (
           <Provenance kind="source" />
         ) : (
-          <Badge>Sender unverified</Badge>
+          <Badge>Source identity not established in this view</Badge>
         )}
-        <Badge>
-          {source && !source.is_current
-            ? "Changed source"
-            : `Document v${doc.version}`}
-        </Badge>
-        <span>{doc.mime}</span>
+        {source && !source.is_current && <Badge>Source changed</Badge>}
       </div>
       {error !== undefined && <ErrorNotice error={error} />}
+      <p className="source-explainer">
+        Extracted fields point to the highlighted words. A matching quote proves
+        its location, not that the customer’s claim is justified.
+      </p>
       <div className="span-actions">
         {refs.map((r, i) => (
           <button
@@ -220,9 +228,7 @@ export function DocumentInspector({
       </div>
       {highlight && (
         <p className="span-caption">
-          <Provenance kind="check">Span consistent</Provenance>Page{" "}
-          {highlight.page} · characters {highlight.start}–{highlight.end} · end
-          exclusive
+          <Provenance kind="check">Quote verified in source</Provenance>
         </p>
       )}
       <div
@@ -235,7 +241,7 @@ export function DocumentInspector({
             highlight?.page === i + 1 ? sliceSpan(page, highlight) : null;
           return (
             <article className="paper" key={i}>
-              <div className="page-number">Canonical text · page {i + 1}</div>
+              <div className="page-number">Source text · page {i + 1}</div>
               <pre>
                 {parts ? (
                   <>
@@ -273,7 +279,20 @@ export function DocumentInspector({
           />
         </Disclosure>
       )}
-      <Disclosure title="Original & provenance">
+      <Disclosure title="Provenance / technical details">
+        <Fields
+          value={{
+            document_version: doc.version,
+            mime: doc.mime,
+            selected_span: highlight
+              ? {
+                  page: highlight.page,
+                  start: highlight.start,
+                  end: highlight.end,
+                }
+              : null,
+          }}
+        />
         <dl className="fields">
           <div>
             <dt>Document</dt>

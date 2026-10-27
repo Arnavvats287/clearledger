@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ApiError, Client, basis, presentation, type Me } from "./api";
 import { ConfirmDialog, Saved } from "./ui";
+import { ReviewContext } from "./ReviewContext";
 import type { Loaded } from "./workstation";
 
 export function ReviewAction({
@@ -85,6 +86,7 @@ export function ReviewAction({
           close={() => setOpened(undefined)}
           confirm={recordReview}
         >
+          <ReviewContext data={data} />
           <p>
             {draft
               ? "Prepare a source-linked request for the missing or conflicting evidence. This is a draft only; no customer message is sent."

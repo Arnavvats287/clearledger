@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, FileText, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import {
   ApiError,
   Client,
@@ -9,27 +9,17 @@ import {
   type Doc,
   type Invoice,
   type Me,
+  type Model,
   type Receipt,
-  date,
-  human,
-  money,
-  presentation,
-  short,
 } from "./api";
 import { DocumentInspector, type Selection } from "./Documents";
-import {
-  Badge,
-  Empty,
-  ErrorNotice,
-  Loading,
-  Provenance,
-  Section,
-  useResource,
-} from "./ui";
+import { ErrorNotice, Loading, useResource } from "./ui";
 import { Investigation } from "./Investigation";
 import { Correlation } from "./Correlation";
 import { History } from "./History";
 import type { Loaded } from "./workstation";
+import { CaseStory, FinancialStory } from "./CaseStory";
+import { assessment } from "./story";
 
 export function CaseFile({ api, me }: { api: Client; me: Me }) {
   const { id = "" } = useParams(),
@@ -39,11 +29,11 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
 
   const tab = params.get("tab") || "file";
 
-  const [hideDefaultDoc, setHideDefaultDoc] = useState(false);
-
   const sourceTrigger = useRef<HTMLElement | null>(null);
 
-  const load = useCallback(async (): Promise<Loaded> => {
+  const load = useCallback(async (): Promise<
+    Loaded & { sources: Model<"RecordView">[] }
+  > => {
     void revision;
 
     const c = await api.case(id),
@@ -64,12 +54,43 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
         : undefined,
     ]);
 
-    return { b, invoices, receipts, docs, customer };
+    const ids = [
+      ...new Set(
+        b.findings.flatMap((f) => f.citations.map((c) => c.record_id)),
+      ),
+    ];
+    const query = new URLSearchParams({
+      expected_case_version: String(c.version),
+      expected_context_sha256: c.context_sha256,
+      customer_id: c.customer_id || "",
+    });
+    const sources = c.customer_id
+      ? await Promise.all(
+          ids
+            .slice(0, 20)
+            .map((r) =>
+              api.request<Model<"RecordView">>(
+                `/cases/${c.id}/evidence/records/${r}?${query}`,
+              ),
+            ),
+        )
+      : [];
+    return { b, invoices, receipts, docs, customer, sources };
   }, [api, id, revision]);
 
   const state = useResource(load),
     refresh = () => setRevision((v) => v + 1);
 
+  useEffect(() => {
+    if (
+      tab === "file" &&
+      state.data &&
+      window.location.hash === "#required-action"
+    )
+      document
+        .getElementById("required-action")
+        ?.scrollIntoView({ block: "center" });
+  }, [tab, state.data]);
   const activeRun = state.data?.b.runs.find((r) => !r.is_stale);
   const waiting = activeRun && ["QUEUED", "RUNNING"].includes(activeRun.status);
   const polls = useRef(0);
@@ -107,11 +128,10 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
   const data = state.data,
     { b } = data,
     c = b.case,
-    p = presentation(b);
+    p = assessment(b);
 
   const inspect = (s: Selection) => {
     sourceTrigger.current = document.activeElement as HTMLElement;
-    setHideDefaultDoc(false);
     setSelection(s);
     setParams((v) => {
       v.set("document", s.document);
@@ -122,6 +142,21 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
   // Open a citation with its original canonical quote, not a privacy-projected excerpt.
 
   async function inspectVerified(s: Selection) {
+    if (!s.record) {
+      const cited = b.findings
+        .flatMap((f) => f.citations)
+        .find((c) => c.document_id === s.document);
+      if (cited)
+        s = {
+          ...s,
+          record: cited.record_id,
+          expected: {
+            version: cited.document_version,
+            raw: cited.raw_sha256,
+            canonical: cited.canonical_sha256,
+          },
+        };
+    }
     if (s.span) {
       try {
         const raw = await api.request<{ pages: string[] }>(
@@ -147,249 +182,85 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     selection ||
     (params.get("document")
       ? { document: params.get("document")! }
-      : !hideDefaultDoc && tab === "file" && data.docs[0]
-        ? { document: data.docs[0].id }
-        : undefined);
-
+      : undefined);
+  const technical = () =>
+    setParams((v) => {
+      v.set("tab", "technical");
+      return v;
+    });
   return (
-    <main id="main" className="case-page">
+    <main id="main" className="case-page case-v2">
       <div className="case-breadcrumb">
         <Link to="/">
           <ArrowLeft size={14} aria-hidden="true" />
-          Exception register
+          Exceptions
         </Link>
         <span>/</span>
-        <span className="mono">{short(c.id)}</span>
-        <span>Case v{c.version}</span>
+        <span>
+          {data.invoices.map((i) => i.invoice_number).join(", ") ||
+            "Payment association review"}
+        </span>
       </div>
-
       <header className="case-heading">
         <div>
           <h1 tabIndex={-1}>
-            {data.customer?.name || "Unassigned remittance"}
+            {data.customer?.name || "Customer association unconfirmed"}
           </h1>
           <p>
-            {data.invoices.map((i) => i.invoice_number).join(" · ") ||
-              "Invoice relationship awaits source proof"}{" "}
-            ·{" "}
-            {b.claims.map((q) => human(q.category)).join(", ") ||
-              "No extracted claims"}
+            {p.pending
+              ? "Review the payment match before linking this claim."
+              : "Short payment under review · customer-claimed deduction"}
           </p>
         </div>
-        <div>
-          <Badge
-            kind={p.conflict ? "danger" : p.supported ? "positive" : "neutral"}
-          >
-            {human(p.state)}
-          </Badge>
-          <button onClick={refresh} disabled={state.loading}>
-            <RefreshCw size={14} aria-hidden="true" />
-            Refresh case
-          </button>
-        </div>
+        <button onClick={refresh} disabled={state.loading}>
+          <RefreshCw size={14} aria-hidden="true" />
+          {state.loading ? "Refreshing…" : "Refresh case"}
+        </button>
       </header>
-
-      <div className="financial-comparison">
-        <div>
-          <span>Open invoice AR</span>
-          <strong>
-            {money(
-              data.invoices.length
-                ? data.invoices.reduce((n, i) => n + i.open_amount_paise, 0n)
-                : null,
-            )}
-          </strong>
-          <small>
-            {data.invoices.map((i) => i.invoice_number).join(", ") ||
-              "Not linked"}
-          </small>
-        </div>
-        <div>
-          <span>Unapplied receipt</span>
-          <strong>
-            {money(
-              data.receipts.length
-                ? data.receipts.reduce(
-                    (n, r) => n + r.unapplied_amount_paise,
-                    0n,
-                  )
-                : null,
-            )}
-          </strong>
-          <small>
-            {data.receipts.length
-              ? "Cash remains unapplied"
-              : "No verified association"}
-          </small>
-        </div>
-        <div className="asserted">
-          <span>Deduction asserted</span>
-          <strong>{money(c.claimed_total_paise)}</strong>
-          <small>
-            {c.unknown_amount_count
-              ? `${c.unknown_amount_count} unknown amount`
-              : "Customer claim · not approved"}
-          </small>
-        </div>
-        <div>
-          <span>Verified settlement</span>
-          <strong>{money(c.verified_settled_paise)}</strong>
-          <small>Source-backed is not settled</small>
-        </div>
-      </div>
-
-      <div className="next-action">
-        <div>
-          <span className="next-symbol" aria-hidden="true">
-            ↳
-          </span>
-          <div>
-            <strong>{human(p.action)}</strong>
-            <p>
-              {p.conflict
-                ? "Verified delivery records disagree. A human must resolve the conflict."
-                : p.supported
-                  ? "Source predicates support this claim. Review the sources before any separate financial decision."
-                  : "Keep the claim unresolved until the required proof and relationship are verified."}
-            </p>
-          </div>
-        </div>
-        <Provenance kind="authority" />
-      </div>
-
+      <FinancialStory data={data} />
       {c.is_stale && (
         <ErrorNotice
           error={new ApiError(409, "STALE_CORRELATION_CASE")}
           retry={refresh}
         />
       )}
-
       <nav className="case-tabs" aria-label="Case views">
         {[
-          ["file", "Case file"],
-          ["investigation", "Investigation"],
-          ["correlation", "Correlation review"],
-          ["history", "Audit trail"],
+          ["file", "Case overview"],
+          ["correlation", "Match payment to invoice"],
+          ["history", "History"],
+          ["technical", "Technical trace"],
         ].map(([key, label]) => (
           <Link
             key={key}
             to={`?tab=${key}`}
-            aria-current={tab === key ? "page" : undefined}
+            aria-current={
+              tab === key || (tab === "investigation" && key === "technical")
+                ? "page"
+                : undefined
+            }
           >
             {label}
-            {key === "correlation" &&
-              b.tasks.some((t) => t.status === "PENDING") && (
-                <span className="pending-dot" aria-label="Pending review" />
-              )}
+            {key === "correlation" && p.pending && (
+              <span className="pending-dot" aria-label="Pending review" />
+            )}
           </Link>
         ))}
       </nav>
-
       <div className={`folio-grid ${doc ? "inspecting" : ""}`}>
         <div className="folio-main">
           {tab === "file" && (
-            <>
-              <Section
-                title="The asserted discrepancy"
-                meta={<Badge>{b.claims.length} claims</Badge>}
-              >
-                {b.claims.map((q) => (
-                  <article className="claim-row" key={q.id}>
-                    <div>
-                      <Provenance kind="check">Extracted assertion</Provenance>
-                      <h3>{human(q.category)}</h3>
-                      <p>
-                        {human(q.state)} ·{" "}
-                        {q.source_current ? "Current source" : "Source changed"}
-                      </p>
-                    </div>
-                    <strong className="num">{money(q.amount_paise)}</strong>
-                    <button
-                      onClick={() => inspect({ document: q.document_id })}
-                    >
-                      <FileText size={15} aria-hidden="true" />
-                      Inspect remittance
-                    </button>
-                  </article>
-                ))}
-                {!b.claims.length && (
-                  <Empty>
-                    No claim extracted. A bank receipt alone does not establish
-                    a deduction.
-                  </Empty>
-                )}
-              </Section>
-              <Section
-                title="Original documents"
-                meta={<span>{data.docs.length} immutable originals</span>}
-              >
-                {data.docs.map((d) => (
-                  <button
-                    className="document-row"
-                    key={d.id}
-                    onClick={() => inspect({ document: d.id })}
-                  >
-                    <FileText size={19} aria-hidden="true" />
-                    <span>
-                      <strong>{d.source_name}</strong>
-                      <small>
-                        {d.mime} · {d.parse_status} · v{d.version}
-                      </small>
-                    </span>
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </button>
-                ))}
-                {!data.docs.length && (
-                  <Empty>No source documents linked.</Empty>
-                )}
-              </Section>
-              <Section
-                title="Financial relationship"
-                meta={<Provenance kind="check" />}
-              >
-                {data.invoices.map((i) => (
-                  <div className="relationship-row" key={i.id}>
-                    <span>
-                      Invoice {i.invoice_number}
-                      <small>{human(i.status)}</small>
-                    </span>
-                    <strong>
-                      {money(i.original_amount_paise)}
-                      <small>Original invoice</small>
-                    </strong>
-                    <strong>
-                      {money(i.open_amount_paise)}
-                      <small>Still open</small>
-                    </strong>
-                  </div>
-                ))}
-                {data.receipts.map((r) => (
-                  <div className="relationship-row" key={r.id}>
-                    <span>
-                      Receipt <span className="mono">{short(r.id)}</span>
-                      <small>{human(r.status)}</small>
-                    </span>
-                    <strong>
-                      {money(r.amount_paise)}
-                      <small>Received</small>
-                    </strong>
-                    <strong>
-                      {money(r.unapplied_amount_paise)}
-                      <small>Unapplied</small>
-                    </strong>
-                  </div>
-                ))}
-                {!data.receipts.length && (
-                  <Empty>
-                    Receipt/customer association has not been verified. Open
-                    correlation review for source requirements.
-                  </Empty>
-                )}
-              </Section>
-            </>
+            <CaseStory
+              api={api}
+              data={data}
+              me={me}
+              refresh={refresh}
+              inspect={(s) => void inspectVerified(s)}
+              sources={data.sources}
+              technical={technical}
+            />
           )}
-
-          {tab === "investigation" && (
+          {["technical", "investigation"].includes(tab) && (
             <Investigation
               api={api}
               data={data}
@@ -398,7 +269,6 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
               inspect={(s) => void inspectVerified(s)}
             />
           )}
-
           {tab === "correlation" && (
             <Correlation
               api={api}
@@ -408,18 +278,16 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
               inspect={inspect}
             />
           )}
-
           {tab === "history" && <History api={api} data={data} />}
         </div>
-        <aside className="folio-margin">
-          {doc ? (
+        {doc && (
+          <aside className="folio-margin">
             <DocumentInspector
               key={`${doc.document}-${doc.record || ""}`}
               api={api}
               selection={doc}
               caseRecord={c}
               close={() => {
-                setHideDefaultDoc(true);
                 setSelection(undefined);
                 setParams((v) => {
                   v.delete("document");
@@ -428,50 +296,8 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
                 requestAnimationFrame(() => sourceTrigger.current?.focus());
               }}
             />
-          ) : (
-            <>
-              <div className="margin-note">
-                <span className="folio-index" aria-hidden="true">
-                  §
-                </span>
-                <h2>Proof before permission.</h2>
-                <p>
-                  Every source has a location.
-                  <br />
-                  Every finding has a basis.
-                  <br />
-                  Every decision has an author.
-                </p>
-                <dl className="key-list">
-                  <div>
-                    <Provenance kind="source" />
-                    <dd>Authenticated source facts</dd>
-                  </div>
-                  <div>
-                    <Provenance kind="check" />
-                    <dd>Rules, integrity & currentness</dd>
-                  </div>
-                  <div>
-                    <Provenance kind="ai" />
-                    <dd>Proposals, never authority</dd>
-                  </div>
-                  <div>
-                    <Provenance kind="human" />
-                    <dd>Recorded review decisions</dd>
-                  </div>
-                </dl>
-              </div>
-              <div className="margin-detail">
-                <span>Canonical case</span>
-                <code>{c.id}</code>
-                <span>Workflow</span>
-                <strong>{human(c.state)}</strong>
-                <span>Opened</span>
-                <strong>{date(c.created_at)}</strong>
-              </div>
-            </>
-          )}
-        </aside>
+          </aside>
+        )}
       </div>
     </main>
   );

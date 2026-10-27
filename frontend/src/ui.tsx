@@ -108,11 +108,11 @@ export function Provenance({
 }) {
   const labels = {
     source: "Source verified",
-    check: "Deterministic check",
+    check: "Rules check",
     ai: "AI generated",
     human: "Human decision",
-    authority: "No financial authority",
-    offline: "Offline model control",
+    authority: "Financial permission not granted",
+    offline: "Demo scenario",
   };
   return (
     <span className={`provenance ${kind}`}>

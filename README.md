@@ -12,7 +12,8 @@ production readiness, autonomous settlement or general live-LLM accuracy.
 
 ![ClearLedger case folio: supported evidence, human review and canonical source](docs/screenshots/supported-evidence-investigation.png)
 
-Real FastAPI/PostgreSQL cases, exact source spans, a structured LangGraph record,
+Financial story first: invoice ₹50,000 − receipt ₹47,000 = ₹3,000 short payment.
+Real FastAPI/PostgreSQL cases, exact source spans, an on-demand LangGraph record,
 controller correlation decisions and immutable history. Open AR, unapplied cash and
 asserted deductions stay visibly separate. No financial approval or posting is faked.
 
@@ -30,8 +31,9 @@ npm.cmd --prefix frontend run dev
 
 Open **http://127.0.0.1:5173**. Privately read the generated controller credentials
 from ignored `local-data/frontend/access.json`; do not share or commit them.
-Use I-1 for missing evidence, I-2 for supported evidence, I-3 for conflict, I-4/I-5
-for deliberate correlation CONFIRM/REJECT. Inspect the 101-paise claim and exact
+Use INV-2026-1042 for missing evidence, INV-2026-1043 for support, INV-2026-1044
+for conflict, and INV-2026-1045/1046
+for deliberate correlation CONFIRM/REJECT. Inspect the ₹3,000 synthetic damage claim and exact
 source span; draft an evidence request and read its audit history. Ctrl+C the API
 host cleans only its generated disposable database. No development data is reset.
 
@@ -279,7 +281,7 @@ Frontend checks (run from `frontend/`): `npm run lint`, `npm run typecheck`,
 `npm run test`, `npm run build`, `npm run format:check`. Actual Chromium acceptance:
 `npx playwright install chromium`, then `npm run test:browser` against a **fresh**
 synthetic host. Browser decisions mutate their test tasks; stop/recreate the owned
-disposable host before a full rerun. Eight browser tests and nine unit tests passed.
+disposable host before a full rerun. Nine browser tests and 16 unit tests passed for UX v2.
 The API-only portfolio gate remains `uv run --frozen python scripts/portfolio_demo.py`.
 Existing broader gates, when appropriate:
 

@@ -91,12 +91,17 @@ def populate(client, engine, org, settings, output):
         assert response.status_code == 200, response.status_code
         return response.json()
 
-    assert post(client, "customers", CUSTOMER).status_code == 200
-    assert post(client, "payer-aliases", ALIAS).status_code == 200
+    assert (
+        post(client, "customers", {**CUSTOMER, "name": "Meridian Retail Pvt Ltd"}).status_code
+        == 200
+    )
+    assert (
+        post(client, "payer-aliases", {**ALIAS, "alias": "Meridian Retail Demo"}).status_code == 200
+    )
     customer = client.get("/customers").json()[0]
     fixtures = []
     for index, mode in enumerate(("missing", "supported", "conflict", "confirm", "reject"), 1):
-        number, utr = f"I-{index}", f"t{index}"
+        number, utr = f"INV-2026-{1041 + index}", f"DEMO-UTR-{index:04}"
         assert (
             post(
                 client,
@@ -104,8 +109,8 @@ def populate(client, engine, org, settings, output):
                 {
                     **INVOICE,
                     "invoice_number": number,
-                    "original_amount_paise": "1001",
-                    "open_amount_paise": "1001",
+                    "original_amount_paise": "5000000",
+                    "open_amount_paise": "5000000",
                 },
             ).status_code
             == 200
@@ -117,17 +122,18 @@ def populate(client, engine, org, settings, output):
                 {
                     **BANK,
                     "external_transaction_id": utr,
-                    "amount_paise": "900",
-                    "payer_name": "Test Alias",
+                    "amount_paise": "4700000",
+                    "payer_name": "Meridian Retail Demo",
                 },
             ).status_code
             == 200
         )
         invoice = next(i for i in client.get("/invoices").json() if i["invoice_number"] == number)
         raw = (
-            f"CUSTOMER: c\nINVOICE: {number}\nUTR: {utr}\nAMOUNT: 101 paise\nCLAIM damage: INR 1.01"
+            f"CUSTOMER: c\nINVOICE: {number}\nUTR: {utr}\n"
+            "AMOUNT: 300000 paise\nCLAIM damage: INR 3000.00"
         )
-        document = upload(f"unit-{mode}-remittance.txt", raw)
+        document = upload(f"{number}-customer-remittance.txt", raw)
 
         def pointer(quote, raw=raw):
             start = raw.index(quote)
@@ -141,9 +147,9 @@ def populate(client, engine, org, settings, output):
             "claims": [
                 {
                     "category": "damage",
-                    "description": pointer("damage: INR 1.01"),
-                    "amount_paise": 101,
-                    "amount_span": pointer("INR 1.01"),
+                    "description": pointer("damage: INR 3000.00"),
+                    "amount_paise": 300000,
+                    "amount_span": pointer("INR 3000.00"),
                     "reason_code": None,
                 }
             ],
@@ -166,7 +172,7 @@ def populate(client, engine, org, settings, output):
         client.app.state.extraction_gateway = None
         assert (
             extracted.status_code == 200
-            and extracted.json()["result"]["claims"][0]["amount_paise"] == 101
+            and extracted.json()["result"]["claims"][0]["amount_paise"] == 300000
         )
 
         def source(kind, source_raw, doc, facts, mode=mode, invoice=invoice, number=number):
@@ -207,16 +213,16 @@ def populate(client, engine, org, settings, output):
             response = client.post("/evidence/records", json=signed, headers=headers())
             assert response.status_code == 200, response.status_code
 
-        source("REMITTANCE", raw, document, {"amount": ("AMOUNT", 101)})
+        source("REMITTANCE", raw, document, {"amount": ("AMOUNT", 300000)})
         if mode in {"supported", "conflict"}:
             for kind, count in [("WMS", 1), ("POD", 1)] + (
                 [("WMS", 2)] if mode == "conflict" else []
             ):
                 source_raw = (
                     f"CUSTOMER: c\nINVOICE: {number}\nSHIPMENT: s\nSHIPPED: {count}\n"
-                    f"DELIVERED: {count}\nDAMAGED: {count}\nUNIT_VALUE: 101 paise"
+                    f"DELIVERED: {count}\nDAMAGED: {count}\nUNIT_VALUE: 300000 paise"
                 )
-                doc = upload(f"unit-{mode}-{kind}-{count}.txt", source_raw)
+                doc = upload(f"{number}-{kind}-delivery-{count}.txt", source_raw)
                 source(
                     kind,
                     source_raw,
@@ -226,7 +232,7 @@ def populate(client, engine, org, settings, output):
                         "shipped": ("SHIPPED", count),
                         "delivered": ("DELIVERED", count),
                         "damaged": ("DAMAGED", count),
-                        "unit_value": ("UNIT_VALUE", 101),
+                        "unit_value": ("UNIT_VALUE", 300000),
                     },
                 )
         fixtures.append({"mode": mode, "document_id": document["id"], "invoice_id": invoice["id"]})

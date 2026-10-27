@@ -1,5 +1,84 @@
 # Build status
 
+## Frontend UXv2 — financial story and progressive disclosure — 2026-10-27 IST
+
+Branch feat/frontend-financial-story-v2 from verified921335a (implementation2dfac50).
+Backend business behavior frozen and unchanged: no src/clearledger diff, migration,
+new dependency/framework or finance/authorization change. No Gemini call, benchmark,
+original dataset, private operator or sealed-answer access. Only five existing UI
+fixtures receive the user's explicitly approved synthetic business labels/amounts:
+Meridian Retail Pvt Ltd, INV-2026-1042–1046, invoice5,000,000paise, receipt4,700,000,
+damage300,000. Persisted through actual imports/documents/evidence/case/review APIs;
+not browser-hardcoded records. No broad dataset generation permission inferred.
+
+Explored3 materially different UX directions BEFORE implementation: reconciliation
+statement (selected), stepwise decision brief (too slow for scanning), spatial source
+desk (still requires reconstructing money story). Replaced dominant graph mechanics
+and four unrelated figures with invoice minus receipt equals short-payment statement,
+customer explanation, immediate next step and recorded case settlement. Default case
+then shows concise finding, authenticated/missing/conflicting source checklist, human
+action and separate evidence/review/financial-authorization/settlement states. Queue
+explains discrepancy/reason/proof/next step; proposed invoice labels remain explicitly
+unverified. No customer identity inferred from a proposed reference. Financial amounts
+and comparisons remain exact BigInt/lossless paise, unknown distinct from zero.
+
+Source quotes independently verify exact Unicode span; hashes/offsets/versions/UUIDs
+move behind details. Source types follow persisted plans/sources; non-delivery
+conflicts do not get invented delivery wording. Existing persisted model plan/synthesis/tools/rules/policy/cost/
+errors in Technical trace on demand; fallback never labelled AI. Demo scenario explains
+offline controls with real source verification. Human dialog keeps claim amount,
+proposed invoice/receipt, payment proof or findings and no-posting boundary; current
+server basis/hash, role, stable-key/replay/history protections retained unchanged.
+180–200ms actual reveal/selected-stage/dialog/saved feedback; reduced motion disables.
+Native dialog/focus return, required-file validation and existing errors retained.
+No hidden chain-of-thought or artificial progress. Screenshots capture completed motion.
+
+Actual targeted checks:
+- Frontend npm.cmd run lint / typecheck / test / build / format:check PASS.
+  16 unit tests: all9 original +7 new story/abstention/stale/large-paise invariants.
+- CLEARLEDGER_BROWSER_BUILD=1 npm.cmd run test:browser against real Uvicorn/API and
+  disposable PostgreSQL:9 PASS in1.0m, pinned Chromium, production preview4173.
+  All8 existing browser scenarios retained with revised semantic labels; one new
+  finance-led intake/native required-file/no-import-request/reduced-motion scenario.
+  Initial expanded run8PASS/1FAIL: new test wrongly assumed Submit disabled with no
+  file. Corrected to native required-file validation and zero POST assertions, not
+  a domain/security change. JSX edit and minimal unit-fixture type errors fixed.
+- Browser checks include connected arithmetic/claim/next-action/settlement, no default
+  graph, source quotes, missing/support/conflict, all persisted technical stages,
+  CONFIRM/REJECT/context/focus/history/merge, same-run refresh/no visual duplicates,
+  actual draft/human audit, auditor disablement, offline/malformed/empty,390dark/768,
+  no horizontal page overflow. Happy paths assert no page exceptions/HTTP>=400.
+  Financial API snapshots and worker fingerprints unchanged. No source validation
+  assertion or existing backend test changed. After the last copy/type correction,
+  all4 focused queue/story/source/technical regressions passed again in25.4s; the
+  primary next-action link is exercised, not merely displayed.
+- Ruff check/format changed scripts/serve_frontend_demo.py PASS. No production Python
+  changes, full backend/restart gate not rerun/claimed; each generated DB boots with
+  existing Alembic upgrade head/drift check. No shared DB reset/downgrade/restart.
+- Taste source0FAIL/3 justified WARN (price padding, technical Mono, missing dashes).
+  After critique raised primary labels/reduced type sizes. Actual AUTHENTICATED
+  production case at1440/768/390, Taste's own probe/judgeApp/judgeLayout via Playwright:
+  0FAIL/0WARN each. Screenshots visually inspected desktop/mobile/contextual dialog.
+  This extends v1's unauthenticated inspector evidence; no auth-storage workaround.
+- Comprehension audit explicitly maps8 user questions to default visible state and
+  browser assertions. Next action and settlement are before900px on desktop. This
+  is structural/author inspection, NOT an invented5–10s empirical user study.
+
+Logs: local-data/frontend-v2-browser-complete.log, frontend-v2-browser-final.log
+(initial8/1), frontend-v2-intake-final.log (corrected focused pass), build/format/
+Taste logs; local-data/frontend/v2-authenticated-taste.json. Screenshots committed
+only approved synthetic cases: queue, missing/support/conflict, exact source highlight,
+human review, technical trace, decision, dark mobile and tablet. README and FRONTEND
+updated AFTER browser works; the latter documents the60–90s interview sequence.
+
+Known limits: unknown pre-association amounts stay unknown; proposed references do
+not confer identity. Local synthetic identity/source trust is not production authority.
+Fake-provider demo not live Gemini/benchmark accuracy. Full posting queue/cash allocation
+and original Argon CASE-204 UI gate remain deferred. Company-wide queue projection,
+broader browsers/assistive-tech/production security and real first-user testing open.
+Checkpoint will be recorded after staged diff/secret review. No push.
+
+
 ## Frontend evidence-review workstation — 2026-10-27 IST
 
 From verified3d8af58, branch feat/frontend-case-folio. Backend expansion frozen;

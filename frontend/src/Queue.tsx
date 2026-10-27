@@ -14,14 +14,25 @@ import {
   human,
   money,
   presentation,
-  short,
+  record,
+  text,
 } from "./api";
+import { assessment, financialStory } from "./story";
 import { Badge, Empty, ErrorNotice, Loading, useResource } from "./ui";
 
+function proposedInvoices(b: Bundle, invoices: Invoice[]) {
+  const ids = new Set(
+    b.tasks.flatMap((t) => t.candidates.map((c) => text(record(c).invoice_id))),
+  );
+  return invoices
+    .filter((i) => ids.has(i.id))
+    .map((i) => i.invoice_number)
+    .join(", ");
+}
 const filters = [
   "All exceptions",
   "Needs evidence",
-  "Correlation review",
+  "Payment match",
   "Human review",
   "Conflict",
   "Supported",
@@ -36,23 +47,6 @@ export function Queue({ api }: { api: Client }) {
   const load = useCallback(async () => {
     void revision;
     const cases = await api.list<Case>(`/cases?limit=20&offset=${page * 20}`);
-    const [customers, invoices, receipts] = await Promise.all([
-      references<Customer>(
-        api,
-        "/customers",
-        cases.flatMap((c) => (c.customer_id ? [c.customer_id] : [])),
-      ),
-      references<Invoice>(
-        api,
-        "/invoices",
-        cases.flatMap((c) => c.invoice_ids),
-      ),
-      references<Receipt>(
-        api,
-        "/receipts",
-        cases.flatMap((c) => c.receipt_ids),
-      ),
-    ]);
     // Bounded groups avoid unbounded per-case request fanout.
     const bundles: Bundle[] = [];
     for (let i = 0; i < cases.length; i += 3)
@@ -61,6 +55,28 @@ export function Queue({ api }: { api: Client }) {
           cases.slice(i, i + 3).map((c) => bundle(api, c)),
         )),
       );
+    const [customers, invoices, receipts] = await Promise.all([
+      references<Customer>(
+        api,
+        "/customers",
+        cases.flatMap((c) => (c.customer_id ? [c.customer_id] : [])),
+      ),
+      references<Invoice>(api, "/invoices", [
+        ...cases.flatMap((c) => c.invoice_ids),
+        ...bundles
+          .flatMap((b) =>
+            b.tasks.flatMap((t) =>
+              t.candidates.map((c) => text(record(c).invoice_id)),
+            ),
+          )
+          .filter(Boolean),
+      ]),
+      references<Receipt>(
+        api,
+        "/receipts",
+        cases.flatMap((c) => c.receipt_ids),
+      ),
+    ]);
     return { cases: bundles, customers, invoices, receipts };
   }, [api, page, revision]); // revision intentionally refreshes the server snapshot
   const state = useResource(load);
@@ -80,7 +96,7 @@ export function Queue({ api }: { api: Client }) {
       const match =
         filter === filters[0] ||
         (filter === "Needs evidence" && p.missing) ||
-        (filter === "Correlation review" &&
+        (filter === "Payment match" &&
           b.tasks.some((t) => t.status === "PENDING")) ||
         (filter === "Human review" && b.case.state === "AWAITING_REVIEW") ||
         (filter === "Conflict" && p.conflict) ||
@@ -88,7 +104,7 @@ export function Queue({ api }: { api: Client }) {
         (filter === "Stale" && p.stale);
       return (
         match &&
-        `${name} ${b.case.id} ${b.case.invoice_ids.map((id) => state.data?.invoices.find((i) => i.id === id)?.invoice_number).join(" ")}`
+        `${name} ${proposedInvoices(b, state.data!.invoices)} ${b.case.id} ${b.case.invoice_ids.map((id) => state.data?.invoices.find((i) => i.id === id)?.invoice_number).join(" ")}`
           .toLowerCase()
           .includes(query.toLowerCase())
       );
@@ -99,7 +115,8 @@ export function Queue({ api }: { api: Client }) {
         <div>
           <h1 tabIndex={-1}>Exception register</h1>
           <p>
-            Review the claim. Inspect the proof. Keep the balance traceable.
+            Short payments to investigate. Evidence to inspect. Decisions for a
+            human.
           </p>
         </div>
         <button
@@ -151,108 +168,104 @@ export function Queue({ api }: { api: Client }) {
             <span>All values INR · no automatic settlement</span>
           </div>
           <div className="register-scroll">
-            <table className="register">
+            <table className="register story-register">
               <caption className="sr-only">
-                Exception cases and current financial records
+                Short payments, customer explanations, evidence and next actions
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Case / customer</th>
+                  <th scope="col">Customer / invoice</th>
+                  <th scope="col">Invoice → receipt</th>
                   <th scope="col" className="num">
-                    Open invoice AR
+                    Short payment
                   </th>
-                  <th scope="col" className="num">
-                    Unapplied cash
-                  </th>
-                  <th scope="col" className="num">
-                    Claim asserted
-                  </th>
-                  <th scope="col">Evidence / investigation</th>
-                  <th scope="col">Required next action</th>
+                  <th scope="col">Why it needs attention</th>
+                  <th scope="col">Next action</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((b) => {
-                  const p = presentation(b),
-                    c = b.case,
+                  const c = b.case,
+                    a = assessment(b),
                     invoices = state.data!.invoices.filter((i) =>
                       c.invoice_ids.includes(i.id),
                     ),
                     receipts = state.data!.receipts.filter((r) =>
                       c.receipt_ids.includes(r.id),
-                    );
+                    ),
+                    f = financialStory(invoices, receipts);
                   return (
                     <tr key={c.id}>
                       <td>
-                        <Link to={`/cases/${c.id}`} className="case-link">
+                        <Link className="case-link" to={`/cases/${c.id}`}>
                           {state.data!.customers.find(
                             (x) => x.id === c.customer_id,
-                          )?.name || "Unassigned customer"}
-                          <ArrowUpRight size={16} aria-hidden="true" />
+                          )?.name || "Customer not verified"}
+                          <ArrowUpRight size={15} aria-hidden="true" />
                         </Link>
                         <small>
                           {invoices.map((i) => i.invoice_number).join(", ") ||
-                            "Invoice not associated"}{" "}
-                          · <span className="mono">{short(c.id)}</span>
+                            (proposedInvoices(b, state.data!.invoices)
+                              ? `Proposed: ${proposedInvoices(b, state.data!.invoices)}`
+                              : "Invoice association pending")}
                         </small>
                         <small>Opened {date(c.created_at)}</small>
                       </td>
-                      <td className="num">
-                        {money(
-                          invoices.length
-                            ? invoices.reduce(
-                                (n, i) => n + i.open_amount_paise,
-                                0n,
-                              )
-                            : null,
-                        )}
+                      <td>
+                        <span className="queue-equation">
+                          {money(f.invoiced)} <span aria-label="to">→</span>{" "}
+                          {money(f.received)}
+                        </span>
+                        <small>
+                          {f.difference === null
+                            ? "Relationship needs verification"
+                            : "Received cash remains unapplied"}
+                        </small>
                       </td>
                       <td className="num">
-                        {money(
-                          receipts.length
-                            ? receipts.reduce(
-                                (n, r) => n + r.unapplied_amount_paise,
-                                0n,
-                              )
-                            : null,
-                        )}
-                      </td>
-                      <td className="num claim-money">
-                        {money(c.claimed_total_paise)}
-                        {c.unknown_amount_count > 0 && (
-                          <small>{c.unknown_amount_count} unknown amount</small>
-                        )}
+                        <strong>{money(f.difference)}</strong>
+                        <small>
+                          {b.claims.length
+                            ? `${money(c.claimed_total_paise)} ${b.claims.map((q) => human(q.category).toLowerCase()).join(", ")} claim`
+                            : "No claim linked yet"}
+                        </small>
                       </td>
                       <td>
                         <Badge
                           kind={
-                            p.conflict
+                            a.conflict
                               ? "danger"
-                              : p.supported
+                              : a.supported
                                 ? "positive"
                                 : "neutral"
                           }
                         >
-                          {human(p.state)}
+                          {a.title}
                         </Badge>
                         <small>
-                          {b.runs[0]
-                            ? `${b.runs[0].provider === "fake" ? "Offline control" : human(b.runs[0].provider)} · ${human(b.runs[0].status)}${p.stale ? " · changed inputs" : ""}`
-                            : "No investigation yet"}
+                          {b.runs[0]?.provider === "fake"
+                            ? "Demo scenario"
+                            : b.runs.length
+                              ? "Evidence assessment available"
+                              : "Awaiting investigation"}
                         </small>
                         {b.accessError && (
-                          <small>Correlation access unavailable</small>
+                          <small>Review access unavailable</small>
                         )}
                       </td>
                       <td>
                         <Link
-                          to={`/cases/${c.id}?tab=${b.tasks.some((t) => t.status === "PENDING") ? "correlation" : "investigation"}`}
                           className="action-link"
+                          to={`/cases/${c.id}${a.pending ? "?tab=correlation" : ""}`}
                         >
-                          {human(p.action)}
-                          <ArrowDownRight size={16} aria-hidden="true" />
+                          {a.action}
+                          <ArrowDownRight size={15} aria-hidden="true" />
                         </Link>
-                        <small>{human(c.state)}</small>
+                        <small>
+                          {a.supported
+                            ? "Review does not approve an adjustment"
+                            : "Disputed amount remains unresolved"}
+                        </small>
                       </td>
                     </tr>
                   );
@@ -286,21 +299,15 @@ export function Queue({ api }: { api: Client }) {
           </div>
         </>
       )}
-      <aside className="queue-note">
-        <span className="ledger-mark" aria-hidden="true">
-          ↳
+      <div className="queue-footnote">
+        <span>
+          Amounts are comparisons, not allocations. Evidence support never posts
+          a deduction.
         </span>
-        <div>
-          <h2>Supported is not settled.</h2>
-          <p>
-            Evidence may support a deduction. Human review and financial
-            authority remain separate.
-          </p>
-        </div>
         <Link to="/intake">
-          Import & documents <ArrowUpRight size={16} aria-hidden="true" />
+          Import invoices or receipts <ArrowUpRight size={15} />
         </Link>
-      </aside>
+      </div>
     </main>
   );
 }

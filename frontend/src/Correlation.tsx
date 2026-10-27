@@ -14,7 +14,6 @@ import {
   human,
   money,
   record,
-  short,
   text,
 } from "./api";
 import {
@@ -29,6 +28,7 @@ import {
   Section,
   useResource,
 } from "./ui";
+import { ReviewContext } from "./ReviewContext";
 import type { Loaded } from "./workstation";
 import type { Selection } from "./Documents";
 
@@ -60,9 +60,7 @@ function CandidateFinancials({
       </div>
       <ArrowLeft size={16} aria-hidden="true" />
       <div>
-        <span>
-          Receipt <span className="mono">{short(receipt)}</span>
-        </span>
+        <span>Bank receipt</span>
         <strong>{money(state.data.receipt.unapplied_amount_paise)}</strong>
         <small>Unapplied cash</small>
       </div>
@@ -164,7 +162,7 @@ export function Correlation({
 
   return (
     <Section
-      title="Receipt association review"
+      title="Match payment to invoice"
       meta={
         <button
           onClick={() => void update()}
@@ -197,9 +195,21 @@ export function Correlation({
             >
               {human(t.is_stale ? "STALE" : t.status)}
             </Badge>
-            <h3>{human(t.reason)}</h3>
+            <h3>
+              {t.status === "CONFIRMED"
+                ? "Payment association confirmed"
+                : t.status === "REJECTED"
+                  ? "Payment association rejected"
+                  : t.reason === "READY_FOR_REVIEW"
+                    ? "Independent proof ready for review"
+                    : human(t.reason)}
+            </h3>
           </div>
-          <p>{human(t.next_action)}</p>
+          <p>
+            {t.next_action === "REVIEW_CORRELATION"
+              ? "Review the source-backed association before confirming."
+              : human(t.next_action)}
+          </p>
 
           {t.candidates.map((candidate, i) => {
             const c = record(candidate);
@@ -229,7 +239,7 @@ export function Correlation({
                         }
                       >
                         <FileText size={14} aria-hidden="true" />
-                        Inspect authenticated source {short(String(id))}
+                        Inspect independent payment proof
                       </button>
                     ))}
                 </div>
@@ -295,7 +305,7 @@ export function Correlation({
           </Disclosure>
         </article>
       ))}
-      <h3 className="subheading">Immutable decisions</h3>
+      <h3 className="subheading">Decision history</h3>
       {history.error !== undefined && <ErrorNotice error={history.error} />}
       {history.data?.length === 0 && <Empty>No decisions recorded.</Empty>}
       {history.data?.map((d) => (
@@ -325,11 +335,28 @@ export function Correlation({
           close={() => setDecision(undefined)}
           confirm={recordDecision}
         >
-          <p>
-            You are reviewing task{" "}
-            <span className="mono">{short(decision.task.id)}</span> against case
-            version {b.case.version}. This decision is recorded immutably.
-          </p>
+          <ReviewContext
+            data={data}
+            proof={{
+              ready:
+                decision.task.reason === "READY_FOR_REVIEW" &&
+                !decision.task.is_stale,
+              records: new Set(
+                decision.task.candidates.flatMap((c) => {
+                  const ids = record(c).evidence_ids;
+                  return Array.isArray(ids) ? ids.map(String) : [];
+                }),
+              ).size,
+            }}
+          />
+          {decision.task.candidates.slice(0, 1).map((candidate, i) => (
+            <CandidateFinancials
+              key={i}
+              api={api}
+              invoice={text(record(candidate).invoice_id)}
+              receipt={text(record(candidate).receipt_id)}
+            />
+          ))}
           <p>
             {decision.kind === "CONFIRM"
               ? "Link the source-backed invoice/receipt association. No balance changes, settlement or posting will occur."

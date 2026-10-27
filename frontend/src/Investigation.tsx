@@ -199,13 +199,11 @@ export function Investigation({
   return (
     <>
       <Section
-        title="Investigation record"
+        title="Technical investigation trace"
         meta={
           run && (
             <Badge>
-              {run.provider === "fake"
-                ? "Offline control · fake"
-                : human(run.provider)}
+              {run.provider === "fake" ? "Demo scenario" : human(run.provider)}
             </Badge>
           )
         }
@@ -300,15 +298,19 @@ export function Investigation({
                         ? t.metadata.fallback === true
                           ? "Safe fallback"
                           : run?.provider === "fake"
-                            ? "Offline model"
+                            ? "Demo model"
                             : "AI generated"
-                        : "Deterministic"}
+                        : "Rules check"}
                     </small>
                   </span>
                 </button>
               ))}
             </nav>
-            <article className="stage-detail" aria-live="polite">
+            <article
+              key={active?.id}
+              className="stage-detail"
+              aria-live="polite"
+            >
               <div className="stage-title">
                 <h3>{active && nodes[active.node]}</h3>
                 <Provenance kind={origin} />
