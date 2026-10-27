@@ -2,6 +2,8 @@
 
 ## Phase2 Free-tier amendment — provider-payload gate — 2026-10-28
 
+Authorization/gate checkpoint `c7d026b`; no scored evaluation completion claimed.
+
 From status `5ea71f0`, branch `eval/external-phase-2-free-authorization`. Operator
 explicitly authorizes frozen DocILE/ContractNLI Free-tier processing and accepts
 its data treatment. Rights remain USER-RESOLVED; paid tier is no longer an operator
