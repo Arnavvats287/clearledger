@@ -3415,3 +3415,10 @@ in `seals/scored-results.json`; existing artifacts were not modified. Final repo
 records both improvements and missed targets. No further model experiment,
 architecture/prompt change, evaluation or private benchmark is authorized by this
 completion step. STOP after the documentation checkpoint.
+
+Final Phase3 results/report checkpoint:
+`ee36f749f70fea96f93d151ce98344c45b051b34`
+(`eval: record sealed fresh phase 3 grounding results`), following implementation
+`9fbf097826af03086fab3abff077bb15e2bc563e`. This follow-up records the commit only;
+no inference, scoring, source/configuration, product or financial change. Local
+commits only; no push. Backend/evaluation work stops here pending new instructions.
