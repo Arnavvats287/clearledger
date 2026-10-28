@@ -3336,3 +3336,82 @@ domain and5 evaluation files PASS; compile/import and frozen/original hash check
 PASS. Suite duration is verification time, not product latency.
 Fresh24/100 held-out inference is now running, with no gold access, retries, tuning
 or sample replacement. Evaluation outcome remains pending, not inferred from tests.
+
+Verified implementation checkpoint: `9fbf097826af03086fab3abff077bb15e2bc563e`
+(`feat: harden canonical source grounding and evidence selection`). The frozen
+configuration captured base Git HEAD plus exact reviewed working-file hashes;
+those code bytes match this checkpoint, recorded separately without changing config.
+Legal inference completed24 documents:13 accepted final outputs,11 output-validation
+failures;12/24 plan stages failed validation. Parsed declared references:284 plan,
+269 synthesis;24+21 were outside the allowed per-hypothesis candidate sets. These
+are selection-membership violations, not proof that every rejected ID was globally
+nonexistent. No retries/tuning. Invoice inference and both post-seal scores pending.
+
+## Final grounding hardening / fresh Phase 3 — completed 2026-10-28
+
+Implementation checkpoint `9fbf097826af03086fab3abff077bb15e2bc563e` is verified;
+fresh evaluation is complete, sealed and scored. Full report:
+`docs/EXTERNAL_EVALUATION_PHASE3.md`; source contracts:
+`docs/SOURCE_GROUNDING.md`. Machine artifacts remain outside Git under
+`C:/ClearLedgerEval/external-runs/phase3-v1`.
+
+**Quality improved for invoice-reference extraction and regressed for legal
+classification. Do not describe this as all acceptance goals passing.**
+
+- ContractNLI: 24 unused TEST documents / 408 hypotheses; accuracy 153/408 = 37.50%,
+  macro-F1 0.345428, answered-only 153/221 = 69.23%, Contradiction F1 0.086957.
+  187 abstentions from 11 rejected final outputs; 12 rejected plans. 124/124
+  published quotes valid; evidence character F1 0.399647, joint F1 0.198008.
+  Unsupported assertions 3/38 = 7.89%, with a severe coverage cost. 76 policy
+  downgrades; overlapping reasons: 70 relevance, 5 explicit-conflict, 12 plan/relation.
+  Parsed model references violated per-hypothesis membership 45/553 times; these
+  are not all proven globally fabricated IDs. No provider errors or retries.
+- DocILE: 100 unused VALIDATION documents, all retained. Invoice-ID P/R/F1
+  0.822222 / 0.698113 / 0.755102; TP37/FP8/FN16. Exact-set match81%, coverage43%,
+  empty-output/abstention57%. Zero non-invoice false emissions; quotes45/45 valid,
+  locations42/45 = 93.33% (three missing trustworthy coordinates). 82 generation
+  calls,14 deterministic zero-call abstentions,4 input-cap rejections. Whole-source
+  adapter failures0, partial/fallback provenance12; combined input failures4%.
+  Three candidate searches reached the64-candidate completeness bound.
+- Official `docile-benchmark==0.3.5`: conditional document_id KILE on67 tax invoices,
+  location F1 0.648148, location+exact-text F1 0.629630; not a full DocILE score.
+- Goals missed: legal macro/Contradiction/evidence-overlap, raw selection reliability,
+  95% localization and combined2% input-failure rate. No post-gold tuning/fix/rerun.
+  Distinct fresh samples prevent paired or causal improvement claims against v1.
+
+Actual total:144 generations (165 cap),294 HTTP operations;826,402 input,
+65,125 output,891,527 total provider-reported tokens. Separate thinking/cache
+categories unavailable. Zero auth/provider/rate/timeouts or JSON-parse failures;
+27 legal output-validation failures across smoke/final;5 total input-cap rejections.
+Free tier operator-confirmed, published standard tariff USD0; billed invoice USD
+unavailable, not fabricated. No billing/project/key changes. Generation median/p95:
+legal scored4.5175/5.708s; invoice scored1.636/2.905s. Deliberate pacing and the
+1,833.27s regression duration are not product latency. Product performance pass deferred.
+
+Fresh seals: Contract predictions
+`742fc8ae2cc8c25f752ff5348d8fd4a7dfa662f89c2df230192aaeb643d80055`;
+DocILE predictions
+`0ecf3f1f7f4a9cea7d6a164c578029f4abd3b80604d4299b200d9ac54bb71854`;
+config `dbe02bfcc4485a8751f7971650282bc4593883d561e439a12c684b5780880109`.
+Both seals and a318-file provenance manifest preceded gold access; post-score bytes,
+code/source hashes, v1 artifact metadata/critical seals and original plan all PASS.
+Old predictions/scores/scorers/sample IDs were not changed.
+
+Final static recheck: Ruff lint/format PASS (283 formatted files); strict mypy28
+domain and5 evaluation modules PASS; compilation and Git whitespace checks PASS.
+Complete frozen gate1,029 tests PASS and isolated restart4 PASS as recorded above;
+no unnecessary full rerun. No new dependencies, migrations, financial API/authority
+or graph topology changes. Zero evaluation allocations/journals/postings/balance
+mutations/write-offs/approvals. Actual-API tests independently preserve financial
+snapshots. External AI/investigation and both extraction automation flags checked
+disabled. Frontend, original/private benchmark, frozen chronological image and
+RecBench untouched. Backend expansion frozen; sealed AR benchmark requires a new
+explicit instruction. No push.
+
+Final integrity check repeated after scoring: original/V1 metadata and critical
+hashes, Phase3 source/code/config/prediction seals and318-file pre-gold provenance
+manifest PASS unchanged. Ten completed score/provenance files additionally sealed
+in `seals/scored-results.json`; existing artifacts were not modified. Final report
+records both improvements and missed targets. No further model experiment,
+architecture/prompt change, evaluation or private benchmark is authorized by this
+completion step. STOP after the documentation checkpoint.

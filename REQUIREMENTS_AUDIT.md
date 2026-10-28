@@ -630,3 +630,14 @@ checks; separate isolated restart4 passed. Actual commands/logs are in STATUS an
 docs/EXTERNAL_EVALUATION_PHASE3.md. Fresh held-out evaluation remains pending until
 sealed and scored. No aspirational metric is treated as completed, and no authority
 gap is resolved by a source hash or model.
+
+Fresh Phase3 is now sealed/scored; see EXTERNAL_EVALUATION_PHASE3.md for exact
+denominators, targets and regression. Source-ID safeguards and financial isolation
+are verified; **legal reasoning quality goals are not complete**: macro-F1 0.3454,
+Contradiction F1 0.0870, evidence-overlap F1 0.3996,187 abstentions. Published quote
+validity100% is conditional on accepted output, not successful grounding of all
+model selections. Invoice-ID P/R/F1 goals passed at0.8222/0.6981/0.7551; localization
+93.33% and combined input-failure4% goals missed. Original v1 artifact/seal checks
+passed unchanged. No scorer changes, post-gold tuning, retry or sample replacement.
+Backend is frozen with these quality limitations explicitly open; private AR,
+production identity, customer validation and real tax authority remain deferred.
