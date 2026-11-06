@@ -120,3 +120,32 @@ ContractNLI remains evaluation-only legal reasoning; product factual authority s
 requires authenticated typed source predicates. New metrics must disclose policy
 abstention, source/coordinate limitations, model failures and held-out target misses.
 No production readiness or AR accuracy is inferred from either public dataset.
+
+## Development correction — 2026-11-06
+
+New modules compose these original types without editing frozen Phase3 code.
+`source_aliases.py` binds request names to canonical source/hash/version pointers;
+unknown/colliding/stale mappings fail closed. `source_presentations.py` gives the
+existing isolated remittance/AR provider short IDs and restores canonical IDs before
+unchanged strict source/amount/financial validation. AR internal contract remains v3;
+the Gemini configuration separately versions presentation, preventing stale cache
+reuse without rewriting old traces. Remittance provider/cache identity advances to
+grounded-remittance-2-aliases. Public financial/document DTOs and graph shape stay.
+
+`source_semantics.py` supplies legal sentence/clause/list fragments, source section
+context and lexical/defined-term retrieval. Source separators remain represented;
+coverage metrics are not relaxed to conceal whitespace gaps. Legal evaluation
+policy is `external_eval/accuracy_nli.py`: independently typed items and provenance,
+actual-request membership, exact numerics and explicit support/conflict relation.
+Lexical ranking does not authenticate source or veto legal paraphrases. It does not
+replace the product's stronger authenticated relational/financial fact predicates.
+
+`source_invoice_candidates.py` is an opt-in development invoice policy over the
+same occurrence types: geometric labels/header candidates, bounded internal pool,
+explicit punctuation/adjacent-token joins and compact occurrence aliases. Raw span
+text/tokens and exact boxes stay unchanged; transformed candidate values are explicit
+source-derived candidates, not a relaxed scorer normalizer or financial import rule.
+No coordinates are invented. Invoice development changes are not silently applied
+to financial CSVs or production remittance value acceptance. Oracle-only discovery
+markers are excluded from all provider tables to keep oracle selection blinded.
+Report/limits: FINAL_ACCURACY_DIAGNOSTICS.md.

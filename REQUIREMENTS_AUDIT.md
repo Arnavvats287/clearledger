@@ -641,3 +641,27 @@ model selections. Invoice-ID P/R/F1 goals passed at0.8222/0.6981/0.7551; localiz
 passed unchanged. No scorer changes, post-gold tuning, retry or sample replacement.
 Backend is frozen with these quality limitations explicitly open; private AR,
 production identity, customer validation and real tax authority remain deferred.
+
+## Approved accuracy-development correction — 2026-11-06
+
+Historical Phase2/Phase3 remains unchanged. Source provenance stays shared; task
+policies no longer use financial-style lexical veto as a legal semantic oracle.
+Synthetic17-item proof confirms the old all-or-nothing cascade, and independent
+strict item validation preserves the other16 for malformed H07 cases.
+
+| Requirement | Trace / observed state |
+|---|---|
+| Short aliases, scope/hash/version, collisions | source_aliases/source_presentations; focused tests PASS |
+| Independent legal item policy and raw labels | external_eval/accuracy_nli; malformed/duplicate/missing/unknown tests PASS |
+| Retrieval rank distinct from source validity | local/global/hybrid policies; DEV global selectable exposure100% |
+| Semantic clauses/context and exact source coverage | source_semantics; TRAIN/DEV Recall@K artifacts; separators preserved |
+| Invoice occurrence discovery and compact packet | source_invoice_candidates; TRAIN value92%, occurrence84%, below targets |
+| Oracle availability and no class-label leakage |31/31 legal positive DEV visibility;8/10 constructible invoice instances |
+| Live raw/grounded, oracle, batch and plan results | **NOT RUN: synthetic provider admission failed** |
+| Product financial/source constraints and history | restored canonical IDs before original validators; actual API23 PASS |
+| Durability | isolated PostgreSQL restart4 PASS; full gate1049 PASS including migrations |
+| Immutable old evaluations | supplied hashes/seals verified; old scorers/samples untouched |
+
+No model-quality goal is marked complete from unit tests or source exposure.
+No final held-out plan/run is authorized; source quality and live admission remain
+open. This is an architecture/offline diagnostic checkpoint, not accuracy acceptance.

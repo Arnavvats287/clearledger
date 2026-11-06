@@ -99,3 +99,12 @@ documents, with IDs frozen before new gold access. No old scorers/formulas/sampl
 are changed. No private/sealed AR evaluation, UI, deployment, RecBench or README work
 is started here. Backend freezes after the Phase3 report; the sealed AR run requires
 separate explicit instruction. Contract: docs/SOURCE_GROUNDING.md.
+
+## Approved post-Phase3 TRAIN/DEV diagnostics — 2026-11-06
+
+The current user-approved exception permits task-policy separation, short provider
+aliases, item isolation and development retrieval/candidate/oracle ablations.
+Preserve Phase2/Phase3 artifacts and scorers. This does not authorize a new held-out
+plan/run, private benchmark, RecBench, UI or deployment. Provider-gated ablations
+remain unverified when admission fails; never substitute mocked model accuracy.
+Architecture/safety and open quality gates: docs/FINAL_ACCURACY_DIAGNOSTICS.md.

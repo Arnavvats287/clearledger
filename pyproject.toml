@@ -55,5 +55,10 @@ files = [
   "src/clearledger/source_spans.py", "src/clearledger/source_candidates.py",
   "src/clearledger/source_retrieval.py", "src/clearledger/source_ocr.py",
   "src/clearledger/grounded_extraction.py",
+  "src/clearledger/source_aliases.py", "src/clearledger/source_semantics.py",
+  "src/clearledger/source_invoice_candidates.py", "src/clearledger/source_presentations.py",
+  "scripts/external_eval/accuracy_nli.py", "scripts/accuracy_development.py",
+  "scripts/accuracy_worker.py", "scripts/accuracy_campaign.py",
+  "scripts/accuracy_score.py", "scripts/accuracy_exposure.py",
 ]
 

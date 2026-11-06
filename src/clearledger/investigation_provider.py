@@ -142,12 +142,16 @@ def configured_provider(runtime):
         ) // 1000000
 
         def reason(self, payload):
+            from clearledger.source_presentations import canonical, investigation_packet
+            from clearledger.source_spans import GroundingError
+
+            public, alias_map = investigation_packet(payload)
             with Session(runtime.engine) as session:
                 for identifier in payload.get("document_ids", []):
                     if not owned(session, Document, runtime.org, identifier).synthetic_approved:
                         raise CaseError("SYNTHETIC_DOCUMENT_REQUIRED", 403)
             reply, metrics = gateway.generate(
-                [json.dumps(payload)],
+                [json.dumps(public)],
                 before_attempt=lambda: reserve(runtime.engine, runtime.org, "gemini", settings),
             )
             self.metrics = {
@@ -168,7 +172,26 @@ def configured_provider(runtime):
             from clearledger.provider_diagnostics import diagnostic
 
             try:
-                return ARReply.model_validate(decode_output(reply.json_text))
+                parsed = ARReply.model_validate(decode_output(reply.json_text))
+                if parsed.synthesis is not None:
+                    parsed = parsed.model_copy(
+                        update={
+                            "synthesis": parsed.synthesis.model_copy(
+                                update={
+                                    "evidence_span_ids": [
+                                        canonical(a, alias_map)
+                                        for a in parsed.synthesis.evidence_span_ids
+                                    ]
+                                }
+                            )
+                        }
+                    )
+                return parsed
+            except GroundingError:
+                raise ProviderRunError(
+                    "INVALID_INVESTIGATOR_OUTPUT",
+                    {**self.metrics, "diagnostic": diagnostic("SCHEMA_VALIDATION", "VALIDATION")},
+                ) from None
             except ValidationError as error:
                 raise ProviderRunError(
                     "INVALID_INVESTIGATOR_OUTPUT",

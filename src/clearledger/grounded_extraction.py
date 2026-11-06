@@ -10,7 +10,7 @@ from clearledger.document_contract import REASON_CODE_SOURCE, Category, Extracti
 from clearledger.source_candidates import Candidates, discover, select
 from clearledger.source_spans import Source, Span, make_span, span_packet, text_source
 
-VERSION = "grounded-remittance-1"
+VERSION = "grounded-remittance-2-aliases"
 
 
 class ClaimSelection(StrictModel):

@@ -22,11 +22,16 @@ from clearledger.models import DocumentExtraction, Invoice
 
 def configuration(settings, provider):
     from clearledger.investigation_ai_contract import VERSION
+    from clearledger.source_presentations import PRESENTATION_VERSION
 
     return digest(
         {
             "algorithm": ALGORITHM,
-            **({"ai_contract": VERSION} if provider == "gemini" else {}),
+            **(
+                {"ai_contract": VERSION, "ai_presentation": PRESENTATION_VERSION}
+                if provider == "gemini"
+                else {}
+            ),
             "provider": provider,
             "model": settings.gemini_model,
             "enabled": settings.external_ai_enabled,

@@ -3422,3 +3422,67 @@ Final Phase3 results/report checkpoint:
 `9fbf097826af03086fab3abff077bb15e2bc563e`. This follow-up records the commit only;
 no inference, scoring, source/configuration, product or financial change. Local
 commits only; no push. Backend/evaluation work stops here pending new instructions.
+
+## Authorized accuracy diagnostics — 2026-11-06 (development only)
+
+Branch `feat/final-accuracy-diagnostics`, starting from `7d8f035`. Phase2/Phase3
+historical code/config/prediction/score seals verified unchanged before changes.
+Original17-item synthetic control proves whole-document cascade: one bad H07 span
+raises before any answers return; old worker then emits[] and scorer abstains all17.
+This directly verifies11 rejected syntheses ×17 =187 historical abstentions.
+
+Implemented additive source aliases, legal semantic segmentation/retrieval and
+strict item-level NLI policy; source-global selection is independent of top-K rank.
+Product isolated providers use short presentation IDs, restored to canonical IDs
+before unchanged financial/source validators. AR internal DTO remains v3; Gemini
+presentation cache identity is separate. No production graph, Director, PostgreSQL,
+outbox, financial API/authority or migration change. Invoice development candidate
+and compression policy remains separate from financial import/remittance semantics.
+Detailed design, metrics and open gates: docs/FINAL_ACCURACY_DIAGNOSTICS.md.
+
+Development only:3 existing DEV +8 TRAIN legal documents;32 TRAIN invoices. No new
+TEST/VALIDATION IDs, no final held-out inference, no private benchmark/RecBench/UI.
+Actual DEV selectable evidence at K20: local84.67%, global100% for17/five-item
+batches, hybrid91.55%/85.99%. Raw direct K40+context character recall96.65% DEV,
+100% TRAIN. Complete coverage29/31 DEV and83/83 TRAIN. Oracle visibility31/31 DEV
+positive pairs, no classification label leakage. These are exposure, not AI accuracy.
+
+Invoice25 TRAIN annotation targets: value Recall@8=.80,@16/32/64/128/256/1024=.92;
+occurrence recall .72/.84 (page +IoU>=.5 criterion). Increasing64 is not the observed
+bottleneck. Two values unavailable in current OCR; two occurrence thresholds miss.
+Current32 packets compress305,507→127,020 bytes (58.4%), same candidates retained;
+characters/4+512 token estimate gives no cap exceedance in either format. Exact
+token admission and selector quality unverified; not proof of fixing old four cases.
+Existing bounded PDF parser on two value misses: READY, one text-value recovery,
+zero verified geometry capability. No coordinates fabricated.
+
+**LIVE CORPUS DIAGNOSTICS BLOCKED, NOT COMPLETED.** Operator confirmed same Free
+Gemini3.5 project15 RPM/250k TPM/500 RPD;230 displayed RPD was28-day peak, not exact
+remaining allowance. Model lookup succeeded and one synthetic plan succeeded.
+Three distinct synthesis schema controls returned400 INVALID_ARGUMENT (original,
+without alias-array enum, equivalent local-ref inline). Invoice control and one
+counted transient re-attempt returned503 UNAVAILABLE. Exact400 cause UNKNOWN;
+sanitized diagnostics expose no field paths, no raw messages/prompts/keys/URLs.
+Six synthetic generations/13 HTTP operations; **zero corpus requests**. Stop live
+requests at this technical gate. No model/billing/project/key change. No rights or
+paid-tier blocker introduced. Oracle/normal accuracy, raw/grounded model metrics,
+plan/batch/model comparisons and non-invoice model precision are NOT RUN.
+
+Offline tests: focused grounding/legacy worker41 PASS (2.85s); expanded isolated
+NLI+invoice worker22 PASS (3.20s); latest item/schema/privacy controls20 PASS (1.78s).
+Initial PG focus1 pass/22 setup errors: Docker Desktop manually paused, connections
+timed out. Operator resumed it; same actual-API group23 PASS (179.30s). No assertion
+was weakened or skipped. Isolated restart4 PASS (55.87s), only owned resources
+removed; log local-data/verification/isolated-restart-20261106T124159239723Z.log.
+Ruff/format295 files, strict mypy38 files and compilation PASS. Complete command
+`.venv/Scripts/uv.exe run --frozen python scripts/verify.py`: PASS, **1049 tests**
+in2226.71s, including required PostgreSQL migrations/integration, lock/dependency
+checks, lint/format, types and matching bounds. Log:
+`local-data/verification/20261106T123328665712Z.log`. Suite wall-clock is verification
+runtime, not product latency. Existing2700-second runner cap unchanged in this task.
+Final read-only Phase0/2/3 plan/code/config/prediction/result seal checks PASS.
+
+Current external AI/investigation and both automation flags checked false. No new
+held-out evaluation should be frozen until live admission and missing quality gates
+are resolved; global alias/item isolation is verified, model quality is not. No
+production/customer transmission, money mutation or new financial authority.

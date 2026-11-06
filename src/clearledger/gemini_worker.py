@@ -40,6 +40,9 @@ def main():
     from clearledger.extraction_provider import decode_output
     from clearledger.gemini_schema import remittance_contents, remittance_response_schema
     from clearledger.grounded_extraction import (
+        VERSION as GROUNDED_VERSION,
+    )
+    from clearledger.grounded_extraction import (
         RemittanceSelection,
         catalog,
         payload,
@@ -49,6 +52,7 @@ def main():
     from clearledger.investigation_ai_contract import ar_response_schema
     from clearledger.investigation_contract import InvestigatorReply
     from clearledger.provider_diagnostics import diagnostic, exception_category
+    from clearledger.source_presentations import remittance_packet, remittance_selection
 
     install_guard(allow_gemini=True)
 
@@ -158,7 +162,8 @@ def main():
                 else None
             )
             if grounded is not None:
-                contents = json.dumps(payload(grounded))
+                public, alias_map = remittance_packet(payload(grounded))
+                contents = json.dumps(public)
                 schema = provider_schema()
             # SDK 2.33's typed CountTokensConfig omits Developer API system/schema fields.
             # Public extra_body sends the documented full generateContentRequest instead.
@@ -225,6 +230,9 @@ def main():
             }
             if grounded is not None:
                 selection = RemittanceSelection.model_validate(decode_output(response.text or ""))
+                selection = RemittanceSelection.model_validate(
+                    remittance_selection(selection.model_dump(mode="json"), alias_map)
+                )
                 resolved = resolve_selection(selection, grounded)
                 result["json_text"] = resolved.model_dump_json()
                 ids = [
@@ -246,7 +254,7 @@ def main():
                         if i is not None
                     )
                 result["grounding"] = {
-                    "schema_version": "grounded-remittance-1",
+                    "schema_version": GROUNDED_VERSION,
                     "source_hash": grounded.source.source_hash,
                     "selected_span_ids": sorted(set(ids)),
                     "financial_authority": False,

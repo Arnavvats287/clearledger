@@ -46,3 +46,14 @@ No actual bank connection, real customer emails, production ERP posting, live ta
 
 ## Product hypothesis to evaluate
 Directed evidence investigation + persistent case management reduces analyst effort and unsupported financial recommendations compared with deterministic-only and conventional single-investigator baselines. Treat outcome as an experiment, not an assumed success.
+
+## Approved accuracy diagnostics — 2026-11-06
+
+The operator approves TRAIN/DEV architecture correction after immutable Phase3:
+request aliases, item-level legal validation, task-specific semantic policies,
+retrieval and invoice candidate/compression diagnostics. TRAIN/DEV oracle evidence
+and occurrence candidates are explicitly permitted, without class-label disclosure.
+No new held-out selection/inference, historical rerun, private AR, RecBench, UI,
+deployment or expansion of financial authority. Existing PostgreSQL, outbox,
+Director and production graph stages remain. Actual scope/gates/results:
+docs/FINAL_ACCURACY_DIAGNOSTICS.md. No final evaluation starts automatically.
