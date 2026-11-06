@@ -3486,3 +3486,9 @@ Current external AI/investigation and both automation flags checked false. No ne
 held-out evaluation should be frozen until live admission and missing quality gates
 are resolved; global alias/item isolation is verified, model quality is not. No
 production/customer transmission, money mutation or new financial authority.
+
+Local verified engineering checkpoint: `7b67e9b` (`feat: isolate grounding policies
+and development diagnostics`),1049 regression tests +4 isolated restart tests PASS.
+This checkpoint does not close the blocked live corpus/oracle/model-quality gates.
+Staged review contained22 intended code/test/report files, no credentials, datasets,
+UI, migration or frozen evaluation changes. No push.
