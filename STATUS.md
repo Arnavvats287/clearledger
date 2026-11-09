@@ -3586,3 +3586,6 @@ strict mypy (45 files), compile/import, lock/dependencies and historical seal
 checks passed. The scorer-only duplicate counter fix was verified separately
 against both result artifacts. Exact results and artifact hashes are in
 `docs/FINAL_ACCURACY_DIAGNOSTICS.md`. External AI and automation remain disabled.
+
+Local verified experiment checkpoint `f0e9f19`. Staged review confirmed only the
+eight intended development code, test and report paths. Raw artifacts stayed local.
