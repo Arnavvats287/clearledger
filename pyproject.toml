@@ -64,5 +64,7 @@ files = [
   "scripts/contract_selection.py",
   "scripts/contradiction_run.py", "scripts/contradiction_worker.py",
   "scripts/contradiction_score.py", "scripts/external_eval/contradiction.py",
+  "scripts/external_phase3b.py", "scripts/external_phase3b_worker.py",
+  "scripts/external_phase3b_score.py",
 ]
 

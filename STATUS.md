@@ -3611,3 +3611,27 @@ No implementation changes or focused/regression reruns. See
 
 Local report checkpoint `21f6e82`. The commit contains the report and status
 only. The campaign configuration, raw predictions and scores remain local.
+
+## Phase 3B final fresh external evaluation — 2026-11-09
+
+Operator opened only Phase 3B. Source-ID selection froze 24 unused ContractNLI
+TEST documents (408 hypotheses) and 100 unused DocILE VALIDATION documents.
+Plan `2ee162ed6fd6166b387c16f2dcb7a57d2ff75b02c29c137190e1815359e38b0c`.
+The selected Flash-Lite MINIMAL global reference and existing DocILE candidate
+architecture ran through an additive isolated harness with one caller and no
+retries. Both prediction seals verified before the scorer opened annotations.
+
+ContractNLI 303/408 accuracy, .6782 macro-F1, .4638 Contradiction F1, 386/408
+grounded coverage, 53/241 unsupported assertions and 623/623 verified canonical
+quote ranges. DocILE all-document P/R/F1 .6190/.6842/.6500, exact-set match 72/100,
+51/100 coverage and 70/72 localized selections. Official conditional document_id
+KILE location+exact-text F1 .6667 on 67 mapped invoice documents. Four HTTP 503s,
+two no-generation input-cap failures, zero retries. See
+`docs/EXTERNAL_EVALUATION_PHASE3B.md` for source hashes, prediction hashes,
+denominators, comparative limits and complete metrics.
+
+Frozen verification 1,076 passed in 2,242.80s. Focused 62 passed. Ruff/format,
+strict mypy (48 files), compile/import and Phase 2/3, development and Phase 3B
+seal checks passed. External AI and automation disabled in product configuration.
+The evaluation worker had no production financial access and made zero financial
+mutations. No other benchmark or workstream started.
