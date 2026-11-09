@@ -60,5 +60,6 @@ files = [
   "scripts/external_eval/accuracy_nli.py", "scripts/accuracy_development.py",
   "scripts/accuracy_worker.py", "scripts/accuracy_campaign.py",
   "scripts/accuracy_score.py", "scripts/accuracy_exposure.py",
+  "scripts/accuracy_schema_probe.py", "scripts/accuracy_completion.py",
 ]
 

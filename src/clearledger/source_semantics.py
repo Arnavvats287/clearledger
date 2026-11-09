@@ -152,3 +152,44 @@ def context(catalog: SemanticSource, selected: list[Span], *, neighbors: int = 1
                 if spans[i].page == span.page
             )
     return [spans[i] for i in sorted(chosen)]
+
+
+def section_rank(catalog: SemanticSource, query: str, *, limit: int, hybrid: bool) -> list[Span]:
+    """Prioritize coherent clause groups while bounding the evidence per question."""
+    ranked = rank(catalog, query, limit=limit)
+    if not ranked:
+        return []
+    headings = dict(catalog.sections)
+    groups: dict[int, list[Span]] = {}
+    group_ids: dict[str, int] = {}
+    previous: tuple[int, str] | None = None
+    for span in catalog.source.spans:
+        key = span.page, headings.get(span.span_id, "")
+        if key != previous:
+            groups[len(groups)] = []
+        group = len(groups) - 1
+        groups[group].append(span)
+        group_ids[span.span_id] = group
+        previous = key
+
+    section_scores = {group: 0.0 for group in groups}
+    for position, span in enumerate(ranked):
+        section_scores[group_ids[span.span_id]] += 1 / (position + 3)
+    best = sorted(
+        section_scores, key=lambda g: (-section_scores[g] / math.sqrt(len(groups[g])), g)
+    )[:4]
+    if hybrid:
+        # Lexical anchors retain evidence from small or unlabelled clauses.
+        ordered = ranked[: max(1, limit // 3)]
+        for group in best:
+            anchors = [span for span in ranked if group_ids[span.span_id] == group][:3]
+            anchor_ids = {span.span_id for span in anchors}
+            ordered.extend(anchors)
+            for position, span in enumerate(groups[group]):
+                if span.span_id in anchor_ids:
+                    ordered.extend(groups[group][max(0, position - 1) : position + 2])
+        ordered.extend(ranked)
+    else:
+        ordered = [span for group in best for span in groups[group]]
+        ordered.extend(ranked)
+    return list({span.span_id: span for span in ordered}.values())[:limit]

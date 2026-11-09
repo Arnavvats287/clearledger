@@ -3492,3 +3492,41 @@ and development diagnostics`),1049 regression tests +4 isolated restart tests PA
 This checkpoint does not close the blocked live corpus/oracle/model-quality gates.
 Staged review contained22 intended code/test/report files, no credentials, datasets,
 UI, migration or frozen evaluation changes. No push.
+
+## Development accuracy diagnostic completion — 2026-11-09
+
+The previous blocked checkpoint is preserved. Synthetic delta tests reproduced
+HTTP 400 for the exact synthesis schema with both nested `maxItems` bounds. Removing
+either one independently returned HTTP 200. Development transport now projects a
+simple schema and retains all existing strict local checks. Actual synthetic
+legal and invoice controls passed before any TRAIN/DEV generation.
+
+Completed 74 approved development jobs, with 85 corpus generations including two
+HTTP 503 attempts recovered on the first bounded retry. Provider-observed usage
+was 672,077 input and 51,273 output tokens across 83 successful corpus responses.
+No input-cap failure or corpus HTTP 400. Offline scorer correction scoped the
+single-item denominator and counted each recovered gold occurrence once, using
+saved predictions only. No corpus generation was repeated for scoring.
+
+DEV evidence selection then classification: 43/51, macro-F1 .5883. Global direct:
+41/51, evidence F1 .7255. Oracle: 26/51, macro-F1 .4375, including a 17-item
+literal-format failure. No unknown aliases across 558 synthesis references. There
+were 13 known references outside the hypothesis's selectable scope. New section
+strategies expose less source at variable recall. Invoice TRAIN ceilings remain
+23/25 values and 21/25 occurrences. Blinded oracle improved matched selector value
+recall from 4/5 to 5/5 and unique occurrence coverage from 6/9 to 8/9.
+
+Full details, artifacts and open quality limits: `docs/FINAL_ACCURACY_DIAGNOSTICS.md`.
+Development-only code, with no production graph or financial-authority change.
+External AI and both automation flags verified disabled. No Phase 3B, new
+held-out selection/inference or private benchmark execution. Do not freeze a new
+final configuration based on this small DEV matrix alone.
+
+Final `uv run --frozen python scripts/verify.py`: **1,058 passed in 2,008.96s**,
+including PostgreSQL migration/integration, matching bounds, lock/dependency,
+Ruff/format and strict mypy (40 files). Focused tests: 53 passed. Compile/import
+checks passed. Isolated restart: **4 passed in 87.27s**. Local logs:
+`local-data/verification/20261109T104959802108Z.log` and
+`local-data/verification/isolated-restart-20261109T101135869486Z.log`.
+Read-only Phase 0/2/3 plan, code, config, prediction and result seal checks PASS.
+Development seal PASS (`e4c0fc12148bac917983ac2356ce9e5f5040028b8696403e26935ee865f82abc`).

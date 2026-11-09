@@ -7,11 +7,12 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from clearledger.source_aliases import Aliases, aliases
 from clearledger.source_retrieval import exact_atoms
-from clearledger.source_semantics import SemanticSource, context, rank
+from clearledger.source_semantics import SemanticSource, context, rank, section_rank
 from clearledger.source_spans import GroundingError, Span
 
 Label = Literal["Entailment", "Contradiction", "NotMentioned", "Abstain"]
 Relation = Literal["SUPPORT", "CONFLICT", "CONTEXT", "NONE"]
+Strategy = Literal["local", "global", "hybrid", "context", "section", "section-hybrid"]
 Status = Literal[
     "VALID_ENTAILMENT",
     "VALID_CONTRADICTION",
@@ -64,12 +65,26 @@ def packet(
     hypotheses: list[dict[str, str]],
     *,
     request: str,
-    strategy: Literal["local", "global", "hybrid"] = "global",
+    strategy: Strategy = "global",
     k: int = 20,
     extra: list[Span] | None = None,
 ) -> Packet:
-    pools = {h["hypothesis_id"]: rank(catalog, h["text"], limit=k) for h in hypotheses}
-    visible = {s.span_id: s for pool in pools.values() for s in context(catalog, pool)}
+    pools = {}
+    for hypothesis in hypotheses:
+        query = hypothesis["text"]
+        pool = (
+            section_rank(catalog, query, limit=k, hybrid=strategy == "section-hybrid")
+            if strategy in {"section", "section-hybrid"}
+            else rank(catalog, query, limit=k)
+        )
+        pools[hypothesis["hypothesis_id"]] = (
+            context(catalog, pool) if strategy == "context" else pool
+        )
+    visible = {
+        s.span_id: s
+        for pool in pools.values()
+        for s in (context(catalog, pool) if strategy in {"global", "hybrid"} else pool)
+    }
     for span in extra or []:
         catalog.source.resolve(
             span.span_id, expected_hash=span.source_hash, expected_version=span.source_version
@@ -86,7 +101,7 @@ def packet(
     selectable = {
         h: (
             ids
-            if strategy == "local"
+            if strategy in {"local", "context", "section", "section-hybrid"}
             else all_ids
             if strategy == "global"
             else tuple(a for a in all_ids if a in set(ids) | supplemental)
@@ -291,3 +306,22 @@ def inline_schema(schema: dict[str, Any]) -> dict[str, Any]:
 
     result: dict[str, Any] = expand(schema)
     return result
+
+
+def provider_shape(schema: dict[str, Any]) -> dict[str, Any]:
+    """Project the transport shape only. Strict DTO and item checks remain local."""
+
+    def shape(node: dict[str, Any]) -> dict[str, Any]:
+        kind = node.get("type")
+        if kind == "object":
+            return {
+                "type": kind,
+                "properties": {k: shape(v) for k, v in node["properties"].items()},
+            }
+        if kind == "array":
+            return {"type": kind, "items": shape(node["items"])}
+        if kind == "string":
+            return {"type": kind}
+        raise ValueError("UNSUPPORTED_PROVIDER_SHAPE")
+
+    return shape(inline_schema(schema))

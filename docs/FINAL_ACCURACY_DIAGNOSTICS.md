@@ -299,3 +299,228 @@ artifact changed. Live corpus model-quality acceptance remains blocked, not pass
 No financial posting/approval/allocation authority, schema migration, new service,
 Director change, graph topology change, hidden data use or held-out inference.
 External AI and automation flags remain disabled. No push.
+
+## Completion pass — 2026-11-09
+
+The previous blocked checkpoint above is historical. This pass reused only the
+previously selected 3 ContractNLI DEV and 8 TRAIN documents and 32 DocILE TRAIN
+documents. The development results are kept under `local-data/accuracy-completion`.
+
+### Synthetic provider admission
+
+Gemini `gemini-3.5-flash-lite`, `MINIMAL`, `generateContent`, with the same prompt,
+synthetic payload, and output cap across schema probes. The minimal accepted form
+was an object containing `items`, an array of objects with string `id`, string
+`label` and array-of-string `evidence`. The simple synthesis uses that same nesting
+with the existing `answers` fields. The schema logs contain schema hashes and
+sizes, deltas, attempts, timestamps, safe status, latency and usage.
+
+| Probe | Actual HTTP result |
+| --- | --- |
+| Minimal nested array shape | 200 |
+| Label enum and alias enum, independently | 200 each |
+| Outer and inner `minItems` / `maxItems`, independently on the minimal shape | 200 each |
+| `required`, `additionalProperties`, nullable type union, description | 200 each |
+| `$defs` alone, adding `$ref`, nullable `anyOf` | 200 each |
+| Exact synthesis DTO, including both nested `maxItems` bounds | 400 `INVALID_ARGUMENT`, twice |
+| Full synthesis DTO removing only outer `maxItems: 17` | 200 |
+| Full synthesis DTO removing only inner `maxItems: 20` | 200 |
+| Full synthesis DTO removing both bounds | 200 |
+| Simple synthesis retaining all fields and nesting | 200 |
+
+The observed trigger is the pair of array bounds in the full synthesis schema.
+The one-variable removals retain depth and all other DTO fields and constraints.
+The provider did not identify its internal threshold or rejected field. Google
+documents both array bounds and rejection of some complex schemas.
+[Gemini structured outputs](https://ai.google.dev/gemini-api/docs/structured-output).
+
+The development worker sends only the object, array and string transport shapes.
+Local validation still checks enum values, required/extra fields, item counts,
+missing/duplicate hypotheses, aliases, source identity and hashes, and factual
+constraints. The historical validator remains in its own ablation. Provider
+errors are recorded per attempt. Only eligible transient errors may receive two
+additional attempts, with deterministic backoff and ten-second operation pacing.
+
+### Offline ContractNLI exposure
+
+Five-hypothesis requests are shown below. The checked-in preparation command
+also measures 1- and 17-hypothesis requests. Recall and complete coverage are
+over 31 DEV and 83 TRAIN positive pairs. Exposure is mean unique document
+characters sent per request. Token estimates use UTF-8 payload bytes divided by
+four and exclude the instruction and schema. They differ from provider usage.
+
+| Strategy | DEV recall | DEV complete | DEV exposure | DEV tokens / aliases | TRAIN recall | TRAIN complete | TRAIN exposure | TRAIN tokens / aliases |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Local K20 | 84.67% | 14/31 | 67.38% | 4314 / 45.0 | 87.66% | 53/83 | 82.74% | 2700 / 30.8 |
+| Local K40 | 87.97% | 17/31 | 86.34% | 5826 / 62.0 | 97.41% | 66/83 | 96.11% | 3514 / 43.7 |
+| Local K20 + neighbors | 90.11% | 27/31 | 83.06% | 6142 / 80.5 | 94.22% | 78/83 | 92.03% | 3573 / 51.3 |
+| Local K40 + neighbors | 96.65% | 29/31 | 94.38% | 7411 / 96.5 | 100% | 83/83 | 98.70% | 4121 / 59.8 |
+| Global union K20 | 100% | 31/31 | 83.06% | 6232 / 80.5 | 99.92% | 82/83 | 92.03% | 3547 / 51.3 |
+| Section-first K20 | 76.24% | 22/31 | 37.16% | 2918 / 37.9 | 60.18% | 49/83 | 52.42% | 1814 / 24.4 |
+| Section + span K20 | 76.51% | 18/31 | 62.39% | 4174 / 50.8 | 90.31% | 65/83 | 80.43% | 2736 / 36.5 |
+
+Section grouping uses source headings and contiguous clauses, with group scores
+derived from lexical rank and scaled by group size. The hybrid retains lexical
+anchors and nearby spans within sections. On TRAIN it improves K20 local recall
+and complete coverage at lower document exposure, but uses slightly more packet
+tokens. On DEV, section-first reduces exposure and improves complete coverage
+relative to local K20 while losing character recall. The global pool provides
+the strongest measured DEV ceiling. The earlier 77.1% and 94.1% K40 exposure
+figures are per-hypothesis means. The table measures the combined batch request.
+
+### DocILE source ceiling
+
+All 32 PDFs produced bounded parser representations. OCR candidates take priority.
+Up to eight novel PDF text candidates use the PDF byte digest, parser version and
+canonical exact text range, with `localization_status=UNAVAILABLE` on selection.
+OCR candidates preserve source token IDs and geometry. The label parser now joins
+visible punctuation fragments across whitespace, including slash and backslash,
+and tolerates small left overlap in right-of-label box alignment.
+
+The live-sized packets expose **23/25 values (92%) and 21/25 localized occurrences
+(84%)**. All recovered OCR values rank among the first 13 candidates. The source
+pool offers 78 supplemental PDF
+candidates across the 32 documents. Combined packet estimates total 141,365 bytes,
+with a maximum of 11,604 bytes before the system prompt/schema.
+
+| Remaining TRAIN misses | Count | Observation |
+| --- | ---: | --- |
+| PDF text only, no exact standalone value | 1 | The target occurs inside a longer punctuation-delimited identifier. Truncating it has no independent source boundary. |
+| Source absent | 1 | Exact target absent from the admitted OCR and PDF text. |
+| Correct value, occurrence geometry fails | 2 | Best observed IoU was 0 and 0.3085 respectively, below the frozen 0.5 criterion. |
+
+The fallback increases representational coverage. It does not raise measured
+recall on these 25 targets. Source limits, instead of the candidate rank cap,
+account for the observed misses. Scoring normalization remains NFC plus outer trim.
+
+### Live ContractNLI development ablations
+
+Raw semantic metrics accept only exact label literals and count malformed or missing
+items as abstentions. Grounded metrics additionally require strict typed rows and
+verified evidence. The existing unsupported-assertion metric counts assertive
+predictions whose class disagrees with gold, divided by all assertive predictions.
+Evidence F1 is grounded gold-character overlap. Counts include all scheduled pairs.
+
+| Path | Pairs | Raw accuracy / macro-F1 | Grounded accuracy / macro-F1 | Evidence F1 | Unsupported assertions | Generations | Input / output tokens observed |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Local direct, 17 | 51 | 80.39% / .5667 | 74.51% / .5413 | .6657 | 23.53% | 3 | 24090 / 3347 |
+| Global direct, 17 | 51 | 80.39% / .5648 | 80.39% / .5648 | .7255 | 27.03% | 3 | 45582 / 3396 |
+| Hybrid direct, 17 | 51 | 82.35% / .5729 | 82.35% / .5778 | .6692 | 18.18% | 3 | 33007 / 3299 |
+| Historical plan then synthesis | 51 | 58.82% / .4745 | 0% / .0000 | .0000 | N/A | 6 | 82113 / 6816 |
+| Item-level plan then synthesis | 51 | 0% / .0000 | 0% / .0000 | .0000 | N/A | 6 | 91880 / 5595 |
+| Select evidence then classify | 51 | 84.31% / .5883 | 84.31% / .5883 | .6579 | 20.59% | 7 | 77107 / 5520 |
+| Global direct, batches of up to 5 | 51 | 70.59% / .5287 | 70.59% / .5287 | .6031 | 23.33% | 12 | 79665 / 3574 |
+| Global direct, single-item reference | 6 | 83.33% / .6000 | 83.33% / .6000 | .5681 | 0% | 6 | 18249 / 448 |
+| Blinded oracle evidence | 51 | 50.98% / .4375 | 50.98% / .4375 | .4944 | 31.82% | 3 | 50482 / 3421 |
+| DEV section-first | 51 | 78.43% / .5443 | 74.51% / .5291 | .5816 | 16.67% | 3 | 19576 / 3211 |
+| DEV section + span | 51 | 56.86% / .4771 | 54.90% / .4677 | .4413 | 16.67% | 3 | 25304 / 3292 |
+| TRAIN section + span | 136 | 70.59% / .6631 | 67.65% / .6351 | .7071 | 20.83% | 8 | 48409 / 8695 |
+
+The six single-item pairs also scored 6/6 with the existing 17-item global outputs,
+versus 5/6 for the single-item calls. Grounded macro-F1 on those pairs was .6667 vs
+.6000. Contradiction had zero support in that six-pair sample. Neither reduced
+batch size improved measured accuracy on these samples. The five-item path used
+12 calls versus three for the 17-item global run.
+
+The blinded oracle included source evidence for all 31 positive DEV pairs without
+class labels. Grounded per-class F1 was .6250 Entailment, .0000 Contradiction and
+.6875 NotMentioned. One oracle response used relation-style or underscored strings
+in the label field for all 17 items. Across the other two responses, 26/34 labels
+were correct.
+The oracle did not outperform normal retrieval, even with source coverage verified
+offline. Formatting and semantic classification both remain bottlenecks. The oracle
+does not support attributing the main error to retrieval alone.
+
+The historical validator rejected all three synthesis documents. The item-level
+plans themselves validated, but all 51 resulting synthesis rows used unsupported
+uppercase or underscored label literals. The direct global path had zero local
+rejections. The select-then-classify path gained two correct DEV answers at the cost
+of three additional planned calls, one transient retry and lower evidence F1.
+Its Contradiction F1 remained zero. The corpus shows that removing provider enums
+can leave significant format error even when strict local isolation works.
+
+Across the alias-based synthesis jobs, 558 references were declared. All existed
+in their request catalogs. Thirteen (2.33%) were known aliases outside the
+hypothesis's selectable scope, including references in malformed rows. Strict
+validation recorded 12 evidence rejections and 115 item-output failures among 601
+scheduled pairs (127/601, 21.13%). The item failures are chiefly invalid literals.
+No alias normalization or relabeling was applied. A single-hypothesis scorer
+denominator mismatch was corrected offline by projecting the original packet to
+the requested hypothesis IDs. Gold coverage enforcement remains strict. A separate
+occurrence counter deduplicates multiple selected aliases hitting the same gold box.
+Both corrections used the same saved predictions.
+
+### Live DocILE normal vs blinded oracle
+
+| Path | Documents | Correct / gold values | Correct / emitted values | Distinct gold occurrences recovered | Unknown aliases | Non-invoice emissions |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Normal, full live TRAIN subset | 16 | 4/6 | 4/8 | 6/10 | 0/10 | 1 |
+| Normal, paired oracle documents | 5 | 4/5 | 4/6 | 6/9 | 0/8 | 0 |
+| Blinded oracle, same documents | 5 | 5/5 | 5/6 | 8/9 | 0/17 | 0 |
+
+Oracle candidates were source-constructible occurrences blended among distractors.
+The gain on the paired documents indicates that candidate availability matters.
+The remaining incorrect emission shows that selection remains imperfect. Multiple
+aliases can hit one occurrence. The table counts each gold occurrence at most once.
+Exact document value sets matched on 12/16 normal documents and improved from 3/5
+to 4/5 on the paired oracle documents.
+Exact token admission passed for every DocILE generation in this run, including
+fallback packets. This pass did not re-execute old capped requests.
+
+### Transport, reproducibility and recommendation
+
+The final worker recorded 88 generation attempts, comprising 85 corpus attempts
+and three synthetic controls. There were 83 successful corpus responses and two
+HTTP 503 `UNAVAILABLE` attempts, one during evidence selection and one during
+invoice extraction. Each succeeded on its first permitted transient retry. There
+were zero corpus HTTP 400s, 429s or input-cap failures. Across the final 85 corpus
+attempts, provider generation latency was 6.863s median, 10.973s p95 and 12.076s
+maximum, excluding pacing. The 83 reported responses used 672,077 input and 51,273
+output tokens, 723,350 total. Failed usage and separate thinking counts were
+unavailable. Schema probes added 21 synthetic generations, and the earlier exact
+worker admission added three. Total for this pass: 112 generation attempts and
+205 HTTP operations. Billing and model selection stayed as configured by the
+operator. Provider billing amounts are unavailable.
+
+Run artifacts: `local-data/accuracy-completion/run-v2`, with all 74 development
+predictions, exact attempt metadata, variant-level performance, offline exposure,
+invoice ceilings and `development-seal.json`.
+Campaign SHA256 `6507ce6839d48d79cc0d574bf3ead74e5a3ece1b2f8bcf6ff32a938178f77483`.
+Development seal SHA256 `e4c0fc12148bac917983ac2356ce9e5f5040028b8696403e26935ee865f82abc`.
+
+For a future configuration review, the 17-item direct path offers the best
+measured call efficiency. Global K20 is the evidence-recall reference, and the
+direct hybrid is the lower-cost accuracy and assertion-rate candidate on DEV.
+Evidence-first selection merits consideration only if its extra calls are worth
+the observed two-answer gain. Keep local validation and consider retaining admitted
+label enums with the nested array bounds removed. This schema passed synthetic
+admission, but its semantic performance has not been measured on the corpus.
+The weak contradiction results and format failures argue against freezing a final
+configuration based on these DEV results alone. No alternate model or thinking
+level was tested.
+
+For an already authorized development run, `scripts/accuracy_completion.py prepare`
+takes `--runs`, `--docile` and a new `--root`. Use the same root with `preflight`
+before `run`. `scripts/accuracy_score.py --runs <runs> --development-root <root>`
+scores existing attempts without a provider call. The scorer refuses to replace
+an existing result file. The original blocked checkpoint and evaluation seals
+remain available for independent integrity checks.
+
+### Verification
+
+- Focused grounding, schema, transport and scorer suite: 53 passed in 5.78s.
+- Final `uv run --frozen python scripts/verify.py`: 1,058 passed in 2,008.96s.
+  PostgreSQL migrations/integration, matching bounds, lock/dependencies, Ruff,
+  format and strict mypy all passed. Strict mypy checked 40 source files.
+- `uv run --frozen python scripts/verify_isolated_restart.py`: 4 passed in 87.27s.
+  It removed only the disposable resources owned by that invocation.
+- Compilation, imports, Phase 0/2/3 plan/code/config/prediction/result seal checks,
+  and the local development seal all passed. External AI and automation flags
+  were false.
+
+The earlier regression run passed 1,056 tests. The final suite includes the
+additional punctuation and scoped-scorer cases. Full logs are local under
+`local-data/verification/20261109T104959802108Z.log` and
+`local-data/verification/isolated-restart-20261109T101135869486Z.log`.
+The evaluation worker had no database or financial action access. No new held-out
+sample was selected, transmitted or scored.

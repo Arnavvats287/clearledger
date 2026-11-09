@@ -21,8 +21,15 @@ def group(name: str) -> str:
     return name
 
 
-def score(runs: Path) -> None:
-    root = runs / "accuracy-development-v2"
+def scoped_packet(packet: ContractPacket, selected: set[str]) -> ContractPacket:
+    hypotheses = [h for h in packet.hypotheses if h.hypothesis_id in selected]
+    if not hypotheses or {h.hypothesis_id for h in hypotheses} != selected:
+        raise ValueError("INVALID_DEVELOPMENT_HYPOTHESIS_SCOPE")
+    return packet.model_copy(update={"hypotheses": hypotheses})
+
+
+def score(runs: Path, *, development_root: Path | None = None) -> None:
+    root = development_root or runs / "accuracy-development-v2"
     config = load_json(root / "config/campaign.json")
     jobs = config["jobs"]
     by_variant: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -31,6 +38,23 @@ def score(runs: Path) -> None:
         if not prediction_path.exists():
             raise ValueError("INCOMPLETE_DEVELOPMENT_MATRIX")
         by_variant[group(job["variant"])].append({"job": job, "result": load_json(prediction_path)})
+    oracle_ids = {row["result"]["source_id"] for row in by_variant.get("invoice-oracle", [])}
+    if oracle_ids:
+        by_variant["invoice-normal-paired"] = [
+            row for row in by_variant["invoice-normal"] if row["result"]["source_id"] in oracle_ids
+        ]
+    single_ids: dict[str, set[str]] = defaultdict(set)
+    for row in by_variant.get("nli-single", []):
+        single_ids[row["result"]["source_id"]].update(row["job"]["hypotheses"])
+    if single_ids:
+        by_variant["nli-global-on-single-pairs"] = [
+            {
+                **row,
+                "job": {**row["job"], "hypotheses": sorted(single_ids[row["result"]["source_id"]])},
+            }
+            for row in by_variant["nli-global"]
+            if row["result"]["source_id"] in single_ids
+        ]
     results: dict[str, Any] = {}
     for name, records in by_variant.items():
         if name.startswith("nli"):
@@ -40,18 +64,25 @@ def score(runs: Path) -> None:
             ground: dict[str, list[Answer]] = defaultdict(list)
             states: Counter[str] = Counter()
             reasons: Counter[str] = Counter()
+            split_by_id = {}
+            declared = 0
             for record in records:
                 job, row = record["job"], record["result"]
                 p = ContractPacket.model_validate(load_json(root / job["input"]))
+                split_by_id[p.document_id] = job.get("split", "dev")
                 packets[p.document_id] = p
                 selected[p.document_id].update(job["hypotheses"])
                 value = row.get("raw") or {}
-                for candidate in value.get("answers", []):
+                rows = value.get("answers")
+                for candidate in rows if isinstance(rows, list) else []:
                     if (
                         not isinstance(candidate, dict)
                         or candidate.get("hypothesis_id") not in job["hypotheses"]
                     ):
                         continue
+                    identifiers = candidate.get("aliases", candidate.get("span_ids"))
+                    if isinstance(identifiers, list):
+                        declared += len(identifiers)
                     try:
                         label = RawDecision.model_validate(
                             {"predicted_label": candidate.get("predicted_label")}
@@ -66,17 +97,21 @@ def score(runs: Path) -> None:
                         )
                     )
                 output = ContractOutput.model_validate(row["output"])
-                ground[p.document_id].extend(output.answers)
+                ground[p.document_id].extend(
+                    answer for answer in output.answers if answer.hypothesis_id in job["hypotheses"]
+                )
                 diag = row["diagnostics"]
                 if diag.get("legacy_rejected"):
                     states["LEGACY_DOCUMENT_REJECTION"] += 1
                 for item in diag.get("items", []):
+                    if item["hypothesis_id"] not in job["hypotheses"]:
+                        continue
                     states[item["status"]] += 1
                     if item["reason"]:
                         reasons[item["reason"]] += 1
             gold: list[GoldNli] = []
             for identifier, ids in selected.items():
-                path = root / f"scorer-only/contract/dev-{identifier}.json"
+                path = root / f"scorer-only/contract/{split_by_id[identifier]}-{identifier}.json"
                 gold.extend(
                     GoldNli(
                         x["document_id"],
@@ -105,20 +140,30 @@ def score(runs: Path) -> None:
                     )
                 return out
 
-            raw_metrics = score_contract(packets, outputs(raw, list(selected)), gold)
-            grounded = score_contract(packets, outputs(ground, list(selected)), gold)
+            scope = {
+                identifier: scoped_packet(packets[identifier], ids)
+                for identifier, ids in selected.items()
+            }
+            raw_metrics = score_contract(scope, outputs(raw, list(selected)), gold)
+            grounded = score_contract(scope, outputs(ground, list(selected)), gold)
             results[name] = {
                 "pairs": len(gold),
                 "raw_semantic": raw_metrics,
                 "grounded": grounded,
                 "item_statuses": dict(states),
                 "rejection_reasons": dict(reasons),
+                "declared_aliases": declared,
+                "invalid_alias_items": states["INVALID_ALIAS"],
+                "validator_rejections": sum(
+                    states[k] for k in ("INVALID_ALIAS", "INVALID_EVIDENCE")
+                ),
                 "raw_quotes_intentionally_not_scored": True,
             }
         else:
             total = correct = locations = emitted = targets = invalid = declared = (
                 false_non_invoice
             ) = 0
+            gold_occurrences = recovered_occurrences = 0
             for record in records:
                 row = record["result"]
                 g = load_json(root / f"scorer-only/invoice/{row['source_id']}.json")
@@ -130,14 +175,21 @@ def score(runs: Path) -> None:
                 total += 1
                 if not g["is_invoice"]:
                     false_non_invoice += len(pred)
+                occurrences = set()
+                gold_occurrences += len(g["fields"])
                 for selected_span in row["diagnostics"].get("selected", []):
-                    if selected_span["bbox"] and any(
-                        normalized(selected_span["value"]) == normalized(f["text"])
-                        and selected_span["page"] == f["page"] + 1
-                        and overlap_box(selected_span["bbox"], f["bbox"]) >= 0.5
-                        for f in g["fields"]
-                    ):
-                        locations += 1
+                    if not selected_span["bbox"]:
+                        continue
+                    matched = {
+                        i
+                        for i, field in enumerate(g["fields"])
+                        if normalized(selected_span["value"]) == normalized(field["text"])
+                        and selected_span["page"] == field["page"] + 1
+                        and overlap_box(selected_span["bbox"], field["bbox"]) >= 0.5
+                    }
+                    locations += bool(matched)
+                    occurrences.update(matched)
+                recovered_occurrences += len(occurrences)
                 invalid += row["diagnostics"].get("invalid_aliases", 0)
                 declared += row["diagnostics"].get("declared_aliases", 0)
             results[name] = {
@@ -148,6 +200,8 @@ def score(runs: Path) -> None:
                 "value_precision": correct / emitted if emitted else None,
                 "value_recall": correct / targets if targets else None,
                 "source_and_occurrence_correct_selections": locations,
+                "distinct_gold_occurrences": gold_occurrences,
+                "distinct_gold_occurrences_recovered": recovered_occurrences,
                 "invalid_aliases": invalid,
                 "declared_aliases": declared,
                 "non_invoice_false_emissions": false_non_invoice,
@@ -180,4 +234,6 @@ def score(runs: Path) -> None:
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--runs", type=Path, required=True)
-    score(p.parse_args().runs)
+    p.add_argument("--development-root", type=Path)
+    args = p.parse_args()
+    score(args.runs, development_root=args.development_root)

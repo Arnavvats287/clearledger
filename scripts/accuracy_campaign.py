@@ -217,8 +217,14 @@ def jobs(runs: Path) -> None:
     )
 
 
-def run(runs: Path, *, control: bool = False, configuration: str | None = None) -> None:
-    root = runs / "accuracy-development-v2"
+def run(
+    runs: Path,
+    *,
+    control: bool = False,
+    configuration: str | None = None,
+    development_root: Path | None = None,
+) -> None:
+    root = development_root or runs / "accuracy-development-v2"
     path = root / "config/campaign.json"
     reviewed = root / "config/campaign-reviewed.json"
     if reviewed.exists():
@@ -272,7 +278,7 @@ def run(runs: Path, *, control: bool = False, configuration: str | None = None) 
                 "model": "gemini-3.5-flash-lite",
                 "config_sha256": sha256(path),
                 "operator_quota": c["operator_quota"],
-                "retries": 0,
+                "retry_policy": c["retry_policy"],
                 "billing_changes": False,
             },
         )

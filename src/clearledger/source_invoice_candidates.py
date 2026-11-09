@@ -3,11 +3,13 @@
 import re
 from dataclasses import replace
 from itertools import islice
+from typing import TypedDict
 
 from clearledger.source_candidates import Candidate, Candidates, discover
 from clearledger.source_spans import Source, digest, make_span
 
 LABEL = re.compile(r"\b(?:invoice|inv\.?|document|bill)\s*(?:no\.?|number|num|id|#|:)", re.I)
+FRAGMENT = re.compile(r"[A-Za-z0-9]+(?:\s*[-/.\\]\s*[A-Za-z0-9]+)+")
 
 
 def invoice_admission(source: Source) -> str:
@@ -94,6 +96,26 @@ def candidates(source: Source, *, internal_limit: int = 1024) -> Candidates:
             # Same/next line exact values and punctuation-separated OCR identifiers.
             left = match.end()
             tail = page.text[left : left + 140]
+            # Stop before the following label or column value. Join only visible punctuation.
+            fragment = re.match(r"[\s:=#]*", tail)
+            if fragment:
+                identifier = FRAGMENT.match(tail, fragment.end())
+                if identifier and any(c.isdigit() for c in identifier.group()):
+                    span = make_span(
+                        source,
+                        page.number,
+                        page.offset + left + identifier.start(),
+                        page.offset + left + identifier.end(),
+                        len(locations),
+                    )
+                    joined = re.sub(r"\s*([-/.\\])\s*", r"\1", span.text)
+                    locations[span.span_id] = span
+                    found[span.span_id, joined] = Candidate(
+                        "vc_" + digest([span.span_id, joined])[:32],
+                        span.span_id,
+                        joined,
+                        "PUNCTUATION_JOIN",
+                    )
             value = re.search(r"[A-Za-z0-9][A-Za-z0-9_./ -]{0,65}", tail)
             if value and any(c.isdigit() for c in value.group()):
                 start, end = left + value.start(), left + value.end()
@@ -125,7 +147,7 @@ def candidates(source: Source, *, internal_limit: int = 1024) -> Candidates:
             top, bottom = min(b[1] for b in boxes), max(b[3] for b in boxes)
             for index, token in enumerate(page.tokens):
                 box = token.bbox
-                if box is None or box[0] < x or min(box[3], bottom) <= max(box[1], top):
+                if box is None or box[0] < x - 0.01 or min(box[3], bottom) <= max(box[1], top):
                     continue
                 if box[0] - x > 0.3:
                     continue
@@ -185,12 +207,20 @@ def candidates(source: Source, *, internal_limit: int = 1024) -> Candidates:
     )
 
 
-def compact(c: Candidates, *, limit: int = 64) -> tuple[dict[str, object], dict[str, Candidate]]:
+class CompactPacket(TypedDict):
+    admission: str
+    head: str
+    columns: list[str]
+    candidates: list[list[object]]
+    complete: bool
+
+
+def compact(c: Candidates, *, limit: int = 64) -> tuple[CompactPacket, dict[str, Candidate]]:
     if not 1 <= limit <= 128:
         raise ValueError("INVOICE_PROVIDER_BOUND")
     selected = c.items[:limit]
     lookup = {f"C{i:02}": item for i, item in enumerate(selected, 1)}
-    rows = []
+    rows: list[list[object]] = []
     for alias, item in lookup.items():
         s = c.source.resolve(
             item.span_id,
@@ -215,3 +245,15 @@ def compact(c: Candidates, *, limit: int = 64) -> tuple[dict[str, object], dict[
         "candidates": rows,
         "complete": c.complete and len(c.items) <= limit,
     }, lookup
+
+
+def fallback_candidates(primary: Candidates, text: Source) -> Candidates:
+    """Offer source-backed values that are unavailable in OCR; never create geometry."""
+    if text.source_kind != "PDF_TEXT" or any(page.tokens for page in text.pages):
+        raise ValueError("PDF_TEXT_FALLBACK_SOURCE_REQUIRED")
+    if primary.admission == "OUT_OF_SCOPE":
+        return Candidates(text, (), primary.admission, True)
+    existing = {item.value for item in primary.items}
+    discovered = candidates(text)
+    novel = tuple(item for item in discovered.items if item.value not in existing)
+    return replace(discovered, items=novel)

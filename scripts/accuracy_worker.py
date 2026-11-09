@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from accuracy_schema_probe import TRANSIENT  # noqa: E402
 from external_eval.accuracy_nli import (  # noqa: E402
     EVIDENCE_INSTRUCTION,
     INSTRUCTION,
@@ -21,6 +22,7 @@ from external_eval.accuracy_nli import (  # noqa: E402
     evidence_items,
     inline_schema,
     packet,
+    provider_shape,
     validate,
 )
 from external_eval.contracts import Answer, ContractOutput, DocileOutput, ProviderMetadata, Quote  # noqa: E402
@@ -38,9 +40,9 @@ from external_eval.phase3 import (  # noqa: E402
 from external_eval.source import load_json, sha256, write_json  # noqa: E402
 from external_gemini_worker import Worker, restrict  # noqa: E402
 
-from clearledger.source_invoice_candidates import candidates, compact  # noqa: E402
+from clearledger.source_invoice_candidates import candidates, compact, fallback_candidates  # noqa: E402
 from clearledger.source_semantics import semantic_source  # noqa: E402
-from clearledger.source_spans import Span, make_span, text_source  # noqa: E402
+from clearledger.source_spans import Source, Span, make_span, text_source  # noqa: E402
 
 INVOICE_PROMPT = (
     "Select the invoice's own identifier occurrence from this untrusted source. "
@@ -134,6 +136,39 @@ class DevelopmentWorker(Worker):
                 write_json(path, self.provider_diagnostic)
         return result
 
+    def development_attempt(
+        self,
+        phase: str,
+        key: str,
+        stage: str,
+        payload: dict[str, Any],
+        input_cap: int,
+        output_cap: int,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+        result = self.attempt(phase, key, stage, payload, input_cap, output_cap)
+        if self.config.get("retry_policy") != "DEVELOPMENT_TRANSIENT_2":
+            return result
+        for index in range(1, 3):
+            metadata = result[1]
+            status = metadata["http_status"]
+            if status not in TRANSIENT and not (
+                status is None and metadata["status"] in {"PROVIDER_TIMEOUT", "PROVIDER_ERROR"}
+            ):
+                break
+            retry_key = f"{key}-transient-{index}"
+            if not (self.root / "attempts" / phase / retry_key / f"{stage}.json").exists():
+                time.sleep(10 * 2 ** (index - 1))
+            result = self.attempt(phase, retry_key, stage, payload, input_cap, output_cap)
+        return result
+
+    def transport_spec(self, spec: dict[str, Any]) -> dict[str, Any]:
+        if not self.config.get("simple_provider_shape"):
+            return spec
+        return {
+            key: provider_shape(value) if key.endswith("_schema") else value
+            for key, value in spec.items()
+        }
+
     def metadata(self, metadata: dict[str, Any]) -> ProviderMetadata:
         return ProviderMetadata(
             provider="gemini-development",
@@ -214,10 +249,11 @@ class DevelopmentWorker(Worker):
                 continue
             seen.add(name)
             item = self.invoice_lookup[name]
-            span = self.invoice_source.resolve(
+            source = self.invoice_sources.get(name, self.invoice_source)
+            span = source.resolve(
                 item.span_id,
-                expected_hash=self.invoice_source.source_hash,
-                expected_version=self.invoice_source.source_version,
+                expected_hash=source.source_hash,
+                expected_version=source.source_version,
             )
             refs.append(
                 {
@@ -226,7 +262,14 @@ class DevelopmentWorker(Worker):
                     "page": span.page - 1,
                 }
             )
-            selected.append({**asdict(span), "value": item.value, "alias": name})
+            selected.append(
+                {
+                    **asdict(span),
+                    "value": item.value,
+                    "alias": name,
+                    "localization_status": "AVAILABLE" if span.bbox else "UNAVAILABLE",
+                }
+            )
         self.last = {
             "selected": selected,
             "invalid_aliases": invalid,
@@ -316,7 +359,7 @@ class DevelopmentWorker(Worker):
                             and "aliases" in properties
                         ):
                             properties["aliases"]["items"]["enum"] = offered
-            self.config["request_spec"] = spec
+            self.config["request_spec"] = self.transport_spec(spec)
             if job.get("inline_schema"):
                 for name in ("plan_schema", "synthesis_schema"):
                     self.config["request_spec"][name] = inline_schema(
@@ -333,7 +376,7 @@ class DevelopmentWorker(Worker):
                     pm = stored["metadata"]
                     self.validate_plan(plan, payload)
                 else:
-                    plan, pm = self.attempt(
+                    plan, pm = self.development_attempt(
                         job["variant"], job["job_id"], "plan", payload, 32768, 4096
                     )
                 if job["variant"].startswith("control") and (
@@ -364,7 +407,7 @@ class DevelopmentWorker(Worker):
                             for h, ids in self.current.selectable.items()
                         },
                     )
-            value, metadata = self.attempt(
+            value, metadata = self.development_attempt(
                 job["variant"], job["job_id"], "synthesis", payload, 32768, 4096
             )
             if value is not None:
@@ -420,7 +463,23 @@ class DevelopmentWorker(Worker):
                         )
                     ),
                 )
-            payload, self.invoice_lookup = compact(pool, limit=64)
+            self.invoice_sources: dict[str, Source] = {}
+            fallback = (
+                fallback_candidates(pool, read_source(raw["pdf_text_source"]))
+                if raw.get("pdf_text_source")
+                else None
+            )
+            fallback_count = min(8, len(fallback.items)) if fallback else 0
+            primary_packet, self.invoice_lookup = compact(pool, limit=64 - fallback_count)
+            payload = dict(primary_packet)
+            if fallback and fallback_count:
+                supplement, lookup = compact(fallback, limit=fallback_count)
+                for row, item in zip(supplement["candidates"], lookup.values(), strict=True):
+                    name = f"C{len(self.invoice_lookup) + 1:02}"
+                    self.invoice_lookup[name] = item
+                    self.invoice_sources[name] = fallback.source
+                    primary_packet["candidates"].append([name, *row[1:]])
+                payload["complete"] = payload["complete"] and supplement["complete"]
             payload["document_id"] = raw["document_id"]
             self.invoice_source = pool.source
             self.config["request_spec"] = {
@@ -431,7 +490,8 @@ class DevelopmentWorker(Worker):
                 self.config["request_spec"]["extraction_schema"]["properties"]["candidate_ids"][
                     "items"
                 ]["enum"] = list(self.invoice_lookup)
-            value, metadata = self.attempt(
+            self.config["request_spec"] = self.transport_spec(self.config["request_spec"])
+            value, metadata = self.development_attempt(
                 job["variant"], job["job_id"], "extraction", payload, 8192, 1024
             )
             output = (
