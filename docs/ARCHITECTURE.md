@@ -1,12 +1,29 @@
 # Architecture and runtime boundaries
 
+## Current implementation
+
+The local workstation uses React, TypeScript and Vite. It calls the Python 3.12
+FastAPI application in `src/clearledger`. The root Compose file starts PostgreSQL
+only. The API and demo frontend run separately on loopback. The API and worker
+use PostgreSQL for tenant-scoped business records, the transactional outbox,
+leases, idempotency and LangGraph checkpoints. Content-addressed originals are
+stored separately from their database metadata. Redis and a hosted checkpoint
+service are absent from the current runtime.
+
+The [README diagrams](../README.md#system-architecture) show the service and
+authority boundaries. See [FRONTEND.md](../FRONTEND.md) for the disposable
+workstation and [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) for the bounded,
+synthetic live-provider trials. External AI remains disabled by default.
+
+## Investigation and correlation additions
+
 `investigation_ai_contract` and `investigation_ai` add bounded planning/synthesis
 nodes to the existing StateGraph/saver/executor. Existing broker, PostgreSQL
 operation cache, source verification and outbox are reused. Source-free assertion
 plans alone may be reused after revalidation; evidence/conclusions refresh. No
 new infrastructure/dependency/migration or Director LLM. Legacy deterministic
-configuration identity and financial states are preserved. Optional protocol and
-unpassed live acceptance: [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+configuration identity and financial states are preserved. See the
+[optional provider protocol and initial trial history](AI_INVESTIGATOR.md).
 
 `correlation_contract/models/sources/service/api` add the source-proof review boundary
 using existing PostgreSQL/outbox/reviewer/merge/investigation services. Two additive
@@ -24,8 +41,12 @@ Reason-code validation and privacy projection distinguish explicit field evidenc
 from status/category words before any claim enters this path. Contracts:
 [DOCUMENTS.md](DOCUMENTS.md), [INVESTIGATIONS.md](INVESTIGATIONS.md).
 
-## Deployment V1
-Local Compose: `api` (FastAPI/Python), `db` (PostgreSQL), and later `worker` + `redis` and `web` (Next.js). A local file-store adapter persists immutable raw bytes in a volume. No production integrations. One company, INR only. Database = authoritative transactional source; job queue = delivery mechanism; graph checkpoint = investigation progress, never ledger truth.
+## Deployment boundary
+
+The local workflow targets one company and INR. PostgreSQL is authoritative for
+transactional records. Outbox events deliver work, and graph checkpoints record
+investigation progress. Ledger authority stays in the gated accounting service.
+Production deployment and integrations are outside the verified local setup.
 
 ## Layer split
 1. **Ingestion** — CSV/document ingestion, hashes, parse validation, provenance, idempotency keys.
@@ -55,7 +76,10 @@ Use transactional outbox to enqueue work without losing updates when DB commits 
 - Match search is bounded by maximum open invoice count, time limit, and top-K candidate limit; return `AMBIGUOUS_OR_BUDGET_EXCEEDED` if incomplete.
 - Optional invoice combinations may have equal sums. A single exact subset is NOT proof of intent.
 
-## Repository target (evolve only when milestone requires it)
+## Historical repository proposal
+
+The layout below records the original planning proposal. The implemented
+application uses `src/clearledger` and `frontend`, as described above.
 ```
 apps/api/                    # API route, app startup, dependencies
 apps/web/                    # Later Next.js UI

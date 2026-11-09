@@ -3,9 +3,11 @@
 Optional Gemini planning/synthesis now uses `ar-investigator-v2` within the original
 graph/runtime. Director/source/finance controls remain deterministic; no new service.
 Strict numeric/citation/uncertainty validation, conditional review edges and fallback
-are verified offline. Live plans were rejected; live acceptance is **not passed**.
-Protocol, actual attempts, provider-only enum correction (not live reverified),
-frontend trace and limits: [AI_INVESTIGATOR.md](AI_INVESTIGATOR.md).
+are verified offline. The
+[initial provider trials and enum correction](AI_INVESTIGATOR.md) record early
+rejections. The later [bounded live acceptance](LIVE_ACCEPTANCE.md) records
+accepted typed plans and syntheses on approved synthetic fixtures, including
+failures. External investigation remains disabled by default.
 
 Correlation confirmation now triggers the existing affected-claim scheduler. In a
 known correlated scope, UNCERTAIN_EXTRACTION may retrieve independent read-only
@@ -58,12 +60,11 @@ outbox -> original case/claim -> real LangGraph -> persisted current human-revie
 finding, with no manual claim recreation or investigation start. Fake extraction is
 explicitly not evidence of corrected live Gemini accuracy; this task made zero calls.
 
-Remaining gap for the approved PROSE: it has no verified UTR/customer association.
-The document case must remain separate from a receipt case, and investigation reports
-insufficient evidence. Next target is a source-backed, versioned receipt-correlation
-review using existing identity/association contracts, followed by affected-claim
-reevaluation. Do not manufacture a UTR/attestation, merge on invoice text, or bypass
-production identity/evidence-authentication requirements to make automation succeed.
+The approved PROSE fixture alone supplies no verified UTR/customer association.
+Until independently authenticated proof is available, its document case remains
+separate from a receipt case. The later
+[correlation review contract](CORRELATION_REVIEW.md) defines the versioned
+review and affected-claim reevaluation when that proof is available.
 
 M08 adds a separate gated simulator, never a graph posting node. Findings still grant
 no financial/legal authority; finance independently verifies evidence, rules, current

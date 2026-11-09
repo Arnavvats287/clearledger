@@ -1,305 +1,304 @@
 # ClearLedger
 
-**Evidence-driven accounts-receivable reconciliation and deduction investigation
-for an Indian B2B distributor.** An INR-only workstation that connects receipts,
-invoices and source documents, then produces traceable proposals for human review.
+**An INR-only reconciliation and deduction investigation workstation for Indian B2B accounts receivable.** ClearLedger links invoices, bank receipts and remittances, then turns unexplained short payments into evidence-backed cases an AR analyst can review.
 
-This portfolio proves a complete **ingestion → reconciliation candidate → deduction
-evidence → LangGraph investigation → actionable review** workflow. It does not claim
-production readiness, autonomous settlement or general live-LLM accuracy.
+Matching, evidence verification and financial permissions are deterministic. Optional Gemini extraction and investigation propose typed facts and findings tied to source passages. The reviewer sees what was verified, what remains uncertain and what to do next.
 
-## Open the evidence-review workstation
+[Watch the 58-second workstation demo](docs/media/clearledger-workstation.webm) ·
+[Run locally](#running-locally) ·
+[See measured results](#evaluation)
 
-![ClearLedger case folio: supported evidence, human review and canonical source](docs/screenshots/supported-evidence-investigation.png)
+## Why ClearLedger
 
-Financial story first: invoice ₹50,000 − receipt ₹47,000 = ₹3,000 short payment.
-Real FastAPI/PostgreSQL cases, exact source spans, an on-demand LangGraph record,
-controller correlation decisions and immutable history. Open AR, unapplied cash and
-asserted deductions stay visibly separate. No financial approval or posting is faked.
+A bank receipt says how much arrived. A remittance may explain which invoices it covers and why the customer paid less. The proof for a rebate, damaged shipment or missing delivery may be in another document. AR teams have to link those records, check whether the deduction is supported and distinguish unapplied cash from a legitimate adjustment. A wrong assumption can apply cash to the wrong invoice or reduce an open balance without approval.
 
-After the Windows database setup below, in two terminals from the repository root:
+## What it does
 
-```powershell
-# Terminal1: fresh disposable API + existing outbox/graph
-uv sync --frozen
-npm.cmd --prefix frontend ci
-uv run --frozen python scripts/serve_frontend_demo.py
+- **Ingests and links records.** Imports invoice and bank data, preserves original remittances, and extracts typed references and deduction claims with source locations. Versioned correlation checks customer, receipt and invoice evidence.
+- **Proposes cash matches.** Checks exact matches and bounded multi-invoice or partial-payment candidates. Unverified intent, conflicting sources and stale versions can block an association or route it for review.
+- **Investigates deductions.** Collects scoped read-only evidence, surfaces missing or conflicting facts, and independently checks the finding against current sources. A supported finding still requires human review.
+- **Keeps a reviewable history.** Shows the remittance, exact citations, the investigation trace, correlation decisions and case events. A separate gated accounting simulator models approved financial treatment in integer paise.
 
-# Terminal2: React workstation
-npm.cmd --prefix frontend run dev
-```
-
-Open **http://127.0.0.1:5173**. Privately read the generated controller credentials
-from ignored `local-data/frontend/access.json`; do not share or commit them.
-Use INV-2026-1042 for missing evidence, INV-2026-1043 for support, INV-2026-1044
-for conflict, and INV-2026-1045/1046
-for deliberate correlation CONFIRM/REJECT. Inspect the ₹3,000 synthetic damage claim and exact
-source span; draft an evidence request and read its audit history. Ctrl+C the API
-host cleans only its generated disposable database. No development data is reset.
-
-**These reproducible UI states use explicit offline fake-provider controls**, actual
-source validation and the actual LangGraph executor. No Gemini calls populate the
-screenshots. Previously verified real-model results are recorded separately in
-[bounded live acceptance](docs/LIVE_ACCEPTANCE.md); small synthetic success is not
-benchmark accuracy. Local reviewer sessions never confer production finance authority.
-
-[Watch the synthetic product walkthrough (58s)](docs/media/clearledger-workstation.webm) ·
-[Complete frontend setup, API boundaries and browser checks](FRONTEND.md) ·
-[Exception queue](docs/screenshots/exception-queue.png) ·
-[Missing evidence](docs/screenshots/missing-evidence-investigation.png) ·
-[Conflicting evidence](docs/screenshots/conflict-evidence-investigation.png) ·
-[Correlation review](docs/screenshots/correlation-decision.png)
-
-## Run one complete accountant workflow
-
-After the Windows setup below:
-
-```powershell
-uv run --frozen python scripts/portfolio_demo.py
-```
-
-The command uses actual FastAPI routes through **in-process TestClient**, real
-PostgreSQL, the existing outbox and the production LangGraph executor. No API
-responses are mocked. It creates and cleans disposable databases; it does not
-populate or reset your development database. External AI is forced off.
-
-**Observed output excerpt**, reproduced locally with five passing demo scenarios:
-
-```text
-PRIMARY WORKFLOW: one invoice / receipt / remittance / case / claim
-Invoice=1101 paise; receipt=1000 paise
-Candidate: UNRESOLVED -> UNIQUE cash=1000 remaining_AR=101
-Source-backed claim=101 paise; receipt correlation=LINKED; verified citation records=1
-Review: SUPPORTED / HUMAN_REVIEW / AWAITING_REVIEW
-Action: review the 101-paise rebate against cited promotion; no adjustment approved
-Actual AR=1101; cash unapplied=1000; verified settlement=0 (paise, unchanged)
-```
-
-Every stage uses the **same linked receipt, invoice, document, claim and case**:
-
-| Stage | Explicit expected result checked by the demo |
-|---|---|
-| CSV ingestion | Invoice outstanding 1,101 paise; bank entry creates a 1,000-paise receipt |
-| Conservative reconciliation | UNRESOLVED without verified intent; after explicit test attestation, one 1,000-paise candidate retains 101 paise AR |
-| Source-backed deduction | Strict remittance extracts a 101-paise rebate assertion; verified test UTR links it to the same receipt/case |
-| Evidence investigation | Test-signed promotion supports the 101-paise source predicate; real LangGraph retrieval/verifier produces a cited finding |
-| Accountant handoff | SUPPORTED / HUMAN_REVIEW; case AWAITING_REVIEW; inspect cited promotion before making any adjustment |
-| Financial safety | Invoice still 1,101 paise open; receipt still 1,000 paise unapplied; verified settlement 0 |
-
-**Working:** one continuous workflow to human review, supported by explicit
-assertions—not a sequence of unrelated screenshots. **Not demonstrated:** an
-approved adjustment, settlement or posting. The 101-paise residual is a candidate's
-unpaid AR, not an already-applied balance. `SUPPORTED` authenticates a source
-predicate within the fixture, not the legitimacy or approval of a deduction.
-
-All data are tiny application-owned synthetic code fixtures. Matching intent/UTR
-attestations and publisher signatures are explicitly configured **test trust**;
-no customer identity, payment intent or financial authority is inferred from text.
-
-Supplementary actual-API controls demonstrate:
-
-```text
-Matching: NO_SUPPORTED_MATCH -> EXACT_MATCH (explicit synthetic test attestation)
-Document: DETERMINISTIC SUCCEEDED claim_amount_paise=101
-Investigation[supported]: SUPPORTED HUMAN_REVIEW citations=1 tools=3
-Investigation[missing]: INSUFFICIENT_EVIDENCE REQUEST_EVIDENCE citations=0 tools=3
-Investigation[conflict]: INSUFFICIENT_EVIDENCE REQUEST_EVIDENCE citations=2 tools=3
-Human review REQUIRED; financial authority FALSE; financial non-mutation PASS (5 scenarios)
-External AI DISABLED; no posting or approvals; no benchmark access
-```
-
-Missing/conflicting evidence produces a concrete request-evidence action rather than
-a guessed allowance. These are deterministic typed recommendations; no fake output
-is presented as live AI reasoning. The primary workflow is asserted in
-[tests/test_portfolio_demo.py](tests/test_portfolio_demo.py); per-step evidence and
-reproduction details are in [the demo walkthrough](docs/PORTFOLIO_DEMO.md).
-Actual synthetic observations are saved under ignored `local-data/portfolio-demo/`.
-
-## Architecture
+## System architecture
 
 ```mermaid
-flowchart LR
-    Client["React/TypeScript workstation + API clients"] --> API["FastAPI tenant-scoped services"]
-    API --> Financial["CSV imports + matching proposals"]
-    API --> Documents["Immutable originals + deterministic extraction"]
-    API --> Cases["Cases + durable PostgreSQL outbox"]
-    Cases --> Graph["Deterministic Director / LangGraph"]
-    Graph --> Tools["Seven scoped read-only evidence capabilities"]
-    Tools --> Verify["Hash / span / ownership / chronology checks"]
-    Financial --> PG[(PostgreSQL)]
-    Documents --> PG
-    Documents --> Store["Local content-addressed originals"]
-    Verify --> PG
-    Graph --> PG
-    Documents -. "optional; disabled in demo" .-> Gemini["Optional isolated Gemini3.5 extraction / Investigator"]
+---
+config:
+  flowchart:
+    nodeSpacing: 24
+    rankSpacing: 28
+---
+flowchart TB
+    Analyst["AR analyst"] --> Workstation["React and TypeScript workstation"]
+    Workstation --> API["FastAPI API"]
+    API --> Ingest["CSV and document ingestion"]
+    API --> Match["Invoice and receipt matching"]
+    API --> Cases["Case and correlation services"]
+    API --> Review["Human review queue and audit history"]
+
+    Ingest --> Originals["Immutable document originals"]
+    Ingest --> DB[("PostgreSQL: records, outbox and checkpoints")]
+    Match --> DB
+    Cases --> DB
+
+    DB -->|Leased investigation event| Graph["LangGraph with deterministic Director"]
+    Graph -->|Scoped retrieval| Broker["Evidence broker and read-only tools"]
+    Broker --> DB
+    Broker --> Originals
+    Graph -.->|Bounded request if enabled| Gemini["Isolated Gemini transport"]
+    Gemini -.->|Typed candidate finding| Policy["Deterministic evidence and policy checks"]
+    Graph -->|Deterministic path| Policy
+    Broker -->|Source facts and contradictions| Policy
+    Policy -->|Finding or abstention| Review
+    Review --> Boundary["Human authority boundary: no autonomous financial mutation"]
 ```
 
-Domain/services, repositories and APIs remain separate. Integer **paise** is used
-throughout, with explicit Decimal boundaries. Proposals use tenant scope,
-idempotency, optimistic versions and stale-state checks. Document originals and
-audit histories are immutable; evidence failures abstain.
+PostgreSQL holds the durable workflow and ledger state. The transactional outbox
+couples case changes to job creation, and the worker leases events and saves
+investigation progress. The evidence broker controls source scope. Gemini receives
+bounded, privacy-projected inputs through a separate transport and has no database
+session or callable posting tools. See the [architecture notes](docs/ARCHITECTURE.md).
 
-The Investigator has only allowlisted read-only tools; the Director is
-deterministic. Source facts, contradictions and missing information remain distinct
-from financial authority. The separate accounting simulator requires independent
-authorization/maker-checker gates; local actor labels or bearer tokens cannot
-satisfy production finance identity. The demo invokes no finance operation.
+### From remittance to review
 
-| Layer | Technology |
-|---|---|
-| Backend | Python 3.12, FastAPI, Pydantic v2 |
-| Persistence | PostgreSQL 16.15, SQLAlchemy 2, psycopg, Alembic |
-| Investigation | LangGraph + PostgreSQL checkpoints/outbox; deterministic Director/verifier, optional bounded AI Investigator |
-| Frontend | React + TypeScript + Vite, generated OpenAPI client, lossless integer paise, Playwright |
-| Documents | pypdf, bounded parser processes, SHA-256 and canonical spans |
-| Optional model | Official Google GenAI SDK; external calls disabled by default |
-| Quality | pytest, Hypothesis, Ruff, scoped mypy checks, GitHub Actions configuration |
-| Local runtime | Docker Compose PostgreSQL; backend runs on Windows |
+```mermaid
+sequenceDiagram
+    actor Analyst
+    participant App as ClearLedger
+    participant Sources as Source and policy checks
+    participant AI as Gemini (optional)
+    Analyst->>App: Upload remittance
+    opt AI-assisted extraction
+        App->>AI: Offer source spans and reference candidates
+        AI-->>App: Return typed candidate facts
+    end
+    App->>Sources: Verify facts and invoice/receipt association
+    Sources-->>App: Confirm linked sources and identify short payment
+    App->>Sources: Gather scoped deduction evidence
+    Sources-->>App: Return evidence, gaps and conflicts
+    opt AI-assisted investigation
+        App->>AI: Request a finding using offered citations
+        AI-->>App: Return typed finding with source aliases
+    end
+    App->>Sources: Validate citations, amounts and policy
+    Sources-->>App: Return checked finding or abstention
+    App-->>Analyst: Present evidence and next review action
+    Note over Analyst,App: Human decision within role permissions
+```
 
-No Redis, MCP server, vector database or live bank/ERP connection is
-needed. See [architecture](docs/ARCHITECTURE.md) and [financial invariants](docs/DOMAIN_AND_ACCOUNTING.md).
+The diagram shows the linked case path. If correlation cannot be verified, the
+case can stop at association review. Investigation can also abstain when the
+available evidence does not support a conclusion.
 
-## Windows setup
+## AI architecture
 
-Requirements: Python **3.12**, `uv`, running Docker Desktop with Compose, PowerShell;
-Node **22.12+** for the UI (tested Node24).
-From the repository root:
+- **Extraction.** A bounded parser supplies canonical text. Reliable structured
+  formats use deterministic extraction. When Gemini is enabled for an approved
+  synthetic request, it selects from supplied identifier candidates and evidence
+  spans. The application resolves them and validates exact references and
+  amounts against the original source.
+- **Investigation.** A deterministic Director sets the objective, tools and
+  budgets. LangGraph executes the scoped retrieval, optional typed Gemini
+  planning and synthesis, independent verification and review transitions. The
+  deterministic investigator path runs with external AI disabled.
+- **Grounding and abstention.** Request-local aliases resolve to canonical source
+  IDs bound to document versions, hashes and exact ranges. Validation checks
+  scope, currentness, signatures where required, numeric facts and contradictions.
+  Unsupported or ambiguous conclusions can be rejected or sent to review.
+- **Trace and authority.** The durable trace records typed actions, provenance,
+  policy outcomes and review reasons. It does not persist chain-of-thought.
+  Model outputs carry no write or financial authority.
+
+See [canonical source grounding](docs/SOURCE_GROUNDING.md) and the
+[investigation contract](docs/INVESTIGATIONS.md).
+
+## Financial safety
+
+The AI path cannot post, allocate cash, write off a deduction, create an
+authoritative journal or approve a finance action. An investigation finding
+records evidence and a recommendation. A correlation decision establishes a
+case association. Neither moves money.
+
+The separate [accounting simulator](docs/ACCOUNTING_SIMULATOR.md) enforces
+current evidence, policy and authorization checks. Restricted adjustments use
+maker-checker approval with an independent reviewer. Demo credentials cannot
+satisfy finance identity. Tenant scoping, immutable histories, idempotency keys,
+version checks and the transactional outbox protect retries and auditability.
+Amounts use integer paise. Tests compare receipt, invoice and financial records
+before and after investigation and correlation. See the
+[financial invariants](docs/DOMAIN_AND_ACCOUNTING.md) and [security boundaries](docs/SECURITY.md).
+
+## Evaluation
+
+### Fresh external evaluation — Phase 3B
+
+The sealed run used fresh held-out slices and Gemini 3.5 Flash-Lite.
+
+| Benchmark and scope | Result |
+| --- | --- |
+| **ContractNLI** — 24 test documents, 408 hypotheses | **74.26%** full-denominator accuracy, **0.6782** macro-F1, **94.61%** grounded coverage, **0.4638** Contradiction F1 |
+| ContractNLI source binding | **623/623** published canonical quote ranges verified against exact source text |
+| **DocILE** — 100 validation documents, mapped invoice identifier | Invoice-reference precision **0.6190**, recall **0.6842**, F1 **0.6500**. Exact ID-set match **72/100** |
+| DocILE conditional document_id KILE on 67 tax invoices | Location + exact-text F1 **0.6667** |
+
+ContractNLI measures external legal evidence reasoning. Exact quote binding
+establishes provenance, while semantic relevance is scored separately.
+Contradiction recall was **0.3478**, and the model over-selected legal evidence.
+DocILE measures the mapped invoice identifier only. Candidate misses and false
+positive invoice references remain, including two values emitted on non-invoices.
+Four terminal HTTP 503s were retained across the two scored runs.
+
+These results establish neither AR accuracy nor full invoice understanding.
+Earlier external phases used different slices, so cross-phase comparisons are
+descriptive. See [Phase 3B results, scoring and seals](docs/EXTERNAL_EVALUATION_PHASE3B.md).
+
+### Product performance benchmark
+
+**100 timed synthetic workflows**, 20 measured repetitions per workload, at
+product checkpoint `94924cf7f17a26d14143ba317123fd4857f7005f`. The timer starts
+at remittance upload with the invoice and bank receipt already imported and
+stops at the first usable workflow result.
+
+| Local workflow | p95 |
+| --- | ---: |
+| Clean extraction | 0.61 s |
+| Exact receipt/invoice correlation | 2.68 s |
+| Supported short-payment investigation | 6.38 s |
+| Missing evidence | 4.99 s |
+| Conflicting evidence | 7.26 s |
+
+The run recorded **1,420 HTTP 200 responses**, zero API or application errors,
+and zero financial mutations in the measured workflows. Gemini was disabled.
+These figures describe local deterministic execution with disposable PostgreSQL
+and an in-process API client. They exclude live model latency and establish no
+production SLA. See the [performance report and reproducible probe](docs/PERFORMANCE_BENCHMARK.md).
+
+### Sealed private AR benchmark
+
+The one-shot AR benchmark remains **unused**. The trusted operator requires
+a custodian-issued `freeze-eval` gate and adjacent passing verification report.
+Those prerequisites have not been issued. There is no private AR score for the
+frozen product.
+
+## Engineering verification
+
+| Verified checkpoint | Scope |
+| --- | --- |
+| Phase 3B result checkpoint `7fc1c5b` | **1,076 tests passed** in the frozen gate, including real PostgreSQL integration and migrations. Ruff lint, formatting, strict mypy, dependency locks and matching bounds passed. |
+| Contradiction diagnostics checkpoint `f0e9f19` | **4 isolated PostgreSQL restart tests passed** in the earlier restart verification. |
+| Performance report checkpoint `4411140` | **125 focused tests passed** after measurement, including correlation, grounded investigation and finance checks. All measured workflows passed before/after financial-state checks. |
+
+See [verification history](STATUS.md) and the [CI configuration](.github/workflows/verify.yml).
+The repository provides `uv run --frozen python scripts/verify.py` and
+`uv run --frozen python scripts/verify_isolated_restart.py` as separate gates.
+
+## Tech stack
+
+| Layer | Tools |
+| --- | --- |
+| Application | Python 3.12, FastAPI, Pydantic |
+| Data and migrations | PostgreSQL, SQLAlchemy, psycopg, Alembic |
+| Investigation | LangGraph, optional Gemini API via the Google GenAI SDK |
+| Workstation | React, TypeScript, Vite |
+| Local runtime and verification | Docker Compose, Pytest, Hypothesis, Playwright, Ruff, mypy |
+
+## Important engineering decisions
+
+- **Why PostgreSQL instead of Redis?** Durable case state, idempotency, leases,
+  outbox delivery and checkpoints live alongside transactional records.
+  An additional queue could make sense if measured throughput or latency
+  justifies it.
+- **Why LangGraph?** The investigation has explicit transitions, bounded tool
+  loops, checkpoint recovery and stale-input handling. The graph makes those
+  steps inspectable while the Director and verifier remain deterministic.
+- **Why human review?** Automation gathers and checks evidence. People retain
+  authority over decisions that require context, role permissions or independent
+  approval.
+- **Why external AI defaults off?** The local product and demo run without a
+  provider key. External calls require explicit operator configuration,
+  source/privacy admission and bounded requests.
+
+## Demo and screenshots
+
+![ClearLedger supported deduction case with evidence and human review](docs/screenshots/supported-evidence-investigation.png)
+
+[Watch the workstation walkthrough](docs/media/clearledger-workstation.webm) ·
+[Exception queue](docs/screenshots/exception-queue.png) ·
+[Source highlighting](docs/screenshots/evidence-source-highlighting.png) ·
+[Correlation decision](docs/screenshots/correlation-decision.png) ·
+[Technical investigation trace](docs/screenshots/technical-ai-trace.png)
+
+The walkthrough uses synthetic fixtures, real FastAPI routes, PostgreSQL and the
+actual LangGraph executor. The UI's optional provider paths use labelled offline
+controls. A separate [bounded live acceptance report](docs/LIVE_ACCEPTANCE.md)
+records real Gemini trials and their limitations.
+
+## Running locally
+
+On Windows, use PowerShell with Python **3.12**, `uv`, Docker Desktop with
+Compose and Node.js **24** for the UI. Run from the
+repository root.
 
 ```powershell
 uv sync --frozen
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-Edit ignored `.env`: choose local PostgreSQL credentials; align POSTGRES_USER,
-POSTGRES_PASSWORD, POSTGRES_DB, DATABASE_URL and TEST_DATABASE_URL. URL-encode
-password characters. TEST_DATABASE_URL needs a local role with CREATEDB; the
-walkthrough never migrates or drops the database named in that URL.
+Edit the ignored `.env` with local PostgreSQL settings. Align
+`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL` and
+`TEST_DATABASE_URL`. URL-encode password characters in connection URLs. The
+test role needs `CREATEDB` for the disposable demo databases. If port 5432 is
+occupied, set `POSTGRES_PORT` and use the same host port in both URLs.
 
 ```powershell
-Get-NetTCPConnection -State Listen -LocalPort 5432 -ErrorAction SilentlyContinue
 docker compose config --quiet
 docker compose up -d --wait db
 uv run --frozen python scripts/portfolio_demo.py
 ```
 
-If 5432 is occupied, set POSTGRES_PORT=5433 **before starting Compose** and use 5433
-in both Windows URLs. Preserve the existing process/database.
-Windows URLs use `postgresql+psycopg://<user>:<URL-encoded-password>@127.0.0.1:<host-port>/<database>`.
-An API inside the Compose network would use `db:5432`; Compose currently starts
-only PostgreSQL. Do not remove the named volume. Editing credentials in .env does
-not rotate an already-initialized database password.
+The API-only demo runs one continuous invoice, receipt and remittance case
+through review. The synthetic short payment leaves 101 paise of candidate
+unpaid AR, while actual balances remain unchanged. See the
+[demo walkthrough and expected outcomes](docs/PORTFOLIO_DEMO.md).
 
-The demo privately loads the test URL and clears its child Gemini key. Missing
-configuration fails explicitly instead of skipping PostgreSQL. Keep defaults:
-
-```dotenv
-EXTRACTION_PROVIDER=disabled
-EXTERNAL_AI_ENABLED=false
-INVESTIGATION_PROVIDER=deterministic
-INVESTIGATION_EXTERNAL_ENABLED=false
-```
-
-To explore a separately running local API, configure ORGANIZATION_ID and a random
-DOCUMENT_API_TOKEN of at least 32 characters in ignored .env, then:
+For the browser workstation, start the two processes in separate terminals.
 
 ```powershell
-uv run --frozen alembic upgrade head
-uv run --frozen alembic check
-uv run --frozen python -m clearledger.cli init-organization --name "Local synthetic company"
-uv run --frozen uvicorn clearledger.main:create_app --factory --host 127.0.0.1 --port 8000
+# Terminal 1
+npm.cmd --prefix frontend ci
+uv run --frozen python scripts/serve_frontend_demo.py
+
+# Terminal 2
+npm.cmd --prefix frontend run dev
 ```
 
-Open `http://127.0.0.1:8000/docs`. `/health` checks process health; `/ready` checks
-DB connectivity, not migration currency. This server starts empty: the demo uses
-separate disposable databases. Some financial import/read routes remain
-unauthenticated; loopback and synthetic data only. Never downgrade/reset development
-data or expose the local service as a production system.
+Open [the local workstation](http://127.0.0.1:5173). Read the generated demo
+login privately from ignored `local-data/frontend/access.json`. Try
+`INV-2026-1042` for missing evidence or `INV-2026-1043` for supported evidence.
+Stop the API demo host with Ctrl+C to clean up its disposable database. No
+Gemini key is needed. Keep the default external AI settings disabled for this
+walkthrough. See [frontend setup, API boundaries and browser checks](FRONTEND.md).
 
-## Evaluation: measured results, including failures
+## Repository and evaluation integrity
 
-The frozen independent **development** results below were supplied by the trusted
-operator/user. They were not regenerated, rescored or independently re-audited
-during this pass. The sealed/blind evaluation remains separate.
+External evaluations freeze sample IDs, model configuration and scoring rules
+before inference. The workers receive source-only packets. Predictions are sealed
+before scorers read gold annotations. Reports record benchmark-specific denominators,
+provider failures, provenance checks and hashes. Raw evaluation documents, private
+answers and credentials stay outside Git.
 
-| Measurement | Reported/verified result |
-|---|---|
-| Development stages completed | **255** |
-| Snapshot coverage | **Full** for those development stages |
-| API-error observations in that run | **0** |
-| Conditional matching recall | **0/315** |
-| Review-routing score | **0/255** |
-| Isolated deterministic LangGraph fixtures | **4 passed**: supported, missing, unsigned, conflicting evidence |
-| Gemini3.1 attempts | **6 failed**; minimal probes503,503,504; earlier HTTP400 remains unexplained |
-| Historical Gemini3.5 probe | **7 generation responses**; core fields persisted, optional reason-code error retained in original report |
-| Later bounded live acceptance | **18 attempts**, accepted typed plan and missing/support/conflict syntheses; corrected reason-code behavior, automatic correlation/refresh, financial non-mutation |
-| Real LLM accuracy | Several approved synthetic functional successes, with failures retained; general/held-out accuracy **not established** |
+## Current limitations
 
-Full snapshot/API coverage demonstrates integration completion, **not reconciliation
-usefulness**. Zero recall and review-routing scores remain failures to improve;
-safe abstention does not establish effective matching. These 255 stages do not
-establish completion of the full 420-receipt/sealed study. Small workflow fixtures
-are not benchmark accuracy. Fake-provider tests are explicitly offline controls.
+- The application is a local, synthetic-data portfolio project. Production deployment,
+  real-customer validation and live bank or ERP integrations are unverified.
+- The sealed private AR benchmark is blocked at the custodian gate. External
+  legal reasoning and invoice-ID scores do not establish AR matching quality.
+- Contradiction reasoning remains imperfect, and DocILE coverage is limited to the
+  invoice identifier. The product latency benchmark excludes external AI.
+- Finance remains behind verified identity, deterministic policy and human
+  authorization. Autonomous financial posting is outside scope.
 
-Details: [synthetic usefulness](docs/AI_USEFULNESS_EVALUATION.md),
-[live Gemini results](docs/LIVE_GEMINI_EVALUATION.md),
-[chronological adapter](docs/CHRONOLOGICAL_EVALUATION.md),
-[original snapshot](docs/POST_M09_APPLICATION_EVALUATION.md),
-[pilot v1.0](docs/PILOT_EVALUATION.md), [pilot v1.1](docs/PILOT_V1_1_EVALUATION.md).
-Independent datasets, hidden answers and original operator/scoring code are not demo inputs.
+## Roadmap
 
-## Known limitations and future work
-
-- **Model reliability:** Gemini3.1 HTTP400/503/504 failures remain documented.
-  Later Gemini3.5 extraction, typed planning/synthesis and automatic review workflow
-  succeeded on approved synthetic fixtures; source-validation/decoding/omission
-  failures are retained in [LIVE_ACCEPTANCE.md](docs/LIVE_ACCEPTANCE.md).
-  This is functional evidence, not broad reliability. External AI remains default-off;
-  the UI demo uses labelled offline controls and spends no quota.
-- **Frontend scope:** evidence-review workstation is implemented; original financial
-  posting queue, complete cash-allocation controls and Argon CASE-204 UI journey
-  remain deferred. Production hosting, assistive-technology and broader browser
-  validation remain future work. See [FRONTEND.md](FRONTEND.md).
-- **Reconciliation usefulness:** improve source-backed matching and actionable
-  review routing, then measure against independent scoring without using answers
-  as evidence. The current benchmark scores are not improved by this demo.
-- **External evaluation:** DocILE/ContractNLI evaluation is future work, not a
-  demonstrated result. Review suitability, licensing and contract mapping first.
-- **Sealed blind evaluation:** not claimed complete; preserve hidden-answer isolation.
-- **Production identity/security:** trusted user identities, source PKI, stronger
-  deployment isolation, backups/storage controls and broader adversarial review
-  remain open. Test signatures and tokens never authorize finance.
-- **Real-customer validation:** no production bank/ERP integration or real-customer
-  acceptance is demonstrated. No Indian tax-compliance claim. OCR and payment-total
-  extraction remain unsupported; uncertain sources route to review.
-
-The workflow is complete **to review**, with explicit evidence and residual balances.
-Approval/settlement and production deployment remain separate, unverified outcomes.
-Live AI usefulness is demonstrated only within the documented synthetic acceptance. No financial rule is changed for a better presentation.
-
-## Checks and contracts
-
-Frontend checks (run from `frontend/`): `npm run lint`, `npm run typecheck`,
-`npm run test`, `npm run build`, `npm run format:check`. Actual Chromium acceptance:
-`npx playwright install chromium`, then `npm run test:browser` against a **fresh**
-synthetic host. Browser decisions mutate their test tasks; stop/recreate the owned
-disposable host before a full rerun. Ten browser tests and 16 unit tests passed for the frozen final frontend.
-The API-only portfolio gate remains `uv run --frozen python scripts/portfolio_demo.py`.
-Existing broader gates, when appropriate:
-
-```powershell
-uv run --frozen python scripts/verify.py
-uv run --frozen python scripts/verify_isolated_restart.py
-```
-
-They were not rerun for this pass. The [CI workflow](.github/workflows/verify.yml)
-configures disposable PostgreSQL and offline providers; no remote CI result is
-claimed. Actual local commands/results and commit hashes are in [STATUS.md](STATUS.md).
-
-Contracts: [CSV v1.0](docs/DATA_CONTRACT.md) · [matching](docs/MATCHING.md) ·
-[documents](docs/DOCUMENTS.md) · [cases](docs/CASES.md) · [evidence](docs/EVIDENCE.md) ·
-[investigations](docs/INVESTIGATIONS.md) · [accounting simulator](docs/ACCOUNTING_SIMULATOR.md) ·
-[review/recovery](docs/REVIEW_RECOVERY.md) · [security](docs/SECURITY.md) ·
-[requirements audit](REQUIREMENTS_AUDIT.md).
-
-Dataset research/construction belongs to the independent dataset owner. No realistic
-dataset, secret, customer document or private evaluation artifact is committed here.
+Finish deployment-facing UX polish, package deployment, harden production identity
+and integrations, and validate with real customers if suitable access is available.
