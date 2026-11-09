@@ -839,3 +839,89 @@ production financial and retrieval paths retain their existing behavior.
 
 Local logs: `local-data/verification/20261109T125744313054Z.log` and
 `local-data/verification/isolated-restart-20261109T125743611303Z.log`.
+
+## FINAL MODEL-CAPACITY ABLATION
+
+The comparison pairs the saved 3.5 Flash-Lite MINIMAL global reference with one
+new 3.5 Flash MINIMAL run. The latter is the same Free-tier model admitted for the
+earlier hybrid comparison. It supports the same MINIMAL setting, allowing this
+pass to test the global reference without changing the reasoning setting.
+[Gemini thinking levels](https://ai.google.dev/gemini-api/docs/thinking).
+[Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing).
+
+The 11 frozen reference jobs provide the three DEV and eight TRAIN documents,
+17 hypotheses each, and the same direct global K20 plus adjacent context. The
+zero-shot prompt, exact enum, aliases, validators, 32,768 input cap, 4,096 output
+cap and existing development scorer are shared. The control uses its saved
+predictions and attempt records. The runs were made at different times, so
+latency is an observed comparison rather than a contemporaneous benchmark.
+The stronger model uses the existing Flash transport pacing, excluded from
+generation latency. Candidate identity and synthetic admission precede source
+inference. The local manifest hash is
+`490dab70710e7921c8865cd31d75317c4332a42fab5a7791def750c4050d9535`.
+
+Promotion requires a correct DEV contradiction, a material TRAIN contradiction
+F1 gain (the previous .05 criterion), and consistent grounded quality. The
+previous 95% coverage and 25% unsupported-assertion boundaries remain the
+quality checks. A small DEV overall accuracy gain alone does not qualify.
+
+### Full-denominator results
+
+All 11 source packet, prompt, schema and thinking hashes matched the saved
+reference. Synthetic admission passed in the existing Free project. `E/C/N`
+lists Entailment / Contradiction / NotMentioned F1. Unanswered hypotheses remain
+in the denominator. The unchanged scorer counts absent predictions as
+abstentions, and the transport table separately identifies provider failures.
+
+| Split | Model | Grounded accuracy | Macro-F1 | E/C/N F1 | Coverage | Evidence F1 | Unsupported assertions |
+| --- | --- | ---: | ---: | --- | ---: | ---: | ---: |
+| DEV | Flash-Lite | 42/51 (82.35%) | .5727 | .9180/.0000/.8000 | 49/51 (96.08%) | .7021 | 6/34 (17.65%) |
+| DEV | Flash | 14/51 (27.45%) | .2616 | .5238/.0000/.2609 | 17/51 (33.33%) | .4077 | 3/14 (21.43%) |
+| TRAIN | Flash-Lite | 106/136 (77.94%) | .7116 | .8392/.5385/.7573 | 136/136 (100%) | .7736 | 19/86 (22.09%) |
+| TRAIN | Flash | 27/136 (19.85%) | .3286 | .2500/.3478/.3881 | 34/136 (25%) | .2015 | 6/20 (30%) |
+
+| Split | Model | Malformed / missing label fields on returned rows | Unknown / outside-scope aliases | Terminal failed jobs | Failed generation attempts / attempts | Observed input/output tokens | Median/p95 generation s |
+| --- | --- | --- | --- | ---: | ---: | --- | --- |
+| DEV | Flash-Lite | 0/0 | 0/0 (54 declared) | 0/3 | 1/4 | 45786/3158 | 3.168/3.450 |
+| DEV | Flash | 0/0 | 0/0 (18 declared) | 2/3 | 7/8 | 9445/1040 | 10.823/18.866 |
+| TRAIN | Flash-Lite | 0/0 | 0/0 (97 declared) | 0/8 | 0/8 | 72651/8347 | 3.121/9.097 |
+| TRAIN | Flash | 0/0 | 0/0 (25 declared) | 6/8 | 19/21 | 14947/2184 | 0.479/18.486 |
+
+Flash had 20 HTTP 429 `RESOURCE_EXHAUSTED` and six HTTP 503 `UNAVAILABLE`
+corpus attempts. The terminal failures account for 34 DEV and 102 TRAIN
+hypotheses. The provider did not identify the exhausted quota dimension.
+Generation latency includes failures and excludes pacing and token counting.
+Flash's low TRAIN median is dominated by fast rate-limit responses and does not
+measure successful inference speed. Observed tokens cover successful
+responses only. The three successful Flash corpus calls reported 24,392 input
+and 3,224 output tokens. The run made 29 corpus generations, one synthetic
+generation and one model lookup, for 61 HTTP operations.
+
+### Matched responses and decision
+
+All annotated contradiction passages were fully selectable for both models on
+the frozen global packets. Flash's single successful DEV document contained
+zero of the two DEV contradiction examples. On its 17 hypotheses, Lite scored
+15/17 and Flash 14/17. Flash's zero full-denominator DEV Contradiction F1 therefore
+reflects missing responses on both positives. Its DEV contradiction reasoning
+could not be assessed in this run.
+
+On the two TRAIN documents with responses from both models, Lite scored 25/34
+and Flash 27/34. Flash correctly identified four of the five gold contradictions
+versus three for Lite, with Contradiction F1 .8000 versus .6667. This is a small,
+provider-selected subset. The primary comparison retains all eight TRAIN
+documents, including the six failures. It does not establish a consistent
+capacity improvement across cohorts.
+
+**Retain Gemini 3.5 Flash-Lite MINIMAL and hold Phase 3B.** Semantic reasoning
+with available conflict evidence remains a limitation of the reference. The
+stronger candidate's availability prevented a decisive cross-split capacity
+comparison, and the paired TRAIN signal is insufficient for promotion. This
+concludes the architecture and prompt tuning pass.
+
+The additive scores and request audit are in `local-data/model-capacity-v1`,
+development seal SHA256
+`201730f1c4adc50d2a676bc879e902810622b77dc8da8775840b970127f0fef0`.
+Historical Phase 0/2/3 and all prior development seals verified. This pass used
+only an additive local configuration, the existing runner and the existing
+scorer. No implementation change required a focused or regression rerun.

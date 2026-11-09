@@ -3589,3 +3589,22 @@ against both result artifacts. Exact results and artifact hashes are in
 
 Local verified experiment checkpoint `f0e9f19`. Staged review confirmed only the
 eight intended development code, test and report paths. Raw artifacts stayed local.
+
+## Final ContractNLI model-capacity ablation — 2026-11-09
+
+Gemini 3.5 Flash MINIMAL ran the exact 11 saved global reference jobs on the
+authorized Free project. All source packet, prompt, schema and thinking hashes
+matched Flash-Lite MINIMAL. The existing development runner and scorer were
+reused with an additive local campaign configuration.
+
+Flash returned 1/3 DEV and 2/8 TRAIN documents. It logged 20 HTTP 429s and six
+HTTP 503s in 29 corpus attempts. The only successful DEV document contained
+neither gold contradiction. On the two matched TRAIN documents, Flash found
+4/5 contradictions versus Lite's 3/5. Full grounded coverage was 17/51 DEV and
+34/136 TRAIN, so the paired signal does not qualify for promotion. Retain
+Flash-Lite MINIMAL. Phase 3B stays on hold and architecture/prompt tuning ends.
+
+Historical Phase 0/2/3 and prior development seals verified. New model-capacity
+seal `201730f1c4adc50d2a676bc879e902810622b77dc8da8775840b970127f0fef0`.
+No implementation changes or focused/regression reruns. See
+`docs/FINAL_ACCURACY_DIAGNOSTICS.md` for full DEV/TRAIN and transport metrics.
