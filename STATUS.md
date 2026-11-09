@@ -3564,3 +3564,25 @@ DocILE architecture or historical predictions/scores changed.
 Local verified configuration-selection checkpoint `8366a75`. The staged review
 contained nine intended code, test and report paths. Evaluation inputs, predictions
 and credentials remained local. Working branch `feat/final-accuracy-diagnostics`.
+
+## Final ContractNLI contradiction formulation pass — 2026-11-09
+
+The saved direct global MINIMAL reference remains the control. Four additive
+development formulations reused its packet hashes on all 11 established TRAIN
+and DEV documents. Five disjoint TRAIN demonstrations and a 36-pair TRAIN sanity
+subset were frozen before inference. No retrieval, model or production changes.
+
+All 44 jobs finished. One few-shot TRAIN job exhausted its two transient retries
+and all 17 provider failures remain in the denominator. Zero malformed label
+literals, unknown aliases, outside-scope aliases or cascades on successful corpus
+responses. Every formulation missed both DEV contradictions before validation.
+C improved overall DEV and TRAIN metrics, but full TRAIN contradiction F1 was
+.5333 versus reference .5385. Few-shot improved TRAIN to .5714 with 87.5% coverage
+and no DEV contradiction gain. Retain the reference and hold Phase 3B.
+
+The final `scripts/verify.py` gate passed 1,073 tests in 2,064.40s. Focused tests
+passed 68. PostgreSQL isolated restart passed four tests in 52.46s. Ruff/format,
+strict mypy (45 files), compile/import, lock/dependencies and historical seal
+checks passed. The scorer-only duplicate counter fix was verified separately
+against both result artifacts. Exact results and artifact hashes are in
+`docs/FINAL_ACCURACY_DIAGNOSTICS.md`. External AI and automation remain disabled.

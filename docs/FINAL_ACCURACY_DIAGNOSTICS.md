@@ -658,3 +658,184 @@ financial validators and authority boundaries retain their existing behavior.
 External AI and automation are disabled. Full local logs are
 `local-data/verification/20261109T115210406903Z.log` and
 `local-data/verification/isolated-restart-20261109T115212107836Z.log`.
+
+## FINAL CONTRADICTION-REASONING PASS
+
+This comparison uses the saved global MINIMAL reference as a historical control
+and four new formulations on the same 3 DEV and 8 TRAIN documents. Each new job
+checks the complete source packet digest against the saved reference before the
+provider call. The model, MINIMAL setting, global K20 with adjacent context, all
+17 hypotheses, aliases, provenance checks, 32,768 input cap and 4,096 output cap
+are shared. The historical control is scored from its saved output.
+
+| Variant | Decision formulation |
+| --- | --- |
+| A | Explicit three-way rubric with the exact reference label enum and response schema. |
+| B | Strict JSON support and explicit-conflict booleans. A single positive maps to its class, two negatives map to NotMentioned, and two positives fail that item. |
+| C | Separate support and conflict alias arrays and the exact label enum. The local adapter rejects a missing or incompatible evidence role. |
+| Few-shot | A plus five frozen labeled TRAIN demonstrations from distinct documents outside both evaluated cohorts. |
+
+B and C use simple schema shapes with only the fields required by their respective
+formulations. Neither adds provider-side array bounds. Accepted B/C fields pass
+through the same strict item and source validators used by the reference. Raw
+B labels derive only from the declared truth table, and raw A/C/few-shot labels
+retain exact literals before role and source validation. The scorer keeps absent,
+invalid and duplicate decisions in the full denominator.
+
+The disjoint TRAIN demonstrations were selected in deterministic hash order from
+label- and source-cue strata. They were frozen before provider admission.
+
+| Demonstration category | TRAIN document / hypothesis |
+| --- | --- |
+| Explicit entailment | `198` / `nda-3` |
+| Contradiction with negation | `202` / `nda-17` |
+| Contradiction with an exception cue | `597` / `nda-7` |
+| NotMentioned, absence | `191` / `nda-1` |
+| NotMentioned, lexical overlap | `365` / `nda-4` |
+
+Demonstration SHA256 `470657811e6038a6ee0bf860b8edb2ba0c67ec7223b0de563203c056b74340dc`.
+The model receives only the disjoint examples' excerpts, hypotheses and answers.
+Their `DEMO` aliases have no authority in the evaluated packet. Evaluated gold
+remains scorer-only. The frozen TRAIN sanity set contains all 18 TRAIN
+Contradiction positives and hash-selected 9 Entailment and 9 NotMentioned controls.
+It uses a subset of the same predictions, with no extra calls.
+
+The selection thresholds were frozen before inference. A material TRAIN
+Contradiction F1 gain is at least .05. Consider a DEV gain only alongside TRAIN
+stability and full-cohort quality. Allow at most .02 macro-F1 loss, require at
+least 95% grounded coverage and at most 25% unsupported assertions on both splits,
+and keep input and output token use within 1.5 times the control. Also check
+malformed outputs, alias failures, latency and the direction of the paired results.
+The source-cue taxonomy records observed label outcomes, citation overlap and
+validation outcomes. Scope, temporal, exception and negation cues describe the
+annotated text and do not reveal the model's internal reasoning.
+
+### Classification and evidence results
+
+Accuracy uses the full split denominator. Class F1 is grounded and ordered
+Entailment / Contradiction / NotMentioned. Unsupported assertions are assertive
+predictions that disagree with the gold class, divided by all assertive predictions.
+
+| Split | Formulation | Raw correct / macro-F1 | Grounded correct / macro-F1 | Grounded class F1 | Grounded coverage | Unsupported | Evidence-overlap F1 |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: |
+| DEV | Saved reference | 44/51 / .5943 | 42/51 / .5727 | .9180/.0000/.8000 | 49/51 | 6/34 | .7021 |
+| DEV | A, rubric | 41/51 / .5570 | 41/51 / .5570 | .8710/.0000/.8000 | 49/51 | 7/34 | .6546 |
+| DEV | B, binary | 44/51 / .5833 | 44/51 / .5833 | .9000/.0000/.8500 | 51/51 | 4/31 | .6467 |
+| DEV | C, evidence roles | 44/51 / .5982 | 44/51 / .5982 | .9000/.0000/.8947 | 51/51 | 6/33 | .7183 |
+| DEV | TRAIN few-shot | 43/51 / .5889 | 43/51 / .5889 | .9333/.0000/.8333 | 51/51 | 7/35 | .7366 |
+| TRAIN | Saved reference | 106/136 / .7116 | 106/136 / .7116 | .8392/.5385/.7573 | 136/136 | 19/86 | .7736 |
+| TRAIN | A, rubric | 105/136 / .5801 | 105/136 / .5801 | .8531/.1053/.7818 | 136/136 | 17/79 | .8105 |
+| TRAIN | B, binary | 105/136 / .5782 | 105/136 / .5782 | .8794/.1053/.7500 | 136/136 | 14/77 | .7336 |
+| TRAIN | C, evidence roles | 109/136 / .7315 | 109/136 / .7315 | .8571/.5333/.8039 | 136/136 | 19/87 | .7812 |
+| TRAIN | TRAIN few-shot | 98/136 / .7197 | 98/136 / .7197 | .8455/.5714/.7423 | 119/136 | 13/75 | .7415 |
+
+Raw and grounded accuracy and macro-F1 agreed for the four variants. A still
+lost two incorrect DEV decisions to the evidence validator, moving coverage
+from 51/51 raw to 49/51 grounded. The reference lost two correct DEV decisions
+to item validation. All 17 hypotheses in the failed few-shot TRAIN request stay
+in the table and are classified as provider failures in the grounded score.
+
+### Formats, aliases and transport
+
+`U/O/M` counts unknown aliases, outside-scope aliases and malformed label literals.
+For B, the format count refers to invalid boolean decisions. Latency is the
+provider generation median/p95 in seconds, excluding pacing and token counting.
+The reference uses its saved attempt log.
+
+| Split | Formulation | U/O/M | Failed attempts / calls | Observed input/output tokens | Median/p95 s |
+| --- | --- | --- | ---: | --- | --- |
+| DEV | Saved reference | 0/0/0 | 1/4 | 45786/3158 | 3.168/3.450 |
+| DEV | A | 0/0/0 | 0/3 | 45771/3165 | 4.773/5.113 |
+| DEV | B | 0/0/0 | 0/3 | 45720/2647 | 3.130/6.975 |
+| DEV | C | 0/0/0 | 0/3 | 45756/2855 | 3.616/3.674 |
+| DEV | TRAIN few-shot | 0/0/0 | 0/3 | 47640/3200 | 4.437/8.084 |
+| TRAIN | Saved reference | 0/0/0 | 0/8 | 72651/8347 | 3.121/9.097 |
+| TRAIN | A | 0/0/0 | 2/10 | 72611/8286 | 3.245/7.568 |
+| TRAIN | B | 0/0/0 | 3/11 | 72475/6850 | 3.048/4.711 |
+| TRAIN | C | 0/0/0 | 0/8 | 72571/7344 | 2.937/3.340 |
+| TRAIN | TRAIN few-shot | 0/0/0 | 3/10 | 69909/6868 | 2.955/3.885 |
+
+All 529 declared variant aliases were valid and in scope. Successful responses
+had zero duplicate or missing hypothesis rows, malformed labels or invalid binary
+decisions. There were no validation cascades. The four synthetic controls passed
+and the 44 development jobs recorded 51 generation attempts. Of eight corpus
+HTTP 503s, five recovered and three exhausted one few-shot job's allowance.
+One additional HTTP 503 occurred during synthetic admission and recovered. The
+43 successful corpus responses reported 472,453 input and 41,215 output tokens.
+There were zero HTTP 400s, token-cap rejections or semantic retries. Total new
+activity was 56 generations and 113 HTTP operations, including the model lookup.
+
+### Contradiction taxonomy and TRAIN sanity set
+
+Every formulation, including the reference, assigned Entailment to one DEV gold
+contradiction and NotMentioned to the other before validation. Both annotations
+were fully selectable. In each case pair, the Entailment answer selected text
+overlapping the annotated conflict but interpreted it as support. The NotMentioned
+answer selected no overlapping conflict text. No variant declared an explicit
+conflict role with a different label on these DEV positives.
+
+| TRAIN formulation | Gold contradictions correctly labeled | Labeled Entailment | Labeled NotMentioned | No decision, provider failure | Wrong label with gold overlap | No conflict overlap among misses |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Saved reference | 7/18 | 4 | 7 | 0 | 4 | 7 |
+| A | 1/18 | 7 | 10 | 0 | 9 | 8 |
+| B | 1/18 | 3 | 14 | 0 | 3 | 14 |
+| C | 8/18 | 4 | 6 | 0 | 4 | 6 |
+| TRAIN few-shot | 10/18 | 0 | 6 | 2 | 0 | 8 |
+
+All TRAIN contradictions had fully available annotated evidence before inference.
+The taxonomy records each item locally. The party/scope and exception cues appear
+in the DEV error set. TRAIN misses also include temporal and explicit negation
+cues. These cues identify where to inspect the source. They do not establish
+which mental inference the model made. The six wrong few-shot TRAIN labels were
+NotMentioned with no annotated overlap, and two additional contradictions had no
+response. No wrong gold-contradiction answer was lost to local validation.
+
+| Formulation | Frozen TRAIN sanity accuracy | Coverage | Macro-F1 | Contradiction F1 |
+| --- | ---: | ---: | ---: | ---: |
+| Saved reference | 24/36 | 36/36 | .6698 | .5600 |
+| A | 18/36 | 36/36 | .4634 | .1053 |
+| B | 18/36 | 36/36 | .4799 | .1053 |
+| C | 25/36 | 36/36 | .6979 | .6154 |
+| TRAIN few-shot | 25/36 | 31/36 | .7639 | .7143 |
+
+### Decision
+
+**Retain the saved global MINIMAL reference and hold Phase 3B.** C improves
+overall DEV and TRAIN scores, answers two more DEV hypotheses, and finds one more
+TRAIN contradiction. Its contradiction F1 gain in the frozen sanity subset
+(.5600 to .6154) does not extend to full TRAIN (.5385 to .5333) or DEV (.0000).
+The few-shot variant improves full TRAIN contradiction F1 by .033, below the
+frozen .05 threshold, and its 87.5% TRAIN coverage falls below the gate. On the
+seven successful TRAIN documents, a secondary matched comparison shows 98/119
+versus 93/119 and contradiction F1 .6061 versus .4545. The failed document remains
+in the primary comparison. The few-shot benefit is a TRAIN signal, with no DEV
+contradiction improvement. A and B materially regress on full TRAIN contradiction.
+
+Decision formulation does affect results on this model, especially TRAIN recall.
+The repeatable DEV errors with evidence present still suggest a semantic
+reasoning limit in the tested setup. This single-model comparison cannot establish
+an intrinsic capacity ceiling or separate it from the prompt. There is no basis
+here to replace the reference or open a held-out run.
+
+The campaign is in `local-data/contradiction-v2`. Config SHA256
+`131566e151b48527b872d620b36a3c414815ee7bb155f63566a7f35334c07f5b`.
+The additive result `scorer-only/results-v2.json` corrects a counter that initially
+called the unavailable 17 rows duplicates. It leaves all predictions and scores
+intact, preserves the first diagnostic artifact and keeps the provider failures
+explicit. Final seal SHA256
+`651602676338d28fda0c46684c77cbee198d69235c4a59f8a4ba95ac572012dc`.
+
+### Verification
+
+Focused suite: 68 passed. The full `uv run --frozen python scripts/verify.py`
+gate passed **1,073 tests in 2,064.40s**, including PostgreSQL migrations and
+integration, matching bounds, lock/dependencies, Ruff, format and strict mypy
+(45 files). Isolated PostgreSQL restart passed four tests in 52.46s. The final
+scorer-only counter correction was also checked directly against the two result
+artifacts, focused tests, compilation and strict typing. Phase 0/2/3, both prior
+development seals and the corrected experiment seal verified. External AI and
+automation flags were disabled. The original reference implementation and the
+production financial and retrieval paths retain their existing behavior.
+
+Local logs: `local-data/verification/20261109T125744313054Z.log` and
+`local-data/verification/isolated-restart-20261109T125743611303Z.log`.
