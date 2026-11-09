@@ -56,6 +56,13 @@ synthetic text files from the stored canonical source and checks each SHA-256
 against the original hash. This avoids a paid disk and preserves source
 highlighting across spin-downs.
 
+Seed from the API region so database round trips fit the existing workflow
+limits. For this dedicated synthetic database only, an operator can temporarily
+append `--refresh-timeouts` to the startup command if the three seeded evidence
+cases timed out. It appends new workflow results through the existing offline
+fixture and leaves the earlier results in history. Return to the ordinary
+startup command after the refresh.
+
 The public API admits only its enumerated reads and exact document-span
 verification. It uses the existing FastAPI application on loopback with a
 server-owned local auditor session. The session credential stays on the

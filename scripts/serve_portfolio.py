@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import socket
+import sys
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -13,7 +14,7 @@ from contextvars import ContextVar
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 import certifi
 import httpx
@@ -31,11 +32,13 @@ from serve_frontend_demo import (
     SYNTHETIC_REVIEW_REFERENCE,
     ScriptedAR,
     populate,
+    pump,
 )
 from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
+from clearledger.case_models import CaseCommand
 from clearledger.config import Settings
 from clearledger.db import build_engine
 from clearledger.document_contract import ExtractionError, Span, span_text
@@ -112,7 +115,82 @@ def originals(session, settings):
             raise RuntimeError("PORTFOLIO_ORIGINAL_RESTORE_MISMATCH")
 
 
-def bootstrap(database_url, work):
+def refresh_timed_out_demo_cases(engine, settings):
+    """One-time operator refresh of synthetic outcomes seeded far from the database."""
+    seed_settings = settings.model_copy(
+        update={
+            "review_access_enabled": False,
+            "review_demo_enabled": False,
+            "llm_daily_requests": 30,
+            "llm_daily_input_tokens": 100000,
+            "llm_daily_output_tokens": 30000,
+            "llm_shared_requests_per_minute": 30,
+        }
+    )
+    seed = create_app(seed_settings)
+    seed.state.investigation_provider = ScriptedAR()
+    org = settings.organization_id
+    token = seed_settings.document_api_token
+    if token is None:
+        raise RuntimeError("PORTFOLIO_REFRESH_MISSING_FIXTURE_CREDENTIAL")
+    with TestClient(
+        seed, headers={"Authorization": f"Bearer {token.get_secret_value()}"}
+    ) as client:
+        invoices = {
+            row["id"]
+            for row in client.get("/invoices").raise_for_status().json()
+            if row["invoice_number"] in {"INV-2026-1042", "INV-2026-1043", "INV-2026-1044"}
+        }
+        cases = [
+            case
+            for case in client.get("/cases").raise_for_status().json()
+            if set(case["invoice_ids"]) & invoices
+        ]
+        if len(invoices) != 3 or len(cases) != 3:
+            raise RuntimeError("PORTFOLIO_REFRESH_UNEXPECTED_FIXTURES")
+        for case in cases:
+            path = f"/cases/{case['id']}"
+            runs = client.get(f"{path}/investigations").raise_for_status().json()
+            if not runs or runs[0]["error_code"] != "TIMEOUT":
+                continue
+            key = uuid5(NAMESPACE_URL, f"clearledger-portfolio-timeout-refresh:{case['id']}")
+            with Session(engine) as session:
+                if session.scalar(select(CaseCommand.id).where(CaseCommand.idempotency_key == key)):
+                    raise RuntimeError("PORTFOLIO_REFRESH_ALREADY_ATTEMPTED")
+            headers = {"X-Actor-ID": "portfolio-bootstrap", "Idempotency-Key": str(key)}
+            client.post(
+                f"{path}/refresh",
+                headers=headers,
+                json={"expected_case_version": case["version"]},
+            ).raise_for_status()
+            pump(engine, org, seed_settings)
+            case = client.get(path).raise_for_status().json()
+            claims = client.get(f"{path}/claims").raise_for_status().json()
+            headers["Idempotency-Key"] = str(uuid5(key, "investigation"))
+            run = (
+                client.post(
+                    f"{path}/investigations",
+                    headers=headers,
+                    json={
+                        "expected_case_version": case["version"],
+                        "expected_context_sha256": case["context_sha256"],
+                        "claim_ids": [claim["id"] for claim in claims],
+                        "allow_external": False,
+                    },
+                )
+                .raise_for_status()
+                .json()
+            )
+            pump(engine, org, seed_settings)
+            outcome = client.get(f"/investigations/{run['id']}").raise_for_status().json()
+            if outcome["status"] != "COMPLETED" or outcome["is_stale"]:
+                raise RuntimeError(
+                    f"PORTFOLIO_REFRESH_NOT_CURRENT:{outcome['status']}:{outcome['error_code']}"
+                )
+        print("PORTFOLIO_FIXTURE_REFRESH_COMPLETE", flush=True)
+
+
+def bootstrap(database_url, work, *, refresh_timeouts=False):
     engine = build_engine(database_url)
     try:
         # Session-level lock stays held across the fixture's existing transactions.
@@ -200,6 +278,8 @@ def bootstrap(database_url, work):
                 else:
                     with Session(engine) as session:
                         originals(session, settings)
+                    if refresh_timeouts:
+                        refresh_timed_out_demo_cases(engine, settings)
                 settings.case_auto_correlate_extractions = False
                 settings.case_auto_investigate_extractions = False
                 settings.llm_daily_requests = 0
@@ -410,7 +490,11 @@ def main():
         origin = public_origin(os.environ["PORTFOLIO_ORIGIN"])
         port = int(os.environ["PORT"])
         with TemporaryDirectory(prefix="clearledger-portfolio-") as directory:
-            settings, password = bootstrap(migration_url, Path(directory))
+            settings, password = bootstrap(
+                migration_url,
+                Path(directory),
+                refresh_timeouts=sys.argv[1:] == ["--refresh-timeouts"],
+            )
             settings.database_url = url
             print("PORTFOLIO_SCHEMA_AND_SYNTHETIC_SOURCE_READY", flush=True)
             uvicorn.run(
