@@ -3560,3 +3560,7 @@ Ruff/format and strict mypy (41 files). Isolated restart four passed in 62.39s.
 Compile/import and Phase 0/2/3 plus prior diagnostic seal checks passed.
 External AI and automation checked disabled. No production financial code,
 DocILE architecture or historical predictions/scores changed.
+
+Local verified configuration-selection checkpoint `8366a75`. The staged review
+contained nine intended code, test and report paths. Evaluation inputs, predictions
+and credentials remained local. Working branch `feat/final-accuracy-diagnostics`.
