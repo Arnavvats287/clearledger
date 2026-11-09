@@ -1,6 +1,13 @@
 import { parse, stringify } from "lossless-json";
 import type { components } from "./generated";
 
+const deploymentOrigin = import.meta.env.VITE_API_BASE_URL as
+  string | undefined;
+export const publicPortfolio = Boolean(deploymentOrigin);
+function apiUrl(path: string) {
+  return deploymentOrigin ? `${deploymentOrigin}${path}` : `/api${path}`;
+}
+
 type Cash<T> = T extends readonly (infer U)[]
   ? Cash<U>[]
   : T extends object
@@ -87,14 +94,14 @@ export class Client {
   ): Promise<T> {
     let response: Response;
     try {
-      response = await fetch(`/api${path}`, {
+      response = await fetch(apiUrl(path), {
         method,
         signal,
         cache: "no-store",
         headers: {
           ...(this.token ? { Authorization: `ReviewDemo ${this.token}` } : {}),
           ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-          ...(method !== "GET"
+          ...(method !== "GET" && !publicPortfolio
             ? {
                 "Idempotency-Key": key || crypto.randomUUID(),
                 "X-Actor-ID": "workstation",
@@ -107,6 +114,8 @@ export class Client {
       if (e instanceof DOMException && e.name === "AbortError") throw e;
       throw new ApiError(0, "SERVER_UNAVAILABLE");
     }
+    if (publicPortfolio && response.status === 503)
+      throw new ApiError(503, "PORTFOLIO_API_UNAVAILABLE");
     let data: unknown;
     try {
       data = decode(await response.text());
@@ -156,7 +165,7 @@ export class Client {
   ): Promise<unknown> {
     let response: Response;
     try {
-      response = await fetch(`/api${path}`, {
+      response = await fetch(apiUrl(path), {
         method: "POST",
         headers: {
           Authorization: `ReviewDemo ${this.token}`,
@@ -180,8 +189,8 @@ export class Client {
     return data;
   }
   async original(id: string): Promise<Blob> {
-    const response = await fetch(`/api/documents/${id}/original`, {
-      headers: { Authorization: `ReviewDemo ${this.token}` },
+    const response = await fetch(apiUrl(`/documents/${id}/original`), {
+      headers: this.token ? { Authorization: `ReviewDemo ${this.token}` } : {},
       cache: "no-store",
     });
     if (!response.ok)

@@ -16,6 +16,7 @@ dist/
 uploads/
 raw-data/
 local-data/
+/ClearLedgerEval/
 datasets/
 argon-data/
 secrets/

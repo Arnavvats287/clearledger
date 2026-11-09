@@ -14,6 +14,7 @@ import {
   human,
   money,
   presentation,
+  publicPortfolio,
   record,
   text,
 } from "./api";
@@ -317,9 +318,11 @@ export function Queue({ api }: { api: Client }) {
           Amounts are comparisons, not allocations. Evidence support never posts
           a deduction.
         </span>
-        <Link to="/intake">
-          Import invoices or receipts <ArrowUpRight size={15} />
-        </Link>
+        {!publicPortfolio && (
+          <Link to="/intake">
+            Import invoices or receipts <ArrowUpRight size={15} />
+          </Link>
+        )}
       </div>
     </main>
   );

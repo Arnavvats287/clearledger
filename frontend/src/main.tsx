@@ -8,6 +8,7 @@ import {
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
+  HashRouter,
   Link,
   NavLink,
   Route,
@@ -20,7 +21,7 @@ import "@fontsource/geist/500.css";
 import "@fontsource/geist/600.css";
 import "@fontsource/geist/700.css";
 import "@fontsource/geist-mono/400.css";
-import { Client, type Me } from "./api";
+import { Client, publicPortfolio, type Me } from "./api";
 import { CaseFile } from "./CaseFile";
 import { Intake } from "./Intake";
 import { Queue } from "./Queue";
@@ -83,7 +84,24 @@ function FocusRoute() {
 function App() {
   const [session, setSession] = useState<{ api: Client; me: Me }>(),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState<unknown>();
+    [error, setError] = useState<unknown>(),
+    [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!publicPortfolio) return;
+    const stop = new AbortController();
+    const api = new Client("");
+    api
+      .request<Me>("/review/me", "GET", undefined, undefined, stop.signal)
+      .then((me) => {
+        if (me.role !== "AUDITOR" || me.financial_authority !== false)
+          throw new Error("Unsafe portfolio session");
+        if (!stop.signal.aborted) setSession({ api, me });
+      })
+      .catch((err: unknown) => {
+        if (!stop.signal.aborted) setError(err);
+      });
+    return () => stop.abort();
+  }, [attempt]);
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("clearledger-theme") || "light";
@@ -135,7 +153,16 @@ function App() {
   }
   return (
     <>
-      <a className="skip-link" href="#main">
+      <a
+        className="skip-link"
+        href="#main"
+        onClick={(event) => {
+          if (publicPortfolio) {
+            event.preventDefault();
+            document.querySelector<HTMLElement>("main h1")?.focus();
+          }
+        }}
+      >
         Skip to case content
       </a>
       <header className="app-header">
@@ -148,7 +175,9 @@ function App() {
           <NavLink to="/" end>
             Exceptions
           </NavLink>
-          <NavLink to="/intake">Import & documents</NavLink>
+          {!publicPortfolio && (
+            <NavLink to="/intake">Import & documents</NavLink>
+          )}
         </nav>
         <div className="session-controls">
           <button
@@ -160,19 +189,45 @@ function App() {
           {session && (
             <>
               <Badge>
-                {session.me.authority === "LOCAL_DEMO_ONLY"
-                  ? "Local synthetic session"
-                  : "Verified review session"}
+                {publicPortfolio
+                  ? "Read-only synthetic demo"
+                  : session.me.authority === "LOCAL_DEMO_ONLY"
+                    ? "Local synthetic session"
+                    : "Verified review session"}
               </Badge>
-              <button onClick={() => void logout()}>
-                <LogOut size={15} aria-hidden="true" />
-                <span>Sign out</span>
-              </button>
+              {!publicPortfolio && (
+                <button onClick={() => void logout()}>
+                  <LogOut size={15} aria-hidden="true" />
+                  <span>Sign out</span>
+                </button>
+              )}
             </>
           )}
         </div>
       </header>
-      {!session ? (
+      {!session && publicPortfolio ? (
+        <main id="main" className="queue-page">
+          <h1>ClearLedger portfolio demo</h1>
+          <p role="status">
+            {error === undefined
+              ? "Starting portfolio demo API…"
+              : "The demo API is unavailable. It may still be waking up."}
+          </p>
+          <p>
+            The free service may take about a minute to wake after inactivity.
+          </p>
+          {error !== undefined && (
+            <button
+              onClick={() => {
+                setError(undefined);
+                setAttempt((n) => n + 1);
+              }}
+            >
+              Try again
+            </button>
+          )}
+        </main>
+      ) : !session ? (
         <main id="main" className="login-page">
           <section className="login-explanation">
             <span className="folio-index" aria-hidden="true">
@@ -238,15 +293,17 @@ function App() {
                 path="/cases/:id"
                 element={<CaseFile api={session.api} me={session.me} />}
               />
-              <Route
-                path="/intake"
-                element={
-                  <Intake
-                    api={session.api}
-                    readOnly={session.me.role === "AUDITOR"}
-                  />
-                }
-              />
+              {!publicPortfolio && (
+                <Route
+                  path="/intake"
+                  element={
+                    <Intake
+                      api={session.api}
+                      readOnly={session.me.role === "AUDITOR"}
+                    />
+                  }
+                />
+              )}
               <Route
                 path="*"
                 element={
@@ -268,8 +325,9 @@ function App() {
   );
 }
 
+const WorkstationRouter = publicPortfolio ? HashRouter : BrowserRouter;
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
+  <WorkstationRouter>
     <App />
-  </BrowserRouter>,
+  </WorkstationRouter>,
 );

@@ -20,6 +20,7 @@ from pydantic import SecretStr
 from sqlalchemy.orm import Session
 
 ROOT = Path(__file__).resolve().parents[1]
+SYNTHETIC_REVIEW_REFERENCE = "offline-approved-synthetic-ui-control"
 sys.path.insert(0, str(ROOT / "tests"))
 
 from application_eval_host import initialize  # noqa: E402
@@ -158,7 +159,7 @@ def populate(client, engine, org, settings, output):
         }
         settings.extraction_provider = "fake"
         settings.external_ai_enabled = True
-        settings.privacy_review_reference = "offline-approved-synthetic-ui-control"
+        settings.privacy_review_reference = SYNTHETIC_REVIEW_REFERENCE
         client.app.state.extraction_gateway = Gateway(
             FakeTransport([ProviderReply(json.dumps(result), 100, 100, 200)]), attempts=1
         )

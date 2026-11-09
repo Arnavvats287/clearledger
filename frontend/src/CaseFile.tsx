@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import {
   ApiError,
@@ -28,6 +33,7 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     [selection, setSelection] = useState<Selection>();
 
   const tab = params.get("tab") || "file";
+  const { hash } = useLocation();
 
   const sourceTrigger = useRef<HTMLElement | null>(null);
 
@@ -82,15 +88,11 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     refresh = () => setRevision((v) => v + 1);
 
   useEffect(() => {
-    if (
-      tab === "file" &&
-      state.data &&
-      window.location.hash === "#required-action"
-    )
+    if (tab === "file" && state.data && hash === "#required-action")
       document
         .getElementById("required-action")
         ?.scrollIntoView({ block: "center" });
-  }, [tab, state.data]);
+  }, [tab, hash, state.data]);
   const activeRun = state.data?.b.runs.find((r) => !r.is_stale);
   const waiting = activeRun && ["QUEUED", "RUNNING"].includes(activeRun.status);
   const polls = useRef(0);
