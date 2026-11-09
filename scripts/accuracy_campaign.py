@@ -275,7 +275,7 @@ def run(
             admission,
             {
                 "status": "PASS",
-                "model": "gemini-3.5-flash-lite",
+                "model": c["model"],
                 "config_sha256": sha256(path),
                 "operator_quota": c["operator_quota"],
                 "retry_policy": c["retry_policy"],

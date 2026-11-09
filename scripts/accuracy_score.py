@@ -66,6 +66,7 @@ def score(runs: Path, *, development_root: Path | None = None) -> None:
             reasons: Counter[str] = Counter()
             split_by_id = {}
             declared = 0
+            malformed_labels = missing_label_fields = document_failures = 0
             for record in records:
                 job, row = record["job"], record["result"]
                 p = ContractPacket.model_validate(load_json(root / job["input"]))
@@ -74,6 +75,8 @@ def score(runs: Path, *, development_root: Path | None = None) -> None:
                 selected[p.document_id].update(job["hypotheses"])
                 value = row.get("raw") or {}
                 rows = value.get("answers")
+                if not isinstance(rows, list) or not rows:
+                    document_failures += 1
                 for candidate in rows if isinstance(rows, list) else []:
                     if (
                         not isinstance(candidate, dict)
@@ -83,6 +86,14 @@ def score(runs: Path, *, development_root: Path | None = None) -> None:
                     identifiers = candidate.get("aliases", candidate.get("span_ids"))
                     if isinstance(identifiers, list):
                         declared += len(identifiers)
+                    if "predicted_label" not in candidate:
+                        missing_label_fields += 1
+                    elif candidate["predicted_label"] not in (
+                        "Entailment",
+                        "Contradiction",
+                        "NotMentioned",
+                    ):
+                        malformed_labels += 1
                     try:
                         label = RawDecision.model_validate(
                             {"predicted_label": candidate.get("predicted_label")}
@@ -154,6 +165,9 @@ def score(runs: Path, *, development_root: Path | None = None) -> None:
                 "rejection_reasons": dict(reasons),
                 "declared_aliases": declared,
                 "invalid_alias_items": states["INVALID_ALIAS"],
+                "malformed_labels": malformed_labels,
+                "missing_label_fields": missing_label_fields,
+                "document_failures": document_failures,
                 "validator_rejections": sum(
                     states[k] for k in ("INVALID_ALIAS", "INVALID_EVIDENCE")
                 ),

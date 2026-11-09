@@ -3534,3 +3534,29 @@ Development seal PASS (`e4c0fc12148bac917983ac2356ce9e5f5040028b8696403e26935ee8
 Local implementation checkpoint `d69297f` (`feat: complete development accuracy
 diagnostics`). The staged review included only 12 intended code, test and report
 paths. Raw predictions, source data and credential files remained local. No push.
+
+## Final ContractNLI development configuration selection — 2026-11-09
+
+Compared five configurations on the established 51 DEV and 136 TRAIN hypotheses
+per candidate. The new development provider schema restores only the exact legal
+label enum, with neither nested array bound. The revised instruction clarifies
+material contradiction and scope. Zero malformed label literals, zero document
+cascades, and zero unknown aliases in 719 synthesis references. LOW omitted the
+label field twice on TRAIN. All 55 jobs completed. Seven 503s recovered within
+the bounded retry allowance. The paired hybrid packet hashes matched on all 11
+documents across MINIMAL, LOW and the stronger model.
+
+Configuration review reference: 3.5 Flash-Lite MINIMAL, direct global K20 with
+adjacent context and 17 hypotheses. DEV 42/51, macro-F1 .5727, Contradiction F1
+.0000. TRAIN 106/136, macro-F1 .7116, Contradiction F1 .5385. Every candidate
+missed both DEV Contradiction cases before validation. Direct global offered
+their complete annotated evidence. **Hold Phase 3B.** LOW and stronger Flash did
+not resolve the DEV contradiction weakness. Exact prompt/schema hashes, all
+metrics and token caps are in `docs/FINAL_ACCURACY_DIAGNOSTICS.md`.
+
+Focused suite 59 passed. Frozen `scripts/verify.py` 1,064 passed in 1,999.07s,
+including PostgreSQL migrations/integration, matching bounds, lock/dependencies,
+Ruff/format and strict mypy (41 files). Isolated restart four passed in 62.39s.
+Compile/import and Phase 0/2/3 plus prior diagnostic seal checks passed.
+External AI and automation checked disabled. No production financial code,
+DocILE architecture or historical predictions/scores changed.

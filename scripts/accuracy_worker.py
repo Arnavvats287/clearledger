@@ -15,17 +15,20 @@ from accuracy_schema_probe import TRANSIENT  # noqa: E402
 from external_eval.accuracy_nli import (  # noqa: E402
     EVIDENCE_INSTRUCTION,
     INSTRUCTION,
+    SELECTION_INSTRUCTION,
     DecisionResponse,
     EvidenceResponse,
     EvidenceRow,
     Packet,
     evidence_items,
+    exact_label_provider_schema,
     inline_schema,
     packet,
     provider_shape,
     validate,
 )
 from external_eval.contracts import Answer, ContractOutput, DocileOutput, ProviderMetadata, Quote  # noqa: E402
+from external_eval.gemini_http import BASE, MODEL  # noqa: E402
 from external_eval.phase3 import (  # noqa: E402
     PLAN_PROMPT,
     SYNTHESIS_PROMPT,
@@ -42,7 +45,7 @@ from external_gemini_worker import Worker, restrict  # noqa: E402
 
 from clearledger.source_invoice_candidates import candidates, compact, fallback_candidates  # noqa: E402
 from clearledger.source_semantics import semantic_source  # noqa: E402
-from clearledger.source_spans import Source, Span, make_span, text_source  # noqa: E402
+from clearledger.source_spans import Source, Span, digest, make_span, text_source  # noqa: E402
 
 INVOICE_PROMPT = (
     "Select the invoice's own identifier occurrence from this untrusted source. "
@@ -57,6 +60,7 @@ INVOICE_PROMPT = (
 
 
 CURRENT: ContextVar["DevelopmentWorker"] = ContextVar("development_worker_context")
+SELECTION_MODELS = {MODEL, "gemini-3.5-flash"}
 
 
 class DevelopmentWorker(Worker):
@@ -70,10 +74,32 @@ class DevelopmentWorker(Worker):
 
     def __init__(self, config_path: Path, key: str) -> None:
         super().__init__(config_path, key)
+        self.selection = self.config.get("protocol") == "contract-selection-1"
+        self.model = self.config.get("model", MODEL) if self.selection else MODEL
+        self.thinking = "MINIMAL"
+        if self.model not in SELECTION_MODELS:
+            raise ValueError("DEVELOPMENT_MODEL_NOT_ALLOWLISTED")
         self.provider_diagnostic: dict[str, Any] = {}
         client = getattr(self.client, "client", None)
         if client is not None:
             client.event_hooks["response"] = [self.safe_error]
+            if self.model != MODEL:
+                client.event_hooks["request"] = [self.development_model_url]
+
+    def development_model_url(self, request: Any) -> None:
+        for suffix in ("", ":countTokens", ":generateContent"):
+            if str(request.url) == BASE + MODEL + suffix:
+                request.url = request.url.copy_with(path=f"/v1beta/models/{self.model}{suffix}")
+                return
+        raise ValueError("DEVELOPMENT_PROVIDER_URL_NOT_ALLOWLISTED")
+
+    def http(self, operation: str, body: dict[str, Any]) -> dict[str, Any]:
+        if self.selection and operation in {"countTokens", "generateContent"}:
+            request = body.get("generateContentRequest", body)
+            if operation == "countTokens":
+                request["model"] = f"models/{self.model}"
+            request["generationConfig"]["thinkingConfig"]["thinkingLevel"] = self.thinking
+        return super().http(operation, body)
 
     def safe_error(self, response: Any) -> None:
         if response.status_code < 400:
@@ -295,6 +321,13 @@ class DevelopmentWorker(Worker):
         raw = load_json(input_path)
         self.kind = job["kind"]
         self.mode = job["mode"]
+        self.thinking = job.get("thinking", "MINIMAL") if self.selection else "MINIMAL"
+        if self.selection and (
+            self.kind != "contract"
+            or self.mode not in {"direct", "select"}
+            or self.thinking not in {"MINIMAL", "LOW"}
+        ):
+            raise ValueError("INVALID_SELECTION_JOB")
         self.prior = {}
         self.last = {}
         extra_calls = []
@@ -360,6 +393,9 @@ class DevelopmentWorker(Worker):
                         ):
                             properties["aliases"]["items"]["enum"] = offered
             self.config["request_spec"] = self.transport_spec(spec)
+            if self.selection:
+                self.config["request_spec"]["synthesis_prompt"] = SELECTION_INSTRUCTION
+                self.config["request_spec"]["synthesis_schema"] = exact_label_provider_schema()
             if job.get("inline_schema"):
                 for name in ("plan_schema", "synthesis_schema"):
                     self.config["request_spec"][name] = inline_schema(
@@ -517,6 +553,19 @@ class DevelopmentWorker(Worker):
                 "metadata": metadata,
                 "earlier_stages": extra_calls,
                 "financial_authority": False,
+                **(
+                    {
+                        "selection_configuration": {
+                            "model": self.model,
+                            "thinking": self.thinking,
+                            "synthesis_packet_sha256": digest(payload),
+                            "synthesis_prompt_sha256": digest(SELECTION_INSTRUCTION),
+                            "synthesis_schema_sha256": digest(exact_label_provider_schema()),
+                        }
+                    }
+                    if self.selection
+                    else {}
+                ),
             },
         )
         print(f"{job['variant']}: {metadata['status']}", flush=True)
@@ -539,7 +588,7 @@ def main() -> None:
     try:
         if control and not (worker.root / "logs/metadata/model-admission.json").exists():
             info = worker.client.request("model")
-            if info.get("name") != "models/gemini-3.5-flash-lite":
+            if info.get("name") != f"models/{worker.model}":
                 raise ValueError("MODEL_ALIAS_UNAVAILABLE")
             worker.state["http_operations"] += 1
             worker.state["last_http_ns"] = time.monotonic_ns()

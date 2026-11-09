@@ -524,3 +524,137 @@ additional punctuation and scoped-scorer cases. Full logs are local under
 `local-data/verification/isolated-restart-20261109T101135869486Z.log`.
 The evaluation worker had no database or financial action access. No new held-out
 sample was selected, transmitted or scored.
+
+## FINAL CONTRACTNLI CONFIGURATION SELECTION
+
+The comparison reuses all 17 hypotheses for each of the three established DEV
+documents and eight established TRAIN documents. The gold denominators are 51
+and 136. Contradiction has two DEV positives and 18 TRAIN positives. Results are
+reported separately because the DEV class estimate can move sharply with one item.
+
+The predeclared zero-shot matrix includes direct hybrid, direct global and global
+evidence selection followed by classification at `MINIMAL` on Gemini 3.5
+Flash-Lite. The fourth candidate repeats hybrid direct with `LOW` and paired
+evidence, aliases, prompt, schema, caps and scorer. Google documents `LOW` as the
+next Flash-Lite setting. Gemini 3.5 Flash is the sole stronger-model candidate,
+paired against direct hybrid `MINIMAL` on the same 11 documents, conditional on
+synthetic admission using the same Free project after the thinking comparison.
+[Gemini thinking levels](https://ai.google.dev/gemini-api/docs/thinking).
+[Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing).
+
+The revised instruction distinguishes explicit support, material incompatibility
+and missing information. It calls out negation, defined terms, narrower scope,
+exceptions, prohibitions and party/temporal scope. The transport restores only
+the final `predicted_label` enum (`Entailment`, `Contradiction`, `NotMentioned`).
+Both nested array bounds stay out of the provider schema. The local validators
+still check item counts, scope, source and alias membership, and explicit evidence
+for assertive conclusions. Predictions are scored verbatim with no label repairs.
+
+The comparison uses full denominators, including failed calls and abstentions.
+Predeclared quality gates require zero malformed labels, document cascades and
+unknown aliases, at least 95% grounded coverage and at most 25% unsupported
+assertions on each split, DEV macro-F1 of at least .3954, and positive grounded
+Contradiction F1 on both splits. These thresholds are decision aids for this small
+development comparison. They do not estimate performance on a fresh test set.
+
+### DEV results (51 hypotheses per candidate)
+
+All candidates use the revised instruction and zero-shot inputs. `E/C/N` means
+Entailment / Contradiction / NotMentioned F1. Format counts are malformed
+literal / missing label field. Alias counts are unknown / known but outside the
+hypothesis's selectable set. Provider failures count attempts, including recovered
+transients. Token counts are provider-reported input/output. Latency is median/p95
+generation seconds, excluding count-token calls, backoff and pacing.
+
+| Model | Thinking | Evidence strategy | Grounded accuracy | Macro-F1 | E/C/N F1 | Coverage | Evidence F1 | Unsupported | Format | Alias | Failures / calls | Input/output tokens | Median/p95 s |
+| --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | --- | --- | ---: | --- | --- |
+| 3.5 Flash-Lite | MINIMAL | Hybrid direct | 42/51 | .5654 | .8852/.0000/.8108 | 49/51 | .6600 | 5/32 | 0/0 | 0/3 | 1/4 | 33211/3273 | 4.973/9.594 |
+| 3.5 Flash-Lite | MINIMAL | Global direct | 42/51 | .5727 | .9180/.0000/.8000 | 49/51 | .7021 | 6/34 | 0/0 | 0/0 | 1/4 | 45786/3158 | 3.168/3.450 |
+| 3.5 Flash-Lite | MINIMAL | Global select then classify | 41/51 | .5602 | .8571/.0000/.8235 | 51/51 | .6968 | 10/37 | 0/0 | 0/0 | 2/8 | 77032/4901 | 2.697/3.373 |
+| 3.5 Flash-Lite | LOW | Hybrid direct | 46/51 | .6188 | .9333/.0000/.9231 | 50/51 | .6736 | 3/31 | 0/0 | 0/2 | 0/3 | 33211/3071 | 3.212/3.529 |
+| 3.5 Flash | MINIMAL | Hybrid direct | 42/51 | .5871 | .8966/.0000/.8649 | 48/51 | .6652 | 5/31 | 0/0 | 0/4 | 1/4 | 33211/3393 | 7.802/10.535 |
+
+### TRAIN sanity check (136 hypotheses per candidate)
+
+| Model | Thinking | Evidence strategy | Grounded accuracy | Macro-F1 | E/C/N F1 | Coverage | Evidence F1 | Unsupported | Format | Alias | Failures / calls | Input/output tokens | Median/p95 s |
+| --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | --- | --- | ---: | --- | --- |
+| 3.5 Flash-Lite | MINIMAL | Hybrid direct | 108/136 | .6890 | .8652/.4167/.7850 | 136/136 | .7493 | 16/82 | 0/0 | 0/0 | 0/8 | 57316/8377 | 3.341/4.381 |
+| 3.5 Flash-Lite | MINIMAL | Global direct | 106/136 | .7116 | .8392/.5385/.7573 | 136/136 | .7736 | 19/86 | 0/0 | 0/0 | 0/8 | 72651/8347 | 3.121/9.097 |
+| 3.5 Flash-Lite | MINIMAL | Global select then classify | 109/136 | .6981 | .8671/.4348/.7925 | 136/136 | .7844 | 16/83 | 0/0 | 0/0 | 2/18 | 126602/13919 | 2.907/6.056 |
+| 3.5 Flash-Lite | LOW | Hybrid direct | 105/136 | .6773 | .8552/.4167/.7600 | 133/136 | .7635 | 19/86 | 0/2 | 0/0 | 0/8 | 57316/8157 | 3.269/6.423 |
+| 3.5 Flash | MINIMAL | Hybrid direct | 107/136 | .7186 | .8489/.5185/.7885 | 134/136 | .7658 | 17/83 | 0/0 | 0/2 | 0/8 | 57316/8661 | 8.887/20.636 |
+
+All 55 corpus jobs returned a synthesis envelope and none experienced a
+document-level validation cascade. The final label enum eliminated malformed
+literals. The two omitted TRAIN label fields on LOW remain failures. There were
+zero unknown aliases in 719 declared synthesis references and 11 known references
+outside the permitted hypothesis scope. Seven transient HTTP 503s recovered
+within the retry allowance. The 73 corpus generation attempts and five synthetic
+generations used 158 HTTP operations, including two model metadata lookups.
+The 66 successful corpus generations reported 593,652 input and 65,257 output
+tokens. Failed-call usage and separate thinking-token counts were unavailable.
+
+### What the comparisons resolve
+
+- Direct hybrid LOW gained four correct DEV answers relative to MINIMAL, but
+  lost three on TRAIN and left Contradiction F1 unchanged on both splits. The
+  stored evidence-packet hashes match across all 11 MINIMAL/LOW pairs. This
+  result does not justify choosing LOW on the basis of DEV accuracy alone.
+- Gemini 3.5 Flash passed the Free-project synthetic gate and used the same 11
+  hybrid packets, prompt, schema and MINIMAL setting as the Lite reference.
+  It improved TRAIN Contradiction F1 from .4167 to .5185 and macro-F1 from .6890
+  to .7186, with a higher median latency. DEV Contradiction remained zero and
+  grounded accuracy stayed 42/51. Its DEV coverage fell to 48/51.
+- Selection then classification used 26 attempts across the two splits versus
+  12 for direct global, including retries. It gained three TRAIN answers and
+  lost one DEV answer, with lower macro-F1 on both splits. The selection step
+  retained complete contradiction evidence for 0/2 DEV and 9/18 TRAIN positives.
+- Direct global offered all annotated contradiction characters for **2/2 DEV**
+  and **18/18 TRAIN** positives. Every candidate missed both DEV contradictions
+  in the raw predictions before validation. The hybrid packets exposed 895/898
+  contradiction evidence characters in DEV and 7196/7202 in TRAIN. The remaining
+  DEV weakness is in semantic classification despite evidence access. This
+  experiment cannot isolate model capacity from prompt behavior, and the two
+  supported DEV examples give limited precision for the class estimate.
+
+### RECOMMENDED FINAL CONFIGURATION
+
+**Reference for configuration review: Gemini 3.5 Flash-Lite `MINIMAL`, direct
+global K20. Recommendation for Phase 3B: hold.** None of the five candidates
+passed the predeclared DEV contradiction gate. The direct global reference
+gives 96.08% DEV and 100% TRAIN grounded coverage, the highest TRAIN Contradiction
+F1 (.5385), full contradiction evidence exposure, zero alias scope failures and
+one planned generation per document. The stronger model gained .0070 TRAIN
+macro-F1 over this reference with materially higher latency and no DEV
+contradiction gain. Higher thinking and the extra selection pass gave no
+consistent cross-split improvement.
+
+| Setting | Exact value |
+| --- | --- |
+| Model / thinking | `gemini-3.5-flash-lite` / `MINIMAL` |
+| Prompt | `SELECTION_INSTRUCTION` in `scripts/external_eval/accuracy_nli.py`, canonical JSON SHA256 `e1e11debee729cebae0e73362022bf85fb6aa68bef2198d02baf5495100405bb` |
+| Schema | `exact_label_provider_schema()`, canonical JSON SHA256 `9f4dc71606fdbc29c9272e29f6867b198348461934827ec7391926823b3bdcce` |
+| Evidence | Direct global. Per-hypothesis rank K20, one adjacent span on either side on the same page. Union deduplicated by canonical span, ordered by source position, and selectable by every hypothesis. |
+| Batch / examples | 17 hypotheses, zero-shot |
+| Validation | Strict per-hypothesis DTO, duplicate/missing isolation, request-local alias membership, canonical source/hash/version resolution, exact-atom checks, and explicit incompatible evidence for Contradiction. No label repair. |
+| Caps | 32,768 counted input tokens and 4,096 output tokens including thinking |
+
+DocILE remains frozen at 23/25 candidate values and 21/25 localized occurrences.
+The selection pass used only the established ContractNLI TRAIN/DEV material.
+
+Artifacts are under `local-data/contract-selection-v1`. Baseline config SHA256
+`e8a3e60f341d19525992544431003668d253ee52930beb1a85be028b712ff151`.
+Stronger-model config SHA256
+`19ff48e3ad8ef4d8bf7ec990e7d563316435e2f20ef8f5c791e75f7c696f8ef2`.
+Development comparison seal SHA256
+`5d41af476f94e56e8b052501b82da74e91b0dab0f18a15619b3776a1d64f524d`.
+
+Focused verification passed 59 tests. The complete `uv run --frozen python
+scripts/verify.py` gate passed 1,064 tests in 1,999.07s, including PostgreSQL
+integration/migrations, matching bounds, lock/dependency, Ruff, format and strict
+mypy (41 files). Isolated restart passed four tests in 62.39s. Compilation and
+the Phase 0/2/3 and prior development seal checks passed. The production graph,
+financial validators and authority boundaries retain their existing behavior.
+External AI and automation are disabled. Full local logs are
+`local-data/verification/20261109T115210406903Z.log` and
+`local-data/verification/isolated-restart-20261109T115212107836Z.log`.
