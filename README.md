@@ -4,7 +4,7 @@
 
 Matching, evidence verification and financial permissions are deterministic. Optional Gemini extraction and investigation propose typed facts and findings tied to source passages. The reviewer sees what was verified, what remains uncertain and what to do next.
 
-[**Open the live demo**](https://clearledger-jduu.onrender.com) · Read-only synthetic data. External AI is disabled and the demo has no financial authority. The API can take about a minute to wake after inactivity.
+[**Open the live sandbox**](https://clearledger-jduu.onrender.com) · Continue as Demo Analyst to explore synthetic invoices, receipts, remittances, and evidence-backed cases. Try deterministic extraction with the downloadable sample. Upload only synthetic or non-confidential content. Optional Gemini requests use your key for one request at a time. The included synthetic run is currently disabled pending a dedicated demo key. The sandbox has no financial authority, and the API can take about a minute to wake after inactivity.
 
 [Watch the 63-second workstation demo](docs/media/clearledger-workstation.webm) ·
 [Run locally](#running-locally) ·

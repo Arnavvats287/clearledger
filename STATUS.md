@@ -11,9 +11,12 @@ synthetic fixture and starts disabled without a dedicated Render secret.
 
 Local checks passed: 16 frontend unit tests, 10 private and four public
 Chromium scenarios, 10 focused PostgreSQL tests, Ruff, TypeScript, ESLint,
-Prettier, compilation, and the production frontend build. Gemini integration
-was checked with controlled replies only. Public deployment and live smoke are
-tracked separately in [the deployment runbook](docs/DEPLOYMENT.md).
+Prettier, compilation, and the production frontend build. GitHub Actions
+passed for deployed revision `ca35167`. Four public Chromium scenarios and
+the 43-asset live bundle scan passed. Gemini integration was checked with
+controlled replies. The included key remains unset. See
+[the deployment runbook](docs/DEPLOYMENT.md) for the hosted boundary and
+verification details.
 
 ## Phase2 Free-tier amendment — provider-payload gate — 2026-10-28
 

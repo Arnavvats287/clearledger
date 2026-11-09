@@ -18,9 +18,18 @@ investigation and posting.
 
 The deployed schema is at Alembic revision `0012_correlation`. The
 synthetic fixture includes missing, supporting and conflicting evidence
-cases plus a payment-correlation review. The public browser smoke exercised
-all four states, source highlighting, trace inspection, direct refresh and
-mobile rendering.
+cases plus a payment-correlation review. Both public services run sandbox
+revision `ca3516762b69717d93317990b9adfe21bd635d61`.
+[The required GitHub Actions run passed](https://github.com/Arnavvats287/clearledger/actions/runs/42704148310).
+Four public Chromium scenarios verified demo entry and sign-out, all seeded
+registers and evidence states, source and trace inspection, a real sample
+upload, mobile layout, and retry after a simulated startup failure. The
+browser and focused backend tests used controlled Gemini replies for
+visitor-key verification. There were no live Gemini calls in deployment
+acceptance. The public bundle scan found no credentials or private paths.
+The Neon fingerprint covering finance and seeded case tables matched before
+and after the hosted smoke. Public finance, import and review writes were
+blocked.
 
 ## Build and startup
 
