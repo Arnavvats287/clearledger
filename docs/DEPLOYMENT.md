@@ -37,7 +37,7 @@ Use direct Neon connections with TLS. The startup wrapper requires the
 `clearledger_portfolio` database, verifies the hostname, and enforces
 `sslmode=verify-full` and channel binding. The migration connection owns the
 schema. The runtime can use a separate login with schema usage, table reads,
-and insert permission on `demo_sessions` and `demo_auth_events` for the
+and insert permission on `review_demo_sessions` and `review_demo_auth_events` for the
 server-owned auditor session. It needs no database-creation or replication
 permission. CORS allows the exact static site origin.
 
@@ -59,9 +59,11 @@ highlighting across spin-downs.
 The public API admits only its enumerated reads and exact document-span
 verification. It uses the existing FastAPI application on loopback with a
 server-owned local auditor session. The session credential stays on the
-server. The span check uses the application's source-integrity read and span
-validator. The ordinary workstation's authentication and finance boundary
-remain unchanged.
+server. The gateway runs application reads in PostgreSQL read-only
+transactions using the existing evidence read path and company locks. Only
+the server-owned auditor login needs the restricted insert grants. The span
+check uses the application's source-integrity read and span validator. The
+ordinary workstation's authentication and finance boundary remain unchanged.
 
 ## Redeployment
 

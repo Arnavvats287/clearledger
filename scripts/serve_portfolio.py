@@ -9,6 +9,7 @@ import socket
 import threading
 import time
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import urlsplit
@@ -33,7 +34,7 @@ from serve_frontend_demo import (
 )
 from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from clearledger.config import Settings
 from clearledger.db import build_engine
@@ -231,10 +232,37 @@ def bootstrap(database_url, work):
 class Loopback:
     def __init__(self, settings, password):
         self.app = create_app(settings)
+        self.use_readonly = ContextVar("portfolio_readonly", default=False)
+        self.app.middleware("http")(self.read_boundary)
+        application_lifespan = self.app.router.lifespan_context
+
+        @asynccontextmanager
+        async def lifespan(app):
+            async with application_lifespan(app):
+                normal = app.state.session_factory
+                readonly = sessionmaker(
+                    normal.kw["bind"].execution_options(postgresql_readonly=True),
+                    info={"evidence_readonly": True},
+                )
+                app.state.session_factory = lambda: (
+                    readonly if self.use_readonly.get() else normal
+                )()
+                yield
+
+        self.app.router.lifespan_context = lifespan
         self.password = password
         self.token = ""
         self.valid_until = 0.0
         self.login_lock = asyncio.Lock()
+
+    async def read_boundary(self, request, call_next):
+        # Keep the existing demo login writable and all loopback GETs read-only.
+        # The app's evidence mode uses the company lock without row-level write grants.
+        token = self.use_readonly.set(request.method == "GET")
+        try:
+            return await call_next(request)
+        finally:
+            self.use_readonly.reset(token)
 
     @asynccontextmanager
     async def serve(self):
