@@ -3608,3 +3608,6 @@ Historical Phase 0/2/3 and prior development seals verified. New model-capacity
 seal `201730f1c4adc50d2a676bc879e902810622b77dc8da8775840b970127f0fef0`.
 No implementation changes or focused/regression reruns. See
 `docs/FINAL_ACCURACY_DIAGNOSTICS.md` for full DEV/TRAIN and transport metrics.
+
+Local report checkpoint `21f6e82`. The commit contains the report and status
+only. The campaign configuration, raw predictions and scores remain local.
