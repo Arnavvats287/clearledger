@@ -7,6 +7,20 @@ inspect cases, source documents, correlation proof and investigation traces.
 Imports, review decisions, finance routes and external Gemini are unavailable
 through the public gateway.
 
+## Live services
+
+| Service | Public URL | Region |
+| --- | --- | --- |
+| Workstation | [ClearLedger](https://clearledger-jduu.onrender.com) | Render Static Site CDN |
+| API | [API readiness](https://clearledger-api-we3g.onrender.com/ready) | Render Free, Singapore |
+| Database | Dedicated Neon Free PostgreSQL 16 | Singapore, `aws-ap-southeast-1` |
+
+The deployed schema is at Alembic revision `0012_correlation`. The
+synthetic fixture includes missing, supporting and conflicting evidence
+cases plus a payment-correlation review. The public browser smoke exercised
+all four states, source highlighting, trace inspection, direct refresh and
+mobile rendering.
+
 ## Build and startup
 
 | Service | Configuration |
@@ -18,9 +32,10 @@ through the public gateway.
 | Static build | Node 24, root `frontend`, `npm ci && npm run build`, publish `dist` |
 | Static routes | The public build uses hash-based routes so case URLs refresh on the static host. |
 
-`render.yaml` records the build definition. Use manual deploys from
-`main` until GitHub Actions completes reliably. Render supports switching
-both services to `checksPass` once that condition holds.
+`render.yaml` records the build definition. These services use a public
+repository URL and deploy manually from `main`. Render requires a connected
+Git provider for [automatic deploys after CI passes](https://render.com/docs/deploys#automatic-deploys).
+Check GitHub Actions before manually deploying application changes.
 
 ## Configuration
 

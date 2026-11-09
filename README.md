@@ -4,9 +4,12 @@
 
 Matching, evidence verification and financial permissions are deterministic. Optional Gemini extraction and investigation propose typed facts and findings tied to source passages. The reviewer sees what was verified, what remains uncertain and what to do next.
 
+[**Open the live demo**](https://clearledger-jduu.onrender.com) · Read-only synthetic data. External AI is disabled and the demo has no financial authority. The API can take about a minute to wake after inactivity.
+
 [Watch the 63-second workstation demo](docs/media/clearledger-workstation.webm) ·
 [Run locally](#running-locally) ·
-[See measured results](#evaluation)
+[See measured results](#evaluation) ·
+[Deployment runbook](docs/DEPLOYMENT.md)
 
 ## Why ClearLedger
 
