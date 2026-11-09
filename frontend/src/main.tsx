@@ -14,6 +14,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { ArrowRight, LogOut, Moon, Sun } from "lucide-react";
 import "@fontsource/geist/400.css";
@@ -24,10 +25,35 @@ import "@fontsource/geist-mono/400.css";
 import { Client, publicPortfolio, type Me } from "./api";
 import { CaseFile } from "./CaseFile";
 import { Intake } from "./Intake";
+import { PortfolioRecords } from "./PortfolioRecords";
+import { PortfolioSandbox } from "./PortfolioSandbox";
 import { Queue } from "./Queue";
 import { Badge, ErrorNotice } from "./ui";
 import "./style.css";
 import "./visual-system.css";
+import "./portfolio.css";
+
+const portfolioSessionKey = "clearledger-portfolio-session";
+function savePortfolioSession(token?: string) {
+  try {
+    if (token) sessionStorage.setItem(portfolioSessionKey, token);
+    else sessionStorage.removeItem(portfolioSessionKey);
+  } catch {
+    /* The public session can stay in memory. */
+  }
+}
+async function demoIdentity(api: Client, signal?: AbortSignal) {
+  const me = await api.request<Me>(
+    "/portfolio/session",
+    "GET",
+    undefined,
+    undefined,
+    signal,
+  );
+  if (me.role !== "AUDITOR" || me.financial_authority !== false)
+    throw new Error("Invalid demo identity");
+  return { api, me };
+}
 
 class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -74,34 +100,53 @@ function Mark() {
 function FocusRoute() {
   const location = useLocation();
   useEffect(() => {
-    document.title = `ClearLedger · ${location.pathname.startsWith("/cases/") ? "Case file" : location.pathname === "/intake" ? "Import & documents" : "Exception register"}`;
+    const titles: Record<string, string> = {
+      "/intake": "Import & documents",
+      "/invoices": "Invoices",
+      "/receipts": "Receipts",
+      "/remittances": "Remittances",
+    };
+    document.title = `ClearLedger · ${location.pathname.startsWith("/cases/") ? "Case file" : titles[location.pathname] || "Exception register"}`;
     requestAnimationFrame(() =>
-      document.querySelector<HTMLElement>("h1")?.focus(),
+      (location.hash === "#live-ai"
+        ? document.querySelector<HTMLElement>("#live-ai-heading")
+        : document.querySelector<HTMLElement>("main h1")
+      )?.focus(),
     );
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
   return null;
 }
 function App() {
+  const navigate = useNavigate();
   const [session, setSession] = useState<{ api: Client; me: Me }>(),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState<unknown>(),
-    [attempt, setAttempt] = useState(0);
+    [error, setError] = useState<unknown>();
   useEffect(() => {
     if (!publicPortfolio) return;
+    let token: string | null;
+    try {
+      token = sessionStorage.getItem(portfolioSessionKey);
+    } catch {
+      return;
+    }
+    if (!token) return;
     const stop = new AbortController();
-    const api = new Client("");
-    api
-      .request<Me>("/review/me", "GET", undefined, undefined, stop.signal)
-      .then((me) => {
-        if (me.role !== "AUDITOR" || me.financial_authority !== false)
-          throw new Error("Unsafe portfolio session");
-        if (!stop.signal.aborted) setSession({ api, me });
+    setBusy(true);
+    demoIdentity(new Client(token), stop.signal)
+      .then((restored) => {
+        if (!stop.signal.aborted) setSession(restored);
       })
       .catch((err: unknown) => {
-        if (!stop.signal.aborted) setError(err);
+        if (!stop.signal.aborted) {
+          savePortfolioSession();
+          setError(err);
+        }
+      })
+      .finally(() => {
+        if (!stop.signal.aborted) setBusy(false);
       });
     return () => stop.abort();
-  }, [attempt]);
+  }, []);
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("clearledger-theme") || "light";
@@ -142,12 +187,34 @@ function App() {
       setBusy(false);
     }
   }
+  async function enterDemo() {
+    setBusy(true);
+    setError(undefined);
+    try {
+      const { access_token } = await new Client("").request<{
+        access_token: string;
+      }>("/portfolio/session", "POST");
+      const identity = await demoIdentity(new Client(access_token));
+      savePortfolioSession(access_token);
+      setSession(identity);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function logout() {
     try {
-      await session?.api.request("/review/demo/logout", "POST", {});
+      if (publicPortfolio)
+        await session?.api.request("/portfolio/session", "DELETE");
+      else await session?.api.request("/review/demo/logout", "POST", {});
     } catch {
       setError(new Error("Server session revocation unavailable"));
     } finally {
+      if (publicPortfolio) {
+        savePortfolioSession();
+        void navigate("/");
+      }
       setSession(undefined);
     }
   }
@@ -165,20 +232,29 @@ function App() {
       >
         Skip to case content
       </a>
-      <header className="app-header">
+      <header
+        className={`app-header${publicPortfolio ? " portfolio-header" : ""}`}
+      >
         <Link to="/" className="brand">
           <Mark />
           <span>ClearLedger</span>
           <small>Receivables workstation</small>
         </Link>
-        <nav aria-label="Main navigation">
-          <NavLink to="/" end>
-            Exceptions
-          </NavLink>
-          {!publicPortfolio && (
+        {(!publicPortfolio || session) && (
+          <nav aria-label="Main navigation">
+            <NavLink to="/" end>
+              Exceptions
+            </NavLink>
+            {publicPortfolio && (
+              <>
+                <NavLink to="/invoices">Invoices</NavLink>
+                <NavLink to="/receipts">Receipts</NavLink>
+                <NavLink to="/remittances">Remittances</NavLink>
+              </>
+            )}
             <NavLink to="/intake">Import & documents</NavLink>
-          )}
-        </nav>
+          </nav>
+        )}
         <div className="session-controls">
           <button
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -190,44 +266,20 @@ function App() {
             <>
               <Badge>
                 {publicPortfolio
-                  ? "Read-only synthetic demo"
+                  ? "Synthetic demo"
                   : session.me.authority === "LOCAL_DEMO_ONLY"
                     ? "Local synthetic session"
                     : "Verified review session"}
               </Badge>
-              {!publicPortfolio && (
-                <button onClick={() => void logout()}>
-                  <LogOut size={15} aria-hidden="true" />
-                  <span>Sign out</span>
-                </button>
-              )}
+              <button aria-label="Sign out" onClick={() => void logout()}>
+                <LogOut size={15} aria-hidden="true" />
+                <span>Sign out</span>
+              </button>
             </>
           )}
         </div>
       </header>
-      {!session && publicPortfolio ? (
-        <main id="main" className="queue-page">
-          <h1>ClearLedger portfolio demo</h1>
-          <p role="status">
-            {error === undefined
-              ? "Starting portfolio demo API…"
-              : "The demo API is unavailable. It may still be waking up."}
-          </p>
-          <p>
-            The free service may take about a minute to wake after inactivity.
-          </p>
-          {error !== undefined && (
-            <button
-              onClick={() => {
-                setError(undefined);
-                setAttempt((n) => n + 1);
-              }}
-            >
-              Try again
-            </button>
-          )}
-        </main>
-      ) : !session ? (
+      {!session ? (
         <main id="main" className="login-page">
           <section className="login-explanation">
             <span className="folio-index" aria-hidden="true">
@@ -248,39 +300,77 @@ function App() {
             </div>
           </section>
           <section className="login-form">
-            <h2>Open your workstation</h2>
-            <p>
-              Use a provisioned local review session. These credentials confer
-              no financial authority.
-            </p>
-            <form onSubmit={(e) => void login(e)}>
-              <label>
-                Username
-                <input
-                  name="username"
-                  autoComplete="username"
-                  required
-                  spellCheck={false}
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                />
-              </label>
-              {error !== undefined && <ErrorNotice error={error} />}
-              <button className="primary" type="submit" disabled={busy}>
-                {busy ? "Checking session…" : "Open exception register"}
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </form>
-            <small>
-              Session credentials remain in memory. Reloading requires sign-in.
-            </small>
+            <h2>
+              {publicPortfolio
+                ? "Enter the demo workstation"
+                : "Open your workstation"}
+            </h2>
+            {publicPortfolio ? (
+              <>
+                <p>
+                  Explore the synthetic receivables ledger and inspect the proof
+                  behind a deduction.
+                </p>
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void enterDemo()}
+                >
+                  {error === undefined
+                    ? "Continue as Demo Analyst"
+                    : "Retry demo entry"}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </button>
+                {busy && <p role="status">Starting portfolio demo API…</p>}
+                {error !== undefined && (
+                  <p role="alert">
+                    The demo API may still be waking up. Try again in a moment.
+                  </p>
+                )}
+                <small>
+                  Synthetic portfolio workspace. No financial authority. Upload
+                  only synthetic or non-confidential documents. The API can take
+                  about a minute to wake.
+                </small>
+              </>
+            ) : (
+              <>
+                <p>
+                  Use a provisioned local review session. These credentials
+                  confer no financial authority.
+                </p>
+                <form onSubmit={(e) => void login(e)}>
+                  <label>
+                    Username
+                    <input
+                      name="username"
+                      autoComplete="username"
+                      required
+                      spellCheck={false}
+                    />
+                  </label>
+                  <label>
+                    Password
+                    <input
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                    />
+                  </label>
+                  {error !== undefined && <ErrorNotice error={error} />}
+                  <button className="primary" type="submit" disabled={busy}>
+                    {busy ? "Checking session…" : "Open exception register"}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                </form>
+                <small>
+                  Session credentials remain in memory. Reloading requires
+                  sign-in.
+                </small>
+              </>
+            )}
           </section>
         </main>
       ) : (
@@ -293,7 +383,51 @@ function App() {
                 path="/cases/:id"
                 element={<CaseFile api={session.api} me={session.me} />}
               />
-              {!publicPortfolio && (
+              {publicPortfolio ? (
+                <>
+                  <Route
+                    path="/invoices"
+                    element={
+                      <PortfolioRecords
+                        key="invoices"
+                        api={session.api}
+                        kind="invoices"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/receipts"
+                    element={
+                      <PortfolioRecords
+                        key="receipts"
+                        api={session.api}
+                        kind="receipts"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/remittances"
+                    element={
+                      <PortfolioRecords
+                        key="remittances"
+                        api={session.api}
+                        kind="remittances"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/intake"
+                    element={
+                      <PortfolioSandbox
+                        api={session.api}
+                        includedAvailable={
+                          session.me.included_available === true
+                        }
+                      />
+                    }
+                  />
+                </>
+              ) : (
                 <Route
                   path="/intake"
                   element={

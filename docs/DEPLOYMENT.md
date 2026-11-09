@@ -1,11 +1,12 @@
 # ClearLedger portfolio deployment
 
-The public workstation is a read-only synthetic demo. A Render Static Site
+The public workstation is a synthetic portfolio sandbox. A Render Static Site
 calls the separate Render Free FastAPI service over HTTPS. The API uses a
 dedicated Neon Free PostgreSQL 16 database in Singapore. Public visitors can
 inspect cases, source documents, correlation proof and investigation traces.
-Imports, review decisions, finance routes and external Gemini are unavailable
-through the public gateway.
+Financial imports, review decisions, and finance routes are unavailable through
+the public gateway. The optional sandbox Gemini paths are separate from application
+investigation and posting.
 
 ## Live services
 
@@ -47,6 +48,7 @@ frontend variable limited to the API's public HTTPS origin.
 | --- | --- |
 | API | `DATABASE_URL`, `PORTFOLIO_MIGRATION_DATABASE_URL`, `PORTFOLIO_ORIGIN`, `PORT`, `PYTHON_VERSION` |
 | Static | `VITE_API_BASE_URL`, `NODE_VERSION` |
+| Optional included demo | `PUBLIC_DEMO_GEMINI_KEY` (API service only) |
 
 Use direct Neon connections with TLS. The startup wrapper requires the
 `clearledger_portfolio` database, verifies the hostname, and enforces
@@ -86,6 +88,47 @@ transactions using the existing evidence read path and company locks. Only
 the server-owned auditor login needs the restricted insert grants. The span
 check uses the application's source-integrity read and span validator. The
 ordinary workstation's authentication and finance boundary remain unchanged.
+
+## Public sandbox
+
+Visitors enter with **Continue as Demo Analyst**. The public identity uses the
+existing auditor boundary and cannot grant financial authority. The browser keeps
+an opaque two-hour demo session token in tab-scoped storage so refresh works.
+Sign-out revokes that token. The seeded read API remains public, and the token
+gates sandbox actions. Invoice, receipt, remittance, and case records are read-only.
+
+The upload endpoint accepts PDF, TXT, JSON, and EML up to 2 MiB after explicit
+consent. The existing isolated parser receives the bytes through a pipe and
+returns canonical text. Uploaded originals and parser results are never written
+to disk or PostgreSQL. There is no URL fetching, OCR service, or financial import
+in this endpoint. Unsupported formats and active content are rejected by the
+existing parser. Structured references and amounts retain their exact spans.
+
+PostgreSQL stores only token hashes, expiration, and admission counters in the
+separate `portfolio_demo` schema. The API startup provisions it idempotently
+through the migration credential. The runtime role can write only the sandbox
+metadata and its existing auditor authentication events, outside the financial
+tables. Limits are 15 uploads, one included generation attempt, and three
+visitor-key attempts per session. Global UTC limits are 1,000 new sessions,
+300 uploads, 20 included attempts, and 40 visitor-key attempts per day.
+Reservations precede the provider call and a failure consumes an attempt.
+
+The included call uses only a bundled synthetic missing-POD case. It is disabled
+without `PUBLIC_DEMO_GEMINI_KEY`. To enable it, create a separate Gemini demo
+project and put its key in **Render → clearledger-api → Environment** under
+that name. Save and deploy. Use only the dedicated demo key. The fixed model is
+`gemini-3.5-flash-lite`. Unavailable models and provider failures leave the
+deterministic result available. No substitute model or retries are configured.
+
+Visitors may separately enter their own Gemini key and consent to Google
+processing. Only a bounded privacy-filtered projection leaves the application.
+The credential travels in a request header over HTTPS, is cleared from the input
+when submitted, and is passed to a fresh isolated worker. There is no key storage,
+logging, caching, or durable trace. Sandbox responses use `Cache-Control: no-store`.
+Provider requests use the existing fixed Google transport and strict local
+source validation, with an 8,192 input-token cap and a 2,048 output-token cap.
+The upload AI path also limits canonical input to 6,000 characters. Google
+processing is governed by the [Gemini API terms](https://ai.google.dev/gemini-api/terms).
 
 ## Redeployment
 

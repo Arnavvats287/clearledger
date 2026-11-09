@@ -1,5 +1,20 @@
 # Build status
 
+## Public portfolio sandbox — 2026-11-10
+
+The deployment gateway now provides a credential-free auditor entry, seeded
+record registers, ephemeral extraction, and optional request-scoped Gemini
+access. Sandbox session and quota metadata live in a separate PostgreSQL
+schema. Uploaded bytes and visitor keys do not enter the shared application
+dataset or workflow history. The included path uses only its bundled
+synthetic fixture and starts disabled without a dedicated Render secret.
+
+Local checks passed: 16 frontend unit tests, 10 private and four public
+Chromium scenarios, 10 focused PostgreSQL tests, Ruff, TypeScript, ESLint,
+Prettier, compilation, and the production frontend build. Gemini integration
+was checked with controlled replies only. Public deployment and live smoke are
+tracked separately in [the deployment runbook](docs/DEPLOYMENT.md).
+
 ## Phase2 Free-tier amendment — provider-payload gate — 2026-10-28
 
 Authorization/gate checkpoint `c7d026b`; no scored evaluation completion claimed.

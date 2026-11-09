@@ -1,5 +1,13 @@
 # ClearLedger requirements-alignment audit
 
+## Public portfolio sandbox scope amendment
+
+The operator approved a public entry and seeded record registers, ephemeral
+document extraction, one quota-controlled bundled Gemini attempt, and explicit
+visitor-key processing. These are deployment-only boundaries. Financial imports,
+authoritative review and posting remain unavailable to public visitors.
+Implementation and verification are tracked in [the deployment runbook](docs/DEPLOYMENT.md).
+
 ## Phase2 Free-tier authorization / payload terms — 2026-10-28
 
 Operator Free-tier acceptance recorded in authorization/results documents; historical

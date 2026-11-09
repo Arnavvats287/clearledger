@@ -10,6 +10,7 @@ import {
   ApiError,
   Client,
   bundle,
+  publicPortfolio,
   type Customer,
   type Doc,
   type Invoice,
@@ -220,6 +221,9 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
               ? "Review the payment match before linking this claim."
               : "Short payment under review · customer-claimed deduction"}
           </p>
+          {publicPortfolio && (
+            <Link to="/intake#live-ai">Explore the live AI demo →</Link>
+          )}
         </div>
         <button onClick={refresh} disabled={state.loading}>
           <RefreshCw size={14} aria-hidden="true" />

@@ -43,6 +43,7 @@ export type Me = {
   role: "AR_ANALYST" | "CONTROLLER" | "AUDITOR";
   authority: "VERIFIED" | "LOCAL_DEMO_ONLY";
   financial_authority: false;
+  included_available?: boolean;
 };
 
 export class ApiError extends Error {
@@ -99,7 +100,11 @@ export class Client {
         signal,
         cache: "no-store",
         headers: {
-          ...(this.token ? { Authorization: `ReviewDemo ${this.token}` } : {}),
+          ...(this.token && (!publicPortfolio || path.startsWith("/portfolio/"))
+            ? {
+                Authorization: `${publicPortfolio ? "Portfolio" : "ReviewDemo"} ${this.token}`,
+              }
+            : {}),
           ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
           ...(method !== "GET" && !publicPortfolio
             ? {
@@ -114,6 +119,39 @@ export class Client {
       if (e instanceof DOMException && e.name === "AbortError") throw e;
       throw new ApiError(0, "SERVER_UNAVAILABLE");
     }
+    return this.readResponse<T>(response);
+  }
+  async portfolioUpload<T>(
+    file: File,
+    mime: string,
+    geminiKey?: string,
+  ): Promise<T> {
+    let response: Response;
+    try {
+      response = await fetch(apiUrl("/portfolio/extract"), {
+        method: "POST",
+        cache: "no-store",
+        redirect: "error",
+        headers: {
+          Authorization: `Portfolio ${this.token}`,
+          "Content-Type": mime,
+          "X-Portfolio-Filename": encodeURIComponent(file.name),
+          "X-Portfolio-Consent": "true",
+          ...(geminiKey
+            ? {
+                "X-Portfolio-Gemini-Key": geminiKey,
+                "X-Portfolio-Gemini-Consent": "true",
+              }
+            : {}),
+        },
+        body: file,
+      });
+    } catch {
+      throw new ApiError(0, "SERVER_UNAVAILABLE");
+    }
+    return this.readResponse<T>(response);
+  }
+  private async readResponse<T>(response: Response): Promise<T> {
     if (publicPortfolio && response.status === 503)
       throw new ApiError(503, "PORTFOLIO_API_UNAVAILABLE");
     let data: unknown;

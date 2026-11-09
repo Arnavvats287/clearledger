@@ -1,0 +1,158 @@
+.portfolio-register .case-heading,
+.sandbox .case-heading {
+  margin-bottom: 20px;
+}
+.portfolio-table {
+  max-width: 100%;
+  overflow: auto;
+  border-block: 1px solid var(--line);
+  background: var(--surface);
+}
+.portfolio-table table {
+  width: 100%;
+  min-width: 660px;
+  border-collapse: collapse;
+  text-align: left;
+}
+.portfolio-table :is(th, td) {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.portfolio-table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+.portfolio-table thead th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.portfolio-table tbody tr:focus-within {
+  background: var(--selected);
+}
+.portfolio-table .portfolio-money {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.portfolio-table td:last-child a {
+  display: block;
+  min-height: 28px;
+  white-space: nowrap;
+}
+.sandbox-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+  gap: 20px;
+}
+.sandbox-panel {
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-module);
+  overflow-wrap: anywhere;
+}
+.sandbox-panel h2 {
+  font-size: 20px;
+  margin: 0 0 10px;
+}
+.sandbox-panel h3 {
+  font-size: 16px;
+}
+.sandbox-panel p {
+  line-height: 1.5;
+}
+.sandbox-panel a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sandbox-panel form {
+  margin-top: 18px;
+}
+.sandbox-panel fieldset {
+  min-width: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 10px 0 0;
+  margin: 4px 0;
+}
+.sandbox-panel legend {
+  font-size: 15px;
+  font-weight: 650;
+  padding-right: 12px;
+}
+.sandbox-panel label.sandbox-check {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  margin: 8px 0;
+}
+.sandbox-check input {
+  min-height: auto;
+  width: auto;
+  margin: 0;
+}
+.sandbox-panel input[type="file"] {
+  max-width: 100%;
+}
+.sandbox-key,
+.sandbox-result {
+  margin-block: 16px;
+  padding: 12px;
+  background: var(--ground);
+  border-left: 2px solid var(--control);
+}
+.sandbox-output {
+  margin-top: 20px;
+}
+.sandbox-output pre {
+  white-space: pre-wrap;
+  background: var(--ground);
+  padding: 14px;
+  max-height: 26rem;
+  overflow: auto;
+  margin: 0;
+}
+.sandbox-output mark {
+  background: var(--selected);
+  color: var(--ink);
+  outline: 1px solid var(--blue);
+}
+.sandbox-fields > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.sandbox-fields dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .app-header.portfolio-header {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+  .portfolio-header > nav {
+    order: 3;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    column-gap: 14px;
+    row-gap: 0;
+    min-height: 0;
+    padding-bottom: 4px;
+  }
+  .portfolio-header > nav a {
+    height: auto;
+    min-height: 38px;
+  }
+  .sandbox-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sandbox-panel {
+    padding: 16px;
+  }
+}

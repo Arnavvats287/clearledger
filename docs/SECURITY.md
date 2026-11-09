@@ -1,5 +1,10 @@
 # Security model and threat-driven tests
 
+The operator-approved public portfolio sandbox is isolated from application
+extraction and investigation settings. See [deployment boundaries](DEPLOYMENT.md#public-sandbox)
+for ephemeral upload processing, visitor-key handling, the bundled-only included
+provider request, and persistent admission limits. It grants no financial authority.
+
 Optional phased Gemini Investigator receives scoped facts/authenticated numeric
 summaries only. Models select no arbitrary queries and receive no source prose,
 credentials, DB handles or financial tools. Strict typed plans/syntheses, source

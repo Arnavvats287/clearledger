@@ -25,6 +25,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.testclient import TestClient
+from portfolio_sandbox import HEADERS, mount
+from portfolio_sessions import Sessions
+from portfolio_sessions import setup as setup_portfolio_sessions
 from pydantic import SecretStr, ValidationError
 from serve_frontend_demo import (
     ROOT,
@@ -395,7 +398,7 @@ class Loopback:
         )
 
 
-def make_gateway(inner, origin):
+def make_gateway(inner, origin, sessions=None, included_key=None):
     app = FastAPI(
         docs_url=None,
         redoc_url=None,
@@ -405,9 +408,11 @@ def make_gateway(inner, origin):
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[origin],
-        allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type"],
+        allow_methods=["GET", "POST", "DELETE"],
+        allow_headers=HEADERS,
     )
+    if sessions is not None:
+        mount(app, sessions, origin, included_key)
 
     @app.api_route("/{path:path}", methods=["GET", "POST"], include_in_schema=False)
     async def dispatch(path: str, request: Request):
@@ -496,14 +501,25 @@ def main():
                 refresh_timeouts=sys.argv[1:] == ["--refresh-timeouts"],
             )
             settings.database_url = url
-            print("PORTFOLIO_SCHEMA_AND_SYNTHETIC_SOURCE_READY", flush=True)
-            uvicorn.run(
-                make_gateway(Loopback(settings, password), origin),
-                host="0.0.0.0",
-                port=port,
-                access_log=False,
-                log_level="warning",
-            )
+            owner, runtime = build_engine(migration_url), build_engine(url)
+            try:
+                setup_portfolio_sessions(owner, url)
+                print("PORTFOLIO_SCHEMA_AND_SYNTHETIC_SOURCE_READY", flush=True)
+                uvicorn.run(
+                    make_gateway(
+                        Loopback(settings, password),
+                        origin,
+                        Sessions(runtime),
+                        connection_value("PUBLIC_DEMO_GEMINI_KEY", optional=True) or None,
+                    ),
+                    host="0.0.0.0",
+                    port=port,
+                    access_log=False,
+                    log_level="warning",
+                )
+            finally:
+                owner.dispose()
+                runtime.dispose()
     except Exception as error:
         raise SystemExit(f"PORTFOLIO_STARTUP_FAILED: {type(error).__name__}") from None
 
