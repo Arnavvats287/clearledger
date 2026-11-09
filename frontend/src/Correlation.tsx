@@ -1,14 +1,16 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, RefreshCw } from "lucide-react";
+import { FileText, Link2, RefreshCw } from "lucide-react";
 import {
   ApiError,
   Client,
   basis,
+  type Customer,
   type Decision,
   type Me,
   type Task,
   type Invoice,
+  type Model,
   type Receipt,
   date,
   human,
@@ -36,33 +38,49 @@ function CandidateFinancials({
   api,
   invoice,
   receipt,
+  utr,
 }: {
   api: Client;
   invoice: string;
   receipt: string;
+  utr: string;
 }) {
-  const load = useCallback(
-    async () => ({
-      invoice: await api.request<Invoice>(`/invoices/${invoice}`),
-      receipt: await api.request<Receipt>(`/receipts/${receipt}`),
-    }),
-    [api, invoice, receipt],
-  );
+  const load = useCallback(async () => {
+    const [bill, payment] = await Promise.all([
+      api.request<Invoice>(`/invoices/${invoice}`),
+      api.request<Receipt>(`/receipts/${receipt}`),
+    ]);
+    const [customer, bank] = await Promise.all([
+      api.request<Customer>(`/customers/${bill.customer_id}`),
+      api.request<Model<"BankView">>(
+        `/bank-transactions/${payment.bank_transaction_id}`,
+      ),
+    ]);
+    return { invoice: bill, receipt: payment, customer, bank };
+  }, [api, invoice, receipt]);
   const state = useResource(load);
   if (state.error) return <ErrorNotice error={state.error} />;
   if (!state.data) return <p>Loading proposed financial records…</p>;
+  const { invoice: bill, receipt: payment, customer, bank } = state.data;
   return (
     <div className="candidate-financials">
       <div>
-        <span>Invoice {state.data.invoice.invoice_number}</span>
-        <strong>{money(state.data.invoice.open_amount_paise)}</strong>
-        <small>Outstanding AR</small>
+        <span>Invoice {bill.invoice_number}</span>
+        <strong>{money(bill.original_amount_paise)}</strong>
+        <small>
+          {customer.name} · {money(bill.open_amount_paise)} open
+        </small>
       </div>
-      <ArrowLeft size={16} aria-hidden="true" />
+      <Link2 size={16} aria-hidden="true" />
       <div>
         <span>Bank receipt</span>
-        <strong>{money(state.data.receipt.unapplied_amount_paise)}</strong>
-        <small>Unapplied cash</small>
+        <strong>{money(payment.amount_paise)}</strong>
+        {utr && <small className="candidate-reference">UTR {utr}</small>}
+        <small>
+          {bank.payer_name || "Payer not recorded"} ·{" "}
+          {money(payment.unapplied_amount_paise)} unapplied
+        </small>
+        <small>Received {date(bank.occurred_at)}</small>
       </div>
     </div>
   );
@@ -210,21 +228,30 @@ export function Correlation({
               ? "Review the source-backed association before confirming."
               : human(t.next_action)}
           </p>
+          {!t.candidates.length && (
+            <Empty>
+              No source-backed payment candidate is available for this task.
+            </Empty>
+          )}
 
           {t.candidates.map((candidate, i) => {
             const c = record(candidate);
             return (
               <div key={i} className="association-proof">
-                <span>Proposed association</span>
+                <span>
+                  {t.status === "CONFIRMED"
+                    ? "Confirmed association"
+                    : t.status === "REJECTED"
+                      ? "Rejected candidate"
+                      : "Proposed association"}
+                </span>
                 <CandidateFinancials
                   api={api}
                   invoice={text(c.invoice_id)}
                   receipt={text(c.receipt_id)}
+                  utr={text(record(c.utr_span).quote)}
                 />
-                <small>
-                  These are server-provided candidates, not a financial
-                  allocation.
-                </small>
+                <small>Association review does not apply cash.</small>
                 <div className="span-actions">
                   {Array.isArray(c.evidence_ids) &&
                     c.evidence_ids.map((id) => (
@@ -355,11 +382,12 @@ export function Correlation({
               api={api}
               invoice={text(record(candidate).invoice_id)}
               receipt={text(record(candidate).receipt_id)}
+              utr={text(record(record(candidate).utr_span).quote)}
             />
           ))}
           <p>
             {decision.kind === "CONFIRM"
-              ? "Link the source-backed invoice/receipt association. No balance changes, settlement or posting will occur."
+              ? "Link the source-backed invoice and receipt for case review."
               : "Reject this association. New evidence will be needed for another review."}
           </p>
         </ConfirmDialog>

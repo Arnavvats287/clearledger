@@ -8,11 +8,21 @@ import {
   AlertTriangle,
   LockKeyhole,
 } from "lucide-react";
-import { Client, human, money, record, type Me, type Model } from "./api";
+import { Client, date, human, money, record, type Me, type Model } from "./api";
 import type { Loaded } from "./workstation";
 import type { Selection } from "./Documents";
 import { ReviewAction } from "./ReviewAction";
 import { assessment, financialStory } from "./story";
+
+function evidenceValue({ manifest: { fact } }: Model<"RecordView">) {
+  if (fact.type === "WMS" || fact.type === "POD")
+    return `Delivered: ${fact.delivered.span.quote} · Damaged: ${fact.damaged.span.quote}`;
+  if (fact.type === "CONTRACT")
+    return `Limit: ${money(BigInt(fact.limit.value))}`;
+  if ("amount" in fact)
+    return `Recorded amount: ${money(BigInt(fact.amount.value))}`;
+  return "";
+}
 
 export function FinancialStory({ data }: { data: Loaded }) {
   const f = financialStory(data.invoices, data.receipts);
@@ -22,7 +32,7 @@ export function FinancialStory({ data }: { data: Loaded }) {
       aria-label="Invoice, payment and difference"
     >
       <div className="statement-caption">
-        What happened <span>Linked financial records · INR</span>
+        Payment reconciliation <span>Linked financial records · INR</span>
       </div>
       <div className="money-equation">
         <div className="flow-invoice">
@@ -32,6 +42,14 @@ export function FinancialStory({ data }: { data: Loaded }) {
             {data.invoices.map((i) => i.invoice_number).join(", ") ||
               "Invoice not linked"}
           </small>
+          {data.invoices.length > 0 && (
+            <small>
+              Open AR{" "}
+              {money(
+                data.invoices.reduce((n, i) => n + i.open_amount_paise, 0n),
+              )}
+            </small>
+          )}
         </div>
         <span className="math-sign" aria-label="minus">
           −
@@ -177,7 +195,17 @@ export function CaseStory({
           ) : (
             <CircleHelp size={21} aria-hidden="true" />
           )}
-          <span>What ClearLedger found</span>
+          <span>
+            {a.stale
+              ? "Evidence changed"
+              : a.pending
+                ? "Association review"
+                : a.conflict
+                  ? "Conflicting evidence"
+                  : a.supported
+                    ? "Verified support"
+                    : "Missing proof"}
+          </span>
         </div>
         <h2>{a.title}</h2>
         <p>{a.explanation}</p>
@@ -195,7 +223,7 @@ export function CaseStory({
             <strong>{a.origin}</strong>
             <span>
               {a.origin === "Demo scenario"
-                ? "Offline model fixture; real source verification and workflow. No live AI in this demo."
+                ? "Offline model output. Source verification runs independently."
                 : a.origin === "AI assessment"
                   ? "The model recommends; source verification and review rules constrain the result."
                   : "Rules determine this result. No AI reasoning is implied."}
@@ -236,7 +264,7 @@ export function CaseStory({
           <h2>What was checked</h2>
           <span>Source verification</span>
         </div>
-        {kinds.map((kind) => {
+        {kinds.flatMap((kind) => {
           const label = labels[kind] || human(kind);
           const rows = available(kind),
             missing =
@@ -245,46 +273,54 @@ export function CaseStory({
                 data.b.findings.some((f) =>
                   f.unknowns.includes("MISSING_SIGNED_POD"),
                 ));
+          if (rows.length)
+            return rows.map((source) => (
+              <div className="evidence-check verified" key={source.id}>
+                <ShieldCheck size={18} aria-hidden="true" />
+                <div>
+                  <strong>{label}</strong>
+                  <span className="evidence-value">
+                    {evidenceValue(source)}
+                  </span>
+                  <span>
+                    Publisher {source.manifest.source_system} ·{" "}
+                    {date(source.manifest.occurred_at)} · v{source.revision}
+                  </span>
+                  <span
+                    className={
+                      a.conflict && ["WMS", "POD"].includes(kind)
+                        ? "source-conflict"
+                        : "source-verified"
+                    }
+                  >
+                    {a.stale
+                      ? "Assessment needs refresh"
+                      : a.conflict && ["WMS", "POD"].includes(kind)
+                        ? "Source verified · conflicting delivery evidence"
+                        : "Authenticity and quoted source verified"}
+                  </span>
+                </div>
+                <button onClick={() => openSource(source)}>
+                  View evidence <ArrowRight size={14} aria-hidden="true" />
+                </button>
+              </div>
+            ));
           return (
-            <div
-              className={`evidence-check ${rows.length ? "verified" : "unconfirmed"}`}
-              key={kind}
-            >
-              {rows.length ? (
-                <ShieldCheck size={19} aria-hidden="true" />
-              ) : (
-                <CircleHelp size={19} aria-hidden="true" />
-              )}
+            <div className="evidence-check unconfirmed" key={kind}>
+              <CircleHelp size={18} aria-hidden="true" />
               <div>
                 <strong>{label}</strong>
                 <span>
                   {a.stale
                     ? "Assessment needs refresh"
-                    : rows.length
-                      ? a.conflict && ["WMS", "POD"].includes(kind)
-                        ? "Source verified · assessment has conflicting facts"
-                        : "Authenticity and quoted source verified"
-                      : missing
-                        ? "Required proof missing or unverified"
-                        : "No verified source shown in this assessment"}
+                    : missing
+                      ? "Required proof missing or unverified"
+                      : "No verified source shown in this assessment"}
                 </span>
               </div>
-              {!!rows.length && (
-                <button onClick={() => openSource(rows[0])}>
-                  View evidence <ArrowRight size={14} aria-hidden="true" />
-                </button>
-              )}
             </div>
           );
         })}
-        <p className="evidence-boundary">
-          <Check size={15} aria-hidden="true" />
-          Linked invoice and payment:{" "}
-          {data.invoices.length && data.receipts.length
-            ? "Available in this case"
-            : "Association still needs verification"}
-          . Source authenticity does not approve a deduction.
-        </p>
       </section>
       <section
         className="decision-boundaries"

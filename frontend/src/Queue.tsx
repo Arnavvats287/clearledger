@@ -115,8 +115,7 @@ export function Queue({ api }: { api: Client }) {
         <div>
           <h1 tabIndex={-1}>Exception register</h1>
           <p>
-            Short payments to investigate. Evidence to inspect. Decisions for a
-            human.
+            Investigate short payments and review proposed payment associations.
           </p>
         </div>
         <button
@@ -161,13 +160,18 @@ export function Queue({ api }: { api: Client }) {
       )}
       {state.data && (
         <>
-          <div className="register-caption">
+          <div className="register-caption" role="status">
             <span>
               {rows.length} shown · {state.data.cases.length} cases on this page
             </span>
-            <span>All values INR · no automatic settlement</span>
+            <span>INR · comparison amounts</span>
           </div>
-          <div className="register-scroll">
+          <div
+            className="register-scroll"
+            role="region"
+            aria-label="Exception table"
+            tabIndex={0}
+          >
             <table className="register story-register">
               <caption className="sr-only">
                 Short payments, customer explanations, evidence and next actions
@@ -175,12 +179,17 @@ export function Queue({ api }: { api: Client }) {
               <thead>
                 <tr>
                   <th scope="col">Customer / invoice</th>
-                  <th scope="col">Invoice → receipt</th>
+                  <th scope="col" className="queue-amount">
+                    Invoiced
+                  </th>
+                  <th scope="col" className="queue-amount">
+                    Received
+                  </th>
                   <th scope="col" className="num">
                     Short payment
                   </th>
-                  <th scope="col">Why it needs attention</th>
-                  <th scope="col">Next action</th>
+                  <th scope="col">Evidence / exception</th>
+                  <th scope="col">Next action / case status</th>
                 </tr>
               </thead>
               <tbody key={`${filter}:${query}:${page}`}>
@@ -224,16 +233,11 @@ export function Queue({ api }: { api: Client }) {
                         </small>
                         <small>Opened {date(c.created_at)}</small>
                       </td>
-                      <td>
-                        <span className="queue-equation">
-                          {money(f.invoiced)} <span aria-label="to">→</span>{" "}
-                          {money(f.received)}
-                        </span>
-                        <small>
-                          {f.difference === null
-                            ? "Relationship needs verification"
-                            : "Received cash remains unapplied"}
-                        </small>
+                      <td className="queue-amount" data-label="Invoiced">
+                        {money(f.invoiced)}
+                      </td>
+                      <td className="queue-amount" data-label="Received">
+                        {money(f.received)}
                       </td>
                       <td className="num">
                         <strong>{money(f.difference)}</strong>
@@ -274,11 +278,7 @@ export function Queue({ api }: { api: Client }) {
                           {a.action}
                           <ArrowDownRight size={15} aria-hidden="true" />
                         </Link>
-                        <small>
-                          {a.supported
-                            ? "Review does not approve an adjustment"
-                            : "Disputed amount remains unresolved"}
-                        </small>
+                        <small>{human(c.state)}</small>
                       </td>
                     </tr>
                   );

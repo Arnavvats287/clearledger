@@ -8,6 +8,7 @@ import {
   type Extraction,
   type Model,
   type Span,
+  date,
   money,
   record,
   short,
@@ -225,6 +226,12 @@ export function DocumentInspector({
         )}
         {source && !source.is_current && <Badge>Source changed</Badge>}
       </div>
+      {source?.source_authenticated && (
+        <p className="source-identity">
+          Publisher {source.manifest.source_system} ·{" "}
+          {date(source.manifest.occurred_at)} · v{source.revision}
+        </p>
+      )}
       {error !== undefined && <ErrorNotice error={error} />}
       <p className="source-explainer">
         Extracted fields point to the highlighted words. A matching quote proves

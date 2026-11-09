@@ -4,7 +4,7 @@
 
 Matching, evidence verification and financial permissions are deterministic. Optional Gemini extraction and investigation propose typed facts and findings tied to source passages. The reviewer sees what was verified, what remains uncertain and what to do next.
 
-[Watch the 58-second workstation demo](docs/media/clearledger-workstation.webm) ·
+[Watch the 63-second workstation demo](docs/media/clearledger-workstation.webm) ·
 [Run locally](#running-locally) ·
 [See measured results](#evaluation)
 

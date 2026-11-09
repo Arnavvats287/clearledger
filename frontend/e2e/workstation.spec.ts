@@ -60,9 +60,19 @@ async function shot(page: Page, name: string) {
   });
 }
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, info) => {
   const failures: string[] = [];
   page.on("pageerror", (e) => failures.push(e.name));
+  page.on("console", (message) => {
+    if (
+      info.title.includes("offline error") &&
+      message.type() === "error" &&
+      message.text().includes("net::ERR_INTERNET_DISCONNECTED")
+    )
+      return;
+    if (["error", "warning"].includes(message.type()))
+      failures.push(`Browser console ${message.type()}`);
+  });
   page.on("response", (r) => {
     if (r.status() >= 400)
       failures.push(`${r.status()} ${new URL(r.url()).pathname}`);
@@ -72,9 +82,8 @@ test.beforeEach(async ({ page }) => {
   });
   (page as Page & { failures: string[] }).failures = failures;
 });
-test.afterEach(async ({ page }, info) => {
-  if (!info.title.includes("fault injection"))
-    expect((page as Page & { failures: string[] }).failures).toEqual([]);
+test.afterEach(async ({ page }) => {
+  expect((page as Page & { failures: string[] }).failures).toEqual([]);
 });
 
 test("queue, precise money, canonical span and keyboard focus", async ({
@@ -83,6 +92,15 @@ test("queue, precise money, canonical span and keyboard focus", async ({
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.name));
   await login(page);
+  for (const label of [
+    "Invoiced",
+    "Received",
+    "Short payment",
+    "Next action / case status",
+  ])
+    await expect(
+      page.getByRole("columnheader", { name: label, exact: true }),
+    ).toBeVisible();
   await expect(
     page.getByText("Demo scenario", { exact: true }).first(),
   ).toBeVisible();
@@ -168,6 +186,17 @@ for (const [mode, outcome, action] of [
     ).text();
     await openCase(page, mode);
     await expect(page.locator(".assessment-brief h2")).toHaveText(outcome);
+    if (mode === "conflict") {
+      const warehouse = page
+        .locator(".evidence-check")
+        .filter({ hasText: "Warehouse evidence" });
+      await expect(
+        warehouse.filter({ hasText: "Delivered: 1 · Damaged: 1" }),
+      ).toBeVisible();
+      await expect(
+        warehouse.filter({ hasText: "Delivered: 2 · Damaged: 2" }),
+      ).toBeVisible();
+    }
     await expect(page.locator(".statement-next a")).toContainText(action);
     await expect(
       page.getByRole("region", { name: "Review and financial status" }),
@@ -251,6 +280,10 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
       exact: true,
     }),
   ).toBeVisible();
+  const candidate = page.locator(".association-proof .candidate-financials");
+  await expect(candidate).toContainText("Meridian Retail Pvt Ltd");
+  await expect(candidate).toContainText("Meridian Retail Demo");
+  await expect(candidate).toContainText("UTR DEMO-UTR-0004");
   await page
     .getByRole("button", { name: /Inspect independent payment proof/ })
     .click();
@@ -268,6 +301,17 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
   ).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 1000 });
+  await page
+    .getByRole("button", { name: "Review & confirm association", exact: true })
+    .click();
+  await expect(dialog).toContainText("UTR DEMO-UTR-0004");
+  const mobileDialog = await dialog.boundingBox();
+  expect(mobileDialog!.x).toBeGreaterThanOrEqual(0);
+  expect(mobileDialog!.x + mobileDialog!.width).toBeLessThanOrEqual(390);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("button", { name: "Review & confirm association", exact: true })
     .click();
@@ -275,12 +319,18 @@ test("inspect task proof, deliberately confirm, retain history and merge", async
     "This action does not post a financial adjustment",
   );
   await expect(dialog).toContainText("INV-2026-1045");
+  await expect(dialog).toContainText("UTR DEMO-UTR-0004");
   await shot(page, "human-review");
   await dialog
     .getByRole("button", { name: "Confirm association", exact: true })
     .click();
   await expect(page.getByText("Confirmed", { exact: true })).toBeVisible();
   await expect(page.locator(".decision-history")).toHaveCount(1);
+  await expect(candidate).toContainText("UTR DEMO-UTR-0004");
+  await page.getByRole("button", { name: "Close evidence inspector" }).click();
+  await expect(
+    page.getByRole("region", { name: "Document evidence inspector" }),
+  ).toHaveCount(0);
   await shot(page, "correlation-decision");
   await page
     .getByRole("button", { name: "Refresh proof", exact: true })
@@ -457,6 +507,17 @@ test("final visual system: stable financial anchor, execution flow and four view
   page,
 }) => {
   await login(page);
+  for (const width of [1440, 1280, 768, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const table = page.getByRole("region", { name: "Exception table" });
+    await expect(table.getByRole("table")).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await openCase(page, "missing");
   await page.evaluate(() => document.fonts.ready);
   await page.locator(".case-page").evaluate((e) =>

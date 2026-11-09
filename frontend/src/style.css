@@ -2075,18 +2075,6 @@ textarea:focus-visible {
   border-color: transparent;
   background: transparent;
 }
-.evidence-boundary {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  display: flex;
-  gap: 8px;
-  margin: 14px 0 0;
-}
-.evidence-boundary svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
 .action-brief {
   grid-column: 1/-1;
   display: flex;
@@ -2258,16 +2246,6 @@ textarea:focus-visible {
 .story-register .num strong {
   font-size: 18px;
   font-weight: 500;
-}
-.queue-equation {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-size: 14px;
-  font-weight: 500;
-}
-.queue-equation > span {
-  color: var(--muted);
-  margin: 0 5px;
 }
 .story-register .action-link {
   max-width: 210px;

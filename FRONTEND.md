@@ -1,6 +1,87 @@
 # ClearLedger frontend — final financial-operations workstation
 
-## Final visual system — frozen after this checkpoint
+## Portfolio polish — 2026-11-09
+
+The React and TypeScript workstation still uses the same FastAPI contract and
+case routes. The exception register puts invoiced, received and short-paid INR
+amounts in separately aligned columns. It puts the case state below the next
+action. The case retains the invoice-minus-receipt statement, with open AR,
+unapplied cash, the claimed deduction and recorded settlement clearly separated.
+The main view keeps the analyst action beside the assessment and source list.
+The technical trace stays on demand.
+
+The source list shows each cited, current, authenticated record separately,
+including the registered publisher, date, revision and relevant value. The
+conflict fixture shows the two warehouse counts in separate rows
+without resolving them. Each row leads to the existing verified source highlight.
+Correlation review shows the proposed invoice, customer, receipt, bank payer and
+quoted UTR from existing records. Controller decisions still require the same
+proof and permission checks. A confirmation links records for review and does
+not apply cash. The review dialog keeps the claim, amount, proof status and
+financial boundary in view.
+
+The design uses a light ledger ground, neutral table rows and tabular INR.
+Teal marks the financial difference and small semantic markers distinguish
+verified support, missing proof and conflict. Desktop keeps the queue dense.
+Tablet keeps overflow inside the named table region. Mobile stacks the financial
+statement and preserves source and review controls. The reduced-motion setting
+disables visual motion. The standard view has no entrance or amount-stagger
+animations. Evidence reveal, focus, review feedback and clipboard feedback
+retain their existing behavior.
+
+### Verification
+
+- 16 frontend unit tests and 10 production Chromium scenarios passed. ESLint,
+  Prettier, TypeScript and the Vite production build passed.
+- The browser suite used the real local FastAPI application and disposable
+  PostgreSQL. It exercised queue filters and aligned INR values, missing,
+  supported and conflicting cases, exact source highlighting, clipboard copying,
+  technical trace, controller confirmation and rejection, role restrictions,
+  draft evidence requests, and readable history. The correlation scenarios
+  verified retained decisions and unchanged invoice amounts.
+- The final queue and case were inspected at 1440, 1280, 768 and 390 CSS
+  pixels. No page-wide horizontal overflow was observed. Native dialogs fit
+  the 390px viewport, close on Escape, and keep the customer and
+  payment context. Tested light and dark text/status color pairs all cleared
+  4.5:1. The final browser run had zero unexpected console warnings or errors.
+  The offline scenario deliberately triggered the browser's disconnection
+  message. The suite distinguishes that exact message from other errors.
+- Taste review measured the first desktop queue row at about 88px, down from
+  about 104px before the polish. Authenticated case probes returned zero
+  findings at the four widths. Source lint retained one warning for the
+  existing shadow on an open modal. Visual review also checked monetary
+  alignment, source spacing, evidence states and the completed decision
+  capture. The initial screenshot timing had captured loading labels after
+  confirmation, so the final capture waits for settled content.
+- The backend, API contracts, generated client, schema, migrations, model
+  configuration and evaluation files remained unchanged. The browser suite
+  supplied the integration smoke for this frontend-only pass.
+
+### Current portfolio media
+
+- [Exception queue](docs/screenshots/exception-queue.png)
+- [Supported deduction](docs/screenshots/supported-evidence-investigation.png),
+  [missing evidence](docs/screenshots/missing-evidence-investigation.png) and
+  [conflicting evidence](docs/screenshots/conflict-evidence-investigation.png)
+- [Exact source highlight](docs/screenshots/evidence-source-highlighting.png) and
+  [technical trace](docs/screenshots/technical-ai-trace.png)
+- [Review dialog](docs/screenshots/human-review.png) and
+  [recorded correlation decision](docs/screenshots/correlation-decision.png)
+- [Laptop](docs/screenshots/laptop-case.png), [tablet](docs/screenshots/tablet-case.png)
+  and [dark mobile](docs/screenshots/mobile-dark-case.png)
+- [Workstation walkthrough](docs/media/clearledger-workstation.webm), 62.60
+  seconds at 1440×1000 with sign-in trimmed out.
+
+The media use the running synthetic workstation and real APIs. The demo runs
+offline model controls. It does not measure live provider latency or accuracy.
+The recording repeats confirmation against fresh disposable state, verifies
+the recorded decision, and compares invoice and receipt snapshots before and
+after. No unexpected console or API errors occurred during capture.
+Mobile support covers inspection and review of the tested cases. Production
+identity, finance authorization and broader assistive-technology testing remain
+outside this pass.
+
+## Earlier visual-system checkpoint
 
 UX v2's financial story, progressive disclosure, APIs and workflow semantics are
 preserved. This final pass changes presentation and interaction feedback only.
@@ -110,10 +191,10 @@ Detailed logs remain ignored `local-data/frontend-final-*.log`. Browser criterio
 is absence of observed unexpected clipping/overflow/focus/runtime failures in these
 flows, not an unperformed all-device or assistive-technology certification.
 
-### Final media and interview sequence
+### Earlier media and interview sequence
 
-[58-second actual-API synthetic walkthrough](docs/media/clearledger-workstation.webm)
-(57.75s,1280×900,4.47MB, no audio). Login footage is trimmed out; the first frame was
+The recording at this checkpoint was 57.75 seconds at 1280×900, with no audio.
+The current walkthrough is linked above. Login footage was trimmed out; the first frame was
 visually checked. Viewing pauses help a human inspect fields and are not reported as
 provider latency. The recording includes actual controller confirmation and unchanged
 invoice/receipt API snapshots, with zero page/HTTP errors. Offline providers are

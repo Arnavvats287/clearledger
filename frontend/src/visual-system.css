@@ -1,7 +1,7 @@
 /* ClearLedger final system: paired financial rails, proof layers and an explicit
    human decision boundary. Presentation only; no state/authority is inferred here. */
 :root {
-  --ground: #eef1f1;
+  --ground: #f1f4f4;
   --surface: #ffffff;
   --raised: #e7eceb;
   --ink: #192524;
@@ -21,12 +21,8 @@
   --rule-ink: #4e6370;
   --human-ink: #76521e;
   --human-bg: #f3eee2;
-  --assessment: #242a28;
-  --assessment-ink: #f7faf9;
-  --assessment-muted: #c1d2cd;
   --space-unit: 4px;
   --gutter-x: 26px;
-  --gutter-y: 22px;
   --radius-module: 10px;
   --radius-control: 6px;
   --radius-state: 4px;
@@ -56,9 +52,6 @@
   --rule-ink: #b7cbd4;
   --human-ink: #e4ce9c;
   --human-bg: #2e2c23;
-  --assessment: #24332c;
-  --assessment-ink: #f2f8f4;
-  --assessment-muted: #c2d4c8;
 }
 body {
   font-feature-settings: "ss01";
@@ -98,11 +91,6 @@ button:active:not(:disabled) {
 .app-header nav a::after {
   border-radius: 2px;
 }
-.case-page,
-.queue-page,
-.intake-page {
-  animation: cl-arrive var(--motion-normal) var(--ease-out);
-}
 .case-heading h1,
 .page-heading h1 {
   letter-spacing: -0.8px;
@@ -118,7 +106,7 @@ button:active:not(:disabled) {
   border: 1px solid var(--line);
   border-top: 0;
   border-radius: var(--radius-module);
-  padding: 21px 28px 0;
+  padding: 16px 24px 0;
   overflow: clip;
 }
 .reconciliation-statement::before {
@@ -133,8 +121,15 @@ button:active:not(:disabled) {
   font-size: 13px;
 }
 .money-equation {
-  padding: 23px 0 24px;
+  padding: 14px 0 16px;
   gap: 18px;
+  align-items: stretch;
+}
+.money-equation > div {
+  align-content: start;
+}
+.money-equation > div:not(.difference) {
+  padding-block: 12px;
 }
 .money-equation > div > span {
   font-size: 13px;
@@ -142,13 +137,13 @@ button:active:not(:disabled) {
 }
 .money-equation strong {
   font-weight: 600;
-  font-size: 34px;
-  letter-spacing: -1.5px;
+  font-size: 30px;
+  letter-spacing: -1px;
 }
 .money-equation .difference {
   background: var(--selected);
   border-left: 3px double var(--blue);
-  padding: 17px 20px;
+  padding: 12px 18px;
   border-radius: 0 var(--radius-control) var(--radius-control) 0;
 }
 .money-equation .difference strong {
@@ -157,22 +152,12 @@ button:active:not(:disabled) {
 .money-equation .math-sign {
   font-weight: 400;
   color: var(--control);
-}
-.flow-invoice,
-.flow-receipt,
-.difference {
-  animation: cl-flow var(--motion-reveal) var(--ease-out) both;
-}
-.flow-receipt {
-  animation-delay: 35ms;
-}
-.difference {
-  animation-delay: 70ms;
+  align-self: center;
 }
 .customer-explanation {
   background: var(--raised);
-  margin: 0 -28px;
-  padding: 16px 28px;
+  margin: 0 -24px;
+  padding: 11px 24px;
   border: 0;
 }
 .customer-explanation > span {
@@ -185,7 +170,7 @@ button:active:not(:disabled) {
   font-weight: 600;
 }
 .statement-next {
-  padding: 15px 0;
+  padding: 12px 0;
   border: 0;
 }
 .statement-next a {
@@ -221,9 +206,6 @@ button:active:not(:disabled) {
 .case-tabs > a[aria-current="page"]::after {
   transform: scaleX(1);
 }
-.folio-main {
-  animation: cl-arrive var(--motion-normal) var(--ease-out);
-}
 .case-page[aria-busy="true"] .case-heading > button svg {
   transform: rotate(180deg);
 }
@@ -234,8 +216,10 @@ button:active:not(:disabled) {
 /* Assessment: interpreted result. Evidence: inspectable source stack. Human
    action: an explicit decision band. They must not look like interchangeable cards. */
 .case-brief {
-  gap: var(--gutter-y) var(--gutter-x);
-  grid-template-areas: "assessment evidence" "action action" "bounds bounds" "docs docs";
+  gap: 12px var(--gutter-x);
+  align-items: start;
+  grid-template-areas: "assessment evidence" "action evidence" "bounds bounds" "docs docs";
+  grid-template-rows: max-content 1fr auto auto;
 }
 .assessment-brief {
   grid-area: assessment;
@@ -253,46 +237,51 @@ button:active:not(:disabled) {
   grid-area: docs;
 }
 .assessment-brief {
-  background: var(--assessment);
-  color: var(--assessment-ink);
-  border: 0;
+  --evidence-tone: var(--warn);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--evidence-tone);
   border-radius: var(--radius-module);
-  padding: 24px;
+  padding: 18px 20px;
+}
+.assessment-brief.supported {
+  --evidence-tone: var(--good);
+}
+.assessment-brief.conflict {
+  --evidence-tone: var(--bad);
 }
 .assessment-heading {
-  color: var(--assessment-muted);
+  color: var(--evidence-tone);
 }
 .assessment-brief h2 {
-  color: var(--assessment-ink);
-  margin-top: 16px;
+  color: var(--ink);
+  margin-top: 10px;
 }
 .assessment-brief > p {
-  color: var(--assessment-ink);
+  color: var(--ink);
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 .assessment-origin {
-  border-color: #647e745e;
+  border-color: var(--line);
 }
 .assessment-origin strong {
-  color: var(--assessment-ink);
+  color: var(--ink);
 }
 .assessment-origin div > span {
-  color: var(--assessment-muted);
+  color: var(--muted);
 }
 .assessment-origin .origin-symbol {
-  color: #b8d5ef;
+  color: var(--model-ink);
 }
 .assessment-origin .text-button {
-  color: var(--assessment-ink);
+  color: var(--blue);
   border: 0;
 }
 .assessment-origin .text-button:hover {
   background: transparent;
   text-decoration: underline;
-}
-.assessment-origin .text-button:focus-visible {
-  outline-color: #b4e4d4;
 }
 .evidence-checklist {
   padding: 2px 0;
@@ -304,12 +293,24 @@ button:active:not(:disabled) {
   color: var(--good);
 }
 .evidence-check {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  margin: 0 0 8px;
-  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+  margin: 0;
+  padding: 10px 6px;
   gap: 11px;
+}
+.evidence-check:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.evidence-check .evidence-value {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.evidence-check .source-verified {
+  color: var(--good);
+}
+.evidence-check .source-conflict {
+  color: var(--bad);
 }
 .evidence-check.verified > svg {
   color: var(--good);
@@ -329,14 +330,13 @@ button:active:not(:disabled) {
   outline: 1px solid var(--blue);
   outline-offset: 2px;
 }
-.evidence-boundary {
-  margin-top: 9px;
-}
 .action-brief {
   background: var(--human-bg);
   border-radius: var(--radius-module);
   border-left: 3px solid var(--human-ink);
-  padding: 19px 22px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .human-marker {
   color: var(--human-ink);
@@ -376,14 +376,15 @@ button:active:not(:disabled) {
 .story-register {
   border-collapse: separate;
   border-spacing: 0;
+  background: var(--surface);
 }
 .story-register th {
-  padding-bottom: 12px;
+  padding-block: 10px;
   font-size: 12px;
+  font-weight: 600;
 }
 .story-register td {
-  padding-top: 18px;
-  padding-bottom: 18px;
+  padding-block: 10px;
 }
 .story-register td:first-child {
   padding-left: 12px;
@@ -397,14 +398,55 @@ button:active:not(:disabled) {
 }
 .story-register tbody tr:hover,
 .story-register tbody tr:focus-within {
-  background: var(--surface);
+  background: var(--ground);
 }
 .story-register tbody tr:focus-within td:first-child {
   border-left-color: var(--blue);
 }
-.story-register .queue-equation {
-  font-size: 14px;
+.story-register :is(th, td).queue-amount {
+  text-align: right;
+  width: 11%;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 13px;
   font-weight: 500;
+}
+.register-scroll:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.source-identity {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.association-proof > .candidate-financials {
+  display: grid;
+}
+.candidate-financials {
+  align-items: start;
+}
+.candidate-financials > svg {
+  align-self: center;
+}
+.candidate-financials > div {
+  overflow-wrap: anywhere;
+}
+.candidate-financials strong {
+  font-variant-numeric: tabular-nums;
+}
+.candidate-financials .candidate-reference {
+  color: var(--ink);
+}
+.story-register th:nth-child(4) {
+  width: 15%;
+}
+.story-register th:nth-child(5) {
+  width: 19%;
+}
+.story-register :is(th, td):last-child {
+  padding-right: 12px;
 }
 .story-register .num strong {
   font-weight: 600;
@@ -689,16 +731,6 @@ dialog .primary {
     transform: translateY(0);
   }
 }
-@keyframes cl-flow {
-  from {
-    opacity: 0;
-    transform: translateX(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 @keyframes cl-drawer {
   from {
     opacity: 0;
@@ -740,6 +772,7 @@ dialog .primary {
   .case-brief {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "assessment" "action" "evidence" "bounds" "docs";
+    grid-template-rows: none;
   }
   .assessment-brief {
     padding: 22px;
@@ -762,6 +795,9 @@ dialog .primary {
   }
   .money-equation > div {
     grid-template-columns: 1fr auto;
+  }
+  .money-equation > div:not(.difference) {
+    padding-block: 0;
   }
   .money-equation strong {
     font-size: 28px;
@@ -827,6 +863,19 @@ dialog .primary {
     padding-top: 6px;
     padding-bottom: 6px;
   }
+  .story-register td.queue-amount {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .story-register td.queue-amount::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+  }
+  .story-register td:last-child small {
+    display: block;
+  }
   .stage-nav button {
     flex: 0 0 143px;
     min-height: 82px;
@@ -857,6 +906,7 @@ dialog .primary {
 
 .case-v2 .folio-grid.inspecting .case-brief {
   grid-template-areas: "assessment" "action" "evidence" "bounds" "docs";
+  grid-template-rows: none;
 }
 .span-actions button[aria-pressed="true"] {
   border-color: var(--blue);
