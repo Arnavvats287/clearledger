@@ -18,12 +18,15 @@ investigation and posting.
 
 The deployed schema is at Alembic revision `0012_correlation`. The
 synthetic fixture includes missing, supporting and conflicting evidence
-cases plus a payment-correlation review. Both public services run sandbox
-revision `ca3516762b69717d93317990b9adfe21bd635d61`.
-[The required GitHub Actions run passed](https://github.com/Arnavvats287/clearledger/actions/runs/42704148310).
-Four public Chromium scenarios verified demo entry and sign-out, all seeded
+cases plus a payment-correlation review. The API runs
+`45c110df6d680d9d909ede30ce91b4866370e236` and the frontend runs
+`faed95e5897cafbc6c6e682e2a6462c3772920da`. The required GitHub Actions
+runs passed for [the API](https://github.com/Arnavvats287/clearledger/actions/runs/42750161797)
+and [the frontend](https://github.com/Arnavvats287/clearledger/actions/runs/42745435562).
+Five public Chromium scenarios verified demo entry and sign-out, all seeded
 registers and evidence states, source and trace inspection, a real sample
-upload, mobile layout, and retry after a simulated startup failure. The
+upload, mobile layout, browser-only review, refresh recovery, and retry after
+a simulated startup failure. The
 browser and focused backend tests used controlled Gemini replies for
 visitor-key verification. There were no live Gemini calls in deployment
 acceptance. The public bundle scan found no credentials or private paths.
@@ -122,6 +125,29 @@ The existing review dialogs can simulate evidence-request drafts, review notes,
 and correlation decisions in browser memory. Their results are labelled
 **Demo simulation** and clear on sign-out or full reload. Canonical review and
 financial writes remain blocked at the gateway.
+
+### Public browser navigation measurements
+
+These are single warm Chromium measurements on the hosted site, timed from
+the action until the destination content was visible. Counts include only
+data GETs to the API. Entry also uses one session POST and one identity GET
+in both builds. CDN assets and CORS preflights are outside these counts.
+
+| Flow | Before GETs | After GETs | Before | After |
+| --- | ---: | ---: | ---: | ---: |
+| Demo entry → Exceptions | 35 | 1 | 15.27 s | 6.53 s |
+| Exceptions → Invoices | 3 | 0 | 2.93 s | 66 ms |
+| Invoices → Receipts | 3 | 0 | 2.91 s | 63 ms |
+| Receipts → Remittances | 2 | 0 | 2.89 s | 65 ms |
+| Exceptions → first case open | 11 | 1 | 4.44 s | 3.10 s |
+| Case → Exceptions | 35 | 0 | 14.61 s | 52 ms |
+| Reopen the same case | 11 | 0 | 4.50 s | 274 ms |
+
+A separate Free API wake probe reached its 65-second deadline before the API
+became ready. The warm run began after a successful 390 ms readiness probe.
+Earlier live smoke exposed a sign-out cancellation race and overlapping-read
+contention. The final smoke passed the targeted regressions on the deployed
+revisions above.
 
 The upload endpoint accepts PDF, TXT, JSON, and EML up to 2 MiB after explicit
 consent. The existing isolated parser receives the bytes through a pipe and

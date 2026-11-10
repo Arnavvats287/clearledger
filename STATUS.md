@@ -7,6 +7,9 @@ share an in-memory GET cache, and review simulations stay in browser memory.
 The local checks passed 22 frontend unit tests, five public and 10 private
 Chromium scenarios, and five focused PostgreSQL tests. The public verification
 includes request counts, refresh failure recovery, and canonical write denial.
+All five live public Chromium scenarios passed on the final deployment.
+Switching registers and reopening the same case used zero API GETs. Warm
+timings and deployed revisions are in [the deployment runbook](docs/DEPLOYMENT.md).
 
 ## Public portfolio sandbox — 2026-11-10
 
