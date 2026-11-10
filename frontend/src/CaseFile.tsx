@@ -10,6 +10,7 @@ import {
   ApiError,
   Client,
   bundle,
+  portfolioCase,
   publicPortfolio,
   type Customer,
   type Doc,
@@ -27,6 +28,8 @@ import type { Loaded } from "./workstation";
 import { CaseStory, FinancialStory } from "./CaseStory";
 import { assessment } from "./story";
 
+type CaseDetail = Loaded & { sources: Model<"RecordView">[] };
+
 export function CaseFile({ api, me }: { api: Client; me: Me }) {
   const { id = "" } = useParams(),
     [params, setParams] = useSearchParams(),
@@ -38,10 +41,9 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
 
   const sourceTrigger = useRef<HTMLElement | null>(null);
 
-  const load = useCallback(async (): Promise<
-    Loaded & { sources: Model<"RecordView">[] }
-  > => {
+  const load = useCallback(async (): Promise<CaseDetail> => {
     void revision;
+    if (publicPortfolio) return api.request<CaseDetail>(portfolioCase(id));
 
     const c = await api.case(id),
       b = await bundle(api, c);
@@ -85,8 +87,23 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     return { b, invoices, receipts, docs, customer, sources };
   }, [api, id, revision]);
 
-  const state = useResource(load),
-    refresh = () => setRevision((v) => v + 1);
+  const state = useResource(load, {
+    initial: api.peek<CaseDetail>(portfolioCase(id)),
+    retainOnError: publicPortfolio,
+  });
+  const refresh = () => {
+    api.invalidate(portfolioCase(id), [
+      `/cases/${id}`,
+      ...(state.data?.b.tasks.map(
+        (task) => `/review/correlation-tasks/${task.id}`,
+      ) ?? []),
+      ...(state.data?.docs.map((doc) => `/documents/${doc.id}`) ?? []),
+      ...(state.data?.sources.map(
+        (source) => `/documents/${source.citation.document_id}`,
+      ) ?? []),
+    ]);
+    setRevision((v) => v + 1);
+  };
 
   useEffect(() => {
     if (tab === "file" && state.data && hash === "#required-action")
@@ -95,7 +112,10 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
         ?.scrollIntoView({ block: "center" });
   }, [tab, hash, state.data]);
   const activeRun = state.data?.b.runs.find((r) => !r.is_stale);
-  const waiting = activeRun && ["QUEUED", "RUNNING"].includes(activeRun.status);
+  const waiting =
+    !publicPortfolio &&
+    activeRun &&
+    ["QUEUED", "RUNNING"].includes(activeRun.status);
   const polls = useRef(0);
 
   useEffect(() => {
@@ -111,14 +131,16 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     return () => clearTimeout(t);
   }, [waiting, revision]);
 
-  if (state.loading && !state.data)
+  const wrongCase =
+    publicPortfolio && state.data && state.data.b.case.requested_case_id !== id;
+  if ((!state.data && state.loading) || (wrongCase && !state.error))
     return (
       <main id="main">
         <Loading label="Opening case file…" />
       </main>
     );
 
-  if (state.error)
+  if (state.error && (!publicPortfolio || !state.data || wrongCase))
     return (
       <main id="main">
         <Link to="/">Back to register</Link>
@@ -162,9 +184,21 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
     }
     if (s.span) {
       try {
-        const raw = await api.request<{ pages: string[] }>(
-          `/documents/${s.document}/text`,
-        );
+        const raw = publicPortfolio
+          ? await api.sourceText(
+              s.expected
+                ? {
+                    id: s.document,
+                    version: s.expected.version,
+                    content_sha256: s.expected.raw,
+                    canonical_sha256: s.expected.canonical,
+                  }
+                : (data.docs.find((item) => item.id === s.document) ??
+                    (await api.request<Doc>(`/documents/${s.document}`))),
+            )
+          : await api.request<{ pages: string[] }>(
+              `/documents/${s.document}/text`,
+            );
         const points = Array.from(raw.pages[s.span.page - 1] || "");
         s = {
           ...s,
@@ -230,6 +264,9 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
           {state.loading ? "Refreshing…" : "Refresh case"}
         </button>
       </header>
+      {publicPortfolio && state.error !== undefined && (
+        <ErrorNotice error={state.error} retry={refresh} />
+      )}
       <FinancialStory key={`${c.id}:${c.is_stale}`} data={data} />
       {c.is_stale && (
         <ErrorNotice
@@ -300,6 +337,11 @@ export function CaseFile({ api, me }: { api: Client; me: Me }) {
               api={api}
               selection={doc}
               caseRecord={c}
+              knownDocument={
+                publicPortfolio
+                  ? data.docs.find((item) => item.id === doc.document)
+                  : undefined
+              }
               close={() => {
                 setSelection(undefined);
                 setParams((v) => {

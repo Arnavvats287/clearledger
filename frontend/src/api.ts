@@ -1,5 +1,6 @@
 import { parse, stringify } from "lossless-json";
 import type { components } from "./generated";
+import { PortfolioCache, publicReadKey } from "./portfolio-cache";
 
 const deploymentOrigin = import.meta.env.VITE_API_BASE_URL as
   string | undefined;
@@ -85,8 +86,58 @@ export function decode(text: string): unknown {
 }
 
 export class Client {
+  private reads = new PortfolioCache();
   constructor(private token: string) {}
-  async request<T>(
+  peek<T>(path: string) {
+    return publicPortfolio ? this.reads.peek<T>(path) : undefined;
+  }
+  invalidate(path: string, related: string[] = []) {
+    if (!publicPortfolio) return;
+    this.reads.invalidate((key) =>
+      [path, ...related].some(
+        (p) => key === p || key.startsWith(p + "/") || key.startsWith(p + "?"),
+      ),
+    );
+  }
+  clear() {
+    this.reads.clear();
+  }
+  request<T>(
+    path: string,
+    method = "GET",
+    body?: unknown,
+    key?: string,
+    signal?: AbortSignal,
+  ): Promise<T> {
+    const cached =
+      publicPortfolio &&
+      method === "GET" &&
+      body === undefined &&
+      !signal &&
+      publicReadKey(path);
+    const load = () => this.fetchRequest<T>(path, method, body, key, signal);
+    return cached ? this.reads.read(cached, load) : load();
+  }
+  sourceText(
+    doc: Pick<Doc, "id" | "version" | "content_sha256" | "canonical_sha256">,
+  ): Promise<SourceText> {
+    const path = `/documents/${doc.id}/text`;
+    if (!publicPortfolio) return this.request<SourceText>(path);
+    return this.reads.read(
+      `source:${doc.id}:${doc.version}:${doc.content_sha256}:${doc.canonical_sha256}`,
+      async () => {
+        const source = await this.request<SourceText>(path);
+        if (
+          source.document_version !== doc.version ||
+          source.raw_sha256 !== doc.content_sha256 ||
+          source.canonical_sha256 !== doc.canonical_sha256
+        )
+          throw new ApiError(409, "SOURCE_VERSION_CHANGED");
+        return source;
+      },
+    );
+  }
+  private async fetchRequest<T>(
     path: string,
     method = "GET",
     body?: unknown,
@@ -299,6 +350,29 @@ export type Bundle = {
   trace: Trace[];
   accessError?: ApiError;
 };
+export type SourceText = {
+  document_version: number;
+  raw_sha256: string;
+  canonical_sha256: string;
+  pages: string[];
+};
+export type AssessmentBundle = Omit<Bundle, "findings" | "trace"> & {
+  findings: Pick<Finding, "state" | "unknowns" | "next_action">[];
+  trace: Pick<Trace, "node" | "metadata">[];
+};
+export type PortfolioSnapshot = {
+  cases: AssessmentBundle[];
+  customers: Customer[];
+  invoices: Invoice[];
+  receipts: Receipt[];
+  documents: Doc[];
+  banks: Pick<
+    Model<"BankView">,
+    "id" | "external_transaction_id" | "payer_name" | "occurred_at_source"
+  >[];
+};
+export const portfolioBootstrap = "/portfolio/bootstrap";
+export const portfolioCase = (id: string) => `/portfolio/cases/${id}`;
 export async function references<T extends { id: string }>(
   api: Client,
   path: string,
@@ -343,7 +417,7 @@ export async function bundle(api: Client, c: Case): Promise<Bundle> {
 }
 
 // Display projections only. Authority, transitions, currentness and proofs stay server-side.
-export function presentation(b: Bundle) {
+export function presentation(b: AssessmentBundle) {
   const synth = b.trace.find(
     (t) =>
       t.node === "investigator_synthesize" &&

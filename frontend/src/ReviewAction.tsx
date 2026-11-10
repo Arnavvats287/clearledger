@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ApiError, Client, basis, presentation, type Me } from "./api";
 import { ConfirmDialog, Saved } from "./ui";
+import { useDemoSimulation } from "./DemoSimulation";
 import { ReviewContext } from "./ReviewContext";
 import type { Loaded } from "./workstation";
 
@@ -20,11 +21,22 @@ export function ReviewAction({
     [saved, setSaved] = useState(false);
   const state = presentation(data.b),
     draft = state.missing || state.conflict;
+  const demo = useDemoSimulation(data.b.case.id);
+  const action = draft ? "draft" : "note";
   const label = draft ? "Draft evidence request" : "Record review note";
   async function recordReview() {
     if (!opened) return;
     if (!draft && !comment.trim())
       throw new ApiError(422, "REVIEW_NOTE_REQUIRED");
+    if (demo) {
+      demo.record(
+        action,
+        draft
+          ? "Demo simulation · Evidence request draft prepared for this session only. Shared case and financial state unchanged."
+          : "Demo simulation · Review note recorded for this session only. Shared case and financial state unchanged.",
+      );
+      return;
+    }
     const current = await api.case(data.b.case.id);
     if (
       current.version !== data.b.case.version ||
@@ -60,7 +72,7 @@ export function ReviewAction({
       <button
         className="primary"
         disabled={
-          me.role === "AUDITOR" ||
+          (!demo && me.role === "AUDITOR") ||
           data.b.case.is_stale ||
           (draft && !data.b.case.invoice_ids.length)
         }
@@ -72,6 +84,7 @@ export function ReviewAction({
       >
         {label}
       </button>
+      {demo?.get(action) && <Saved>{demo.get(action)}</Saved>}
       {saved && (
         <Saved>
           {draft
@@ -87,6 +100,9 @@ export function ReviewAction({
           confirm={recordReview}
         >
           <ReviewContext data={data} />
+          {demo && (
+            <p>Demo simulation · Confirmation stays in this browser session.</p>
+          )}
           <p>
             {draft
               ? "Prepare a source-linked request for the missing or conflicting evidence. This is a draft only; no customer message is sent."

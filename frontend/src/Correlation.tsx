@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDemoSimulation } from "./DemoSimulation";
 import { FileText, Link2, RefreshCw } from "lucide-react";
 import {
   ApiError,
@@ -101,6 +102,7 @@ export function Correlation({
 }) {
   const { b } = data,
     navigate = useNavigate();
+  const demo = useDemoSimulation(b.case.id);
 
   const [decision, setDecision] = useState<{
       task: Task;
@@ -126,6 +128,10 @@ export function Correlation({
   const history = useResource(historyLoad);
 
   async function update() {
+    if (demo) {
+      refresh();
+      return;
+    }
     setBusy(true);
     setError(undefined);
     try {
@@ -144,6 +150,13 @@ export function Correlation({
 
   async function recordDecision() {
     if (!decision) return;
+    if (demo) {
+      demo.record(
+        `correlation:${decision.task.id}`,
+        `Demo simulation · Association ${decision.kind === "CONFIRM" ? "confirmed" : "rejected"} for this session only. Shared case and financial state unchanged.`,
+      );
+      return;
+    }
 
     // Re-read current server inputs, but never silently change the reviewed decision basis.
 
@@ -184,10 +197,10 @@ export function Correlation({
       meta={
         <button
           onClick={() => void update()}
-          disabled={busy || me.role === "AUDITOR"}
+          disabled={busy || (!demo && me.role === "AUDITOR")}
         >
           <RefreshCw size={14} aria-hidden="true" />
-          Refresh proof
+          {demo ? "Reload proof" : "Refresh proof"}
         </button>
       }
     >
@@ -279,7 +292,7 @@ export function Correlation({
               <button
                 className="primary"
                 disabled={
-                  me.role !== "CONTROLLER" ||
+                  (!demo && me.role !== "CONTROLLER") ||
                   t.is_stale ||
                   b.case.is_stale ||
                   t.reason !== "READY_FOR_REVIEW"
@@ -296,7 +309,9 @@ export function Correlation({
               </button>
               <button
                 disabled={
-                  me.role !== "CONTROLLER" || t.is_stale || b.case.is_stale
+                  (!demo && me.role !== "CONTROLLER") ||
+                  t.is_stale ||
+                  b.case.is_stale
                 }
                 onClick={() =>
                   setDecision({
@@ -309,15 +324,20 @@ export function Correlation({
                 Review & reject
               </button>
               <small>
-                {me.role !== "CONTROLLER"
-                  ? "Controller access required."
-                  : t.is_stale || b.case.is_stale
-                    ? "Changed inputs must be refreshed."
-                    : t.reason !== "READY_FOR_REVIEW"
-                      ? "Confirmation unavailable until independent proof is complete."
-                      : "Confirmation links case evidence; it does not apply cash."}
+                {demo
+                  ? "Demo simulation only. The shared association stays read-only."
+                  : me.role !== "CONTROLLER"
+                    ? "Controller access required."
+                    : t.is_stale || b.case.is_stale
+                      ? "Changed inputs must be refreshed."
+                      : t.reason !== "READY_FOR_REVIEW"
+                        ? "Confirmation unavailable until independent proof is complete."
+                        : "Confirmation links case evidence; it does not apply cash."}
               </small>
             </div>
+          )}
+          {demo?.get(`correlation:${t.id}`) && (
+            <Saved>{demo.get(`correlation:${t.id}`)}</Saved>
           )}
 
           <Disclosure title="Review basis & provenance">
@@ -362,6 +382,9 @@ export function Correlation({
           close={() => setDecision(undefined)}
           confirm={recordDecision}
         >
+          {demo && (
+            <p>Demo simulation · Confirmation stays in this browser session.</p>
+          )}
           <ReviewContext
             data={data}
             proof={{

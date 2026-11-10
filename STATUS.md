@@ -1,5 +1,13 @@
 # Build status
 
+## Public demo review simulation and navigation
+
+The portfolio gateway adds bounded register and case reads. Public clients
+share an in-memory GET cache, and review simulations stay in browser memory.
+The local checks passed 21 frontend unit tests, five public and 10 private
+Chromium scenarios, and five focused PostgreSQL tests. The public verification
+includes request counts, refresh failure recovery, and canonical write denial.
+
 ## Public portfolio sandbox — 2026-11-10
 
 The deployment gateway now provides a credential-free auditor entry, seeded

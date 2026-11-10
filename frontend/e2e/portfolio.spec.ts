@@ -60,6 +60,15 @@ test("current findings, source span, trace and read-only correlation", async ({
   page,
 }) => {
   const errors = consoleFailures(page);
+  let sourceReads = 0;
+  const workflowWrites: string[] = [];
+  page.on("request", (request) => {
+    const path = new URL(request.url()).pathname;
+    if (request.method() === "GET" && /^\/documents\/[^/]+\/text$/.test(path))
+      sourceReads++;
+    if (request.method() === "POST" && path.endsWith("/decision"))
+      workflowWrites.push(path);
+  });
   await enter(page);
   async function open(invoice: string, proposed = false) {
     await page
@@ -89,6 +98,21 @@ test("current findings, source span, trace and read-only correlation", async ({
     "INV-2026-1042",
   );
   await page.getByRole("button", { name: "Close evidence inspector" }).click();
+  await expect(
+    page.getByRole("button", { name: "Close evidence inspector" }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "View evidence", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Invoice INV-2026-1042", exact: true })
+    .click();
+  await expect(page.getByTestId("source-highlight")).toHaveText(
+    "INV-2026-1042",
+  );
+  expect(sourceReads).toBe(1);
+  await page.getByRole("button", { name: "Close evidence inspector" }).click();
   await page
     .getByRole("link", { name: "Technical trace", exact: true })
     .click();
@@ -113,14 +137,131 @@ test("current findings, source span, trace and read-only correlation", async ({
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Review & confirm association" }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await page
     .getByRole("button", { name: "Inspect independent payment proof" })
     .click();
   await expect(
     page.getByText("Source verified", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Close evidence inspector" }).click();
+  await page
+    .getByRole("button", { name: "Review & confirm association" })
+    .click();
+  const dialog = page.getByRole("dialog", {
+    name: "Confirm this evidence association?",
+  });
+  await dialog
+    .getByRole("button", { name: "Confirm association", exact: true })
+    .click();
+  await expect(
+    page.getByText(/Demo simulation · Association confirmed for this session/),
+  ).toBeVisible();
+  expect(workflowWrites).toEqual([]);
   expect(errors).toEqual([]);
+});
+
+test("shared register cache, ephemeral review and stale refresh recovery", async ({
+  page,
+}) => {
+  const requests: string[] = [];
+  page.on("request", (req) => {
+    if (req.resourceType() === "fetch")
+      requests.push(`${req.method()} ${new URL(req.url()).pathname}`);
+  });
+  const bootstrap = "GET /portfolio/bootstrap";
+  const nav = page.getByRole("navigation", { name: "Main navigation" });
+  const queue = () =>
+    nav.getByRole("link", { name: "Exceptions", exact: true }).click();
+  const draft = page.getByRole("button", {
+    name: "Draft evidence request",
+    exact: true,
+  });
+  const message = page.getByText(
+    /Demo simulation · Evidence request draft prepared/,
+  );
+  async function open() {
+    await page
+      .locator("tbody tr")
+      .filter({ hasText: "INV-2026-1042" })
+      .getByRole("link")
+      .first()
+      .click();
+    await expect(draft).toBeVisible({ timeout: 35_000 });
+  }
+  await enter(page);
+  expect(requests.filter((r) => r === bootstrap)).toHaveLength(1);
+  const beforeRegisters = requests.length;
+  for (const name of ["Invoices", "Receipts", "Remittances"]) {
+    await nav.getByRole("link", { name, exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open case", exact: true }).first(),
+    ).toBeVisible();
+  }
+  await queue();
+  await expect(
+    page.getByRole("heading", { name: "Exception register" }),
+  ).toBeVisible();
+  expect(requests).toHaveLength(beforeRegisters);
+  await open();
+  expect(
+    requests.filter((r) => r.startsWith("GET /portfolio/cases/")),
+  ).toHaveLength(1);
+  const beforeSimulation = requests.length;
+  await draft.click();
+  const dialog = page.getByRole("dialog", { name: "Draft evidence request" });
+  await expect(
+    dialog.getByText(/Confirmation stays in this browser session/),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Save draft only" }).click();
+  await expect(message).toBeVisible();
+  await queue();
+  await open();
+  await expect(message).toBeVisible();
+  expect(requests).toHaveLength(beforeSimulation);
+
+  let refreshFailed = false;
+  await page.route("**/portfolio/cases/*", async (route) => {
+    if (!refreshFailed) {
+      refreshFailed = true;
+      await route.abort("failed");
+    } else await route.continue();
+  });
+  await page.getByRole("button", { name: "Refresh case", exact: true }).click();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(draft).toBeVisible();
+  await expect(message).toBeVisible();
+  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await expect(page.getByRole("alert")).toHaveCount(0, { timeout: 35_000 });
+  await expect(
+    page.getByRole("button", { name: "Refresh case", exact: true }),
+  ).toBeEnabled({ timeout: 35_000 });
+  expect(
+    requests.filter((r) => r.startsWith("GET /portfolio/cases/")),
+  ).toHaveLength(3);
+  await queue();
+  await page
+    .getByRole("button", { name: "Refresh queue", exact: true })
+    .click();
+  await expect(page.locator("tbody tr").first()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Refresh queue", exact: true }),
+  ).toBeEnabled({ timeout: 35_000 });
+  expect(requests.filter((r) => r === bootstrap)).toHaveLength(2);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(
+    page.getByRole("button", { name: "Continue as Demo Analyst" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Continue as Demo Analyst" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Exception register" }),
+  ).toBeVisible();
+  await open();
+  await expect(message).toHaveCount(0);
+  expect(requests.filter((r) => r === bootstrap)).toHaveLength(3);
 });
 
 test("ephemeral sample upload and transient key input at mobile width", async ({

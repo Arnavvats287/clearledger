@@ -8,10 +8,12 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import make_url
 
+from clearledger.case_models import Case, Claim
 from clearledger.db import build_engine
 from clearledger.investigation_runtime import Runtime
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from portfolio_sessions import Sessions, setup  # noqa: E402
 from serve_frontend_demo import fingerprint, rows  # noqa: E402
 from serve_portfolio import Loopback, bootstrap, make_gateway, neon_url, public_origin  # noqa: E402
 
@@ -62,8 +64,36 @@ def test_real_public_read_boundary_and_ephemeral_restart(
             seed.setattr(Runtime, "begin", start_with_short_fake_deadline)
             settings, password = bootstrap(url, first)
         before = fingerprint(rows(engine))
-        with TestClient(make_gateway(Loopback(settings, password), ORIGIN)) as client:
+        setup(engine, url)
+        sessions = Sessions(engine)
+        with TestClient(make_gateway(Loopback(settings, password), ORIGIN, sessions)) as client:
             assert client.get("/ready").status_code == 200
+            assert client.get("/portfolio/bootstrap").status_code == 401
+            token = client.post("/portfolio/session", headers={"Origin": ORIGIN}).json()[
+                "access_token"
+            ]
+            auth = {"Authorization": f"Portfolio {token}"}
+            snapshot_response = client.get("/portfolio/bootstrap", headers=auth)
+            assert snapshot_response.status_code == 200
+            assert snapshot_response.headers["Cache-Control"] == "no-store"
+            snapshot = snapshot_response.json()
+            assert all("pages" not in item for item in snapshot["documents"])
+            assert snapshot["invoices"] and snapshot["receipts"] and snapshot["banks"]
+            task_id = next(task["id"] for case in snapshot["cases"] for task in case["tasks"])
+            assert (
+                client.post(
+                    f"/review/correlation-tasks/{task_id}/decision", headers=auth, json={}
+                ).status_code
+                == 404
+            )
+            assert all(
+                "pages" not in item["case"]
+                and all(
+                    trace["node"] in {"investigator_synthesize", "human_review_or_request_evidence"}
+                    for trace in item["trace"]
+                )
+                for item in snapshot["cases"]
+            )
             response = client.get("/review/me", headers={"Origin": ORIGIN})
             assert response.headers["Access-Control-Allow-Origin"] == ORIGIN
             assert response.json()["role"] == "AUDITOR"
@@ -125,7 +155,26 @@ def test_real_public_read_boundary_and_ephemeral_restart(
             timed_out = run["id"]
         restored, password = bootstrap(url, second, refresh_timeouts=True)
         assert restored.organization_id == settings.organization_id
-        with TestClient(make_gateway(Loopback(restored, password), ORIGIN)) as client:
+        case_before = fingerprint(rows(engine, (Case, Claim)))
+        with TestClient(make_gateway(Loopback(restored, password), ORIGIN, sessions)) as client:
+            token = client.post("/portfolio/session", headers={"Origin": ORIGIN}).json()[
+                "access_token"
+            ]
+            auth = {"Authorization": f"Portfolio {token}"}
+            view = client.get(f"/portfolio/cases/{supported_case}", headers=auth)
+            assert view.status_code == 200
+            data = view.json()
+            assert data["b"]["case"]["id"] == supported_case
+            assert any(item["is_current"] for item in data["b"]["findings"])
+            assert data["b"]["trace"] and data["sources"]
+            assert all("pages" not in item for item in data["docs"])
+            for route in (
+                f"/cases/{supported_case}/draft-evidence-request",
+                f"/cases/{supported_case}/review-comments",
+                f"/cases/{supported_case}/request-evidence",
+                f"/portfolio/cases/{supported_case}",
+            ):
+                assert client.post(route, headers=auth, json={}).status_code == 404
             assert client.get(f"/documents/{document}/original").content == original.content
             runs = client.get(f"/cases/{supported_case}/investigations").json()
             assert runs[0]["status"] == "COMPLETED"
@@ -134,5 +183,6 @@ def test_real_public_read_boundary_and_ephemeral_restart(
             assert any(row["state"] == "SUPPORTED" and row["is_current"] for row in findings)
             assert any(row["id"] == timed_out and row["error_code"] == "TIMEOUT" for row in runs)
         assert fingerprint(rows(engine)) == before
+        assert fingerprint(rows(engine, (Case, Claim))) == case_before
     finally:
         engine.dispose()

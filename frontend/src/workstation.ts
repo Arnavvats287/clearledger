@@ -3,6 +3,6 @@ export type Loaded = {
   b: Bundle;
   invoices: Invoice[];
   receipts: Receipt[];
-  customer?: Customer;
+  customer?: Customer | null;
   docs: Doc[];
 };

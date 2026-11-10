@@ -1,16 +1,13 @@
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  type Case,
   type Client,
-  type Customer,
-  type Doc,
-  type Invoice,
-  type Model,
-  type Receipt,
+  type PortfolioSnapshot,
   human,
   money,
+  portfolioBootstrap,
 } from "./api";
+import { PortfolioCaseLink } from "./PortfolioCaseLink";
 import { Badge, ErrorNotice, useResource } from "./ui";
 
 type Register = "invoices" | "receipts" | "remittances";
@@ -29,6 +26,87 @@ const copy = {
   ],
 } as const;
 
+function project(kind: Register, snapshot: PortfolioSnapshot) {
+  const related = snapshot.cases.map((row) => row.case);
+  if (kind === "invoices") {
+    const customers = new Map(snapshot.customers.map((r) => [r.id, r.name]));
+    return {
+      columns: [
+        "Invoice",
+        "Customer",
+        "Issued",
+        "Due",
+        "Invoiced",
+        "Open AR",
+        "Status",
+      ],
+      moneyColumns: [4, 5],
+      rows: snapshot.invoices.map((r) => ({
+        id: r.id,
+        cases: related.filter((c) => c.invoice_ids.includes(r.id)),
+        values: [
+          r.invoice_number,
+          customers.get(r.customer_id) || "—",
+          r.issued_date,
+          r.due_date,
+          money(r.original_amount_paise),
+          money(r.open_amount_paise),
+          human(r.status),
+        ],
+      })),
+    };
+  }
+  if (kind === "receipts") {
+    const bank = new Map(snapshot.banks.map((r) => [r.id, r]));
+    return {
+      columns: [
+        "Bank reference",
+        "Payer",
+        "Received",
+        "Receipt",
+        "Unapplied",
+        "Status",
+      ],
+      moneyColumns: [3, 4],
+      rows: snapshot.receipts.map((r) => {
+        const entry = bank.get(r.bank_transaction_id);
+        return {
+          id: r.id,
+          cases: related.filter((c) => c.receipt_ids.includes(r.id)),
+          values: [
+            entry?.external_transaction_id || "—",
+            entry?.payer_name || "—",
+            entry?.occurred_at_source.slice(0, 10) || "—",
+            money(r.amount_paise),
+            money(r.unapplied_amount_paise),
+            human(r.status),
+          ],
+        };
+      }),
+    };
+  }
+  return {
+    columns: ["Source file", "Document type", "Registered", "Parse status"],
+    moneyColumns: [],
+    rows: snapshot.documents
+      .filter(
+        (r) =>
+          r.document_type === "REMITTANCE" ||
+          related.some((c) => c.document_ids.includes(r.id)),
+      )
+      .map((r) => ({
+        id: r.id,
+        cases: related.filter((c) => c.document_ids.includes(r.id)),
+        values: [
+          r.source_name,
+          human(r.document_type),
+          r.created_at.slice(0, 10),
+          human(r.parse_status),
+        ],
+      })),
+  };
+}
+
 export function PortfolioRecords({
   api,
   kind,
@@ -37,102 +115,15 @@ export function PortfolioRecords({
   kind: Register;
 }) {
   const [retry, setRetry] = useState(0);
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     void retry;
-    const cases = api.list<Case>("/cases");
-    if (kind === "invoices") {
-      const [rows, parties, related] = await Promise.all([
-        api.list<Invoice>("/invoices"),
-        api.list<Customer>("/customers"),
-        cases,
-      ]);
-      const customers = new Map(parties.map((r) => [r.id, r.name]));
-      return {
-        columns: [
-          "Invoice",
-          "Customer",
-          "Issued",
-          "Due",
-          "Invoiced",
-          "Open AR",
-          "Status",
-        ],
-        moneyColumns: [4, 5],
-        rows: rows.map((r) => ({
-          id: r.id,
-          cases: related.filter((c) => c.invoice_ids.includes(r.id)),
-          values: [
-            r.invoice_number,
-            customers.get(r.customer_id) || "—",
-            r.issued_date,
-            r.due_date,
-            money(r.original_amount_paise),
-            money(r.open_amount_paise),
-            human(r.status),
-          ],
-        })),
-      };
-    }
-    if (kind === "receipts") {
-      const [rows, banks, related] = await Promise.all([
-        api.list<Receipt>("/receipts"),
-        api.list<Model<"BankView">>("/bank-transactions"),
-        cases,
-      ]);
-      const bank = new Map(banks.map((r) => [r.id, r]));
-      return {
-        columns: [
-          "Bank reference",
-          "Payer",
-          "Received",
-          "Receipt",
-          "Unapplied",
-          "Status",
-        ],
-        moneyColumns: [3, 4],
-        rows: rows.map((r) => {
-          const entry = bank.get(r.bank_transaction_id);
-          return {
-            id: r.id,
-            cases: related.filter((c) => c.receipt_ids.includes(r.id)),
-            values: [
-              entry?.external_transaction_id || "—",
-              entry?.payer_name || "—",
-              entry?.occurred_at_source.slice(0, 10) || "—",
-              money(r.amount_paise),
-              money(r.unapplied_amount_paise),
-              human(r.status),
-            ],
-          };
-        }),
-      };
-    }
-    const [rows, related] = await Promise.all([
-      api.list<Doc>("/documents"),
-      cases,
-    ]);
-    return {
-      columns: ["Source file", "Document type", "Registered", "Parse status"],
-      moneyColumns: [],
-      rows: rows
-        .filter(
-          (r) =>
-            r.document_type === "REMITTANCE" ||
-            related.some((c) => c.document_ids.includes(r.id)),
-        )
-        .map((r) => ({
-          id: r.id,
-          cases: related.filter((c) => c.document_ids.includes(r.id)),
-          values: [
-            r.source_name,
-            human(r.document_type),
-            r.created_at.slice(0, 10),
-            human(r.parse_status),
-          ],
-        })),
-    };
-  }, [api, kind, retry]);
-  const state = useResource(load);
+    return api.request<PortfolioSnapshot>(portfolioBootstrap);
+  }, [api, retry]);
+  const state = useResource(load, {
+    initial: api.peek<PortfolioSnapshot>(portfolioBootstrap),
+    retainOnError: true,
+  });
+  const table = state.data && project(kind, state.data);
   return (
     <main id="main" className="queue-page portfolio-register">
       <header className="case-heading">
@@ -144,13 +135,13 @@ export function PortfolioRecords({
           <Link to="/intake">Open document sandbox →</Link>
         )}
       </header>
-      {state.loading && (
+      {state.loading && !table && (
         <p role="status">Loading {copy[kind][0].toLowerCase()}…</p>
       )}
       {state.error !== undefined && (
         <ErrorNotice error={state.error} retry={() => setRetry((n) => n + 1)} />
       )}
-      {state.data && (
+      {table && (
         <div
           className="portfolio-table"
           tabIndex={0}
@@ -160,12 +151,12 @@ export function PortfolioRecords({
           <table>
             <thead>
               <tr>
-                {state.data.columns.map((column, i) => (
+                {table.columns.map((column, i) => (
                   <th
                     scope="col"
                     key={column}
                     className={
-                      state.data?.moneyColumns.includes(i)
+                      table.moneyColumns.includes(i)
                         ? "portfolio-money"
                         : undefined
                     }
@@ -177,14 +168,14 @@ export function PortfolioRecords({
               </tr>
             </thead>
             <tbody>
-              {state.data.rows.map((row) => (
+              {table.rows.map((row) => (
                 <tr key={row.id}>
                   <th scope="row">{row.values[0]}</th>
                   {row.values.slice(1).map((value, i) => (
                     <td
                       key={i}
                       className={
-                        state.data?.moneyColumns.includes(i + 1)
+                        table.moneyColumns.includes(i + 1)
                           ? "portfolio-money"
                           : undefined
                       }
@@ -199,19 +190,24 @@ export function PortfolioRecords({
                   <td>
                     {row.cases.length
                       ? row.cases.map((c, i) => (
-                          <Link key={c.id} to={`/cases/${c.id}`}>
+                          <PortfolioCaseLink
+                            key={c.id}
+                            api={api}
+                            caseId={c.id}
+                            to={`/cases/${c.id}`}
+                          >
                             {row.cases.length > 1
                               ? `Case ${i + 1}`
                               : "Open case"}
-                          </Link>
+                          </PortfolioCaseLink>
                         ))
                       : "—"}
                   </td>
                 </tr>
               ))}
-              {state.data.rows.length === 0 && (
+              {table.rows.length === 0 && (
                 <tr>
-                  <td colSpan={state.data.columns.length + 1}>
+                  <td colSpan={table.columns.length + 1}>
                     No seeded records are available.
                   </td>
                 </tr>

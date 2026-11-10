@@ -3,7 +3,7 @@ import {
   presentation,
   record,
   text,
-  type Bundle,
+  type AssessmentBundle,
   type Invoice,
   type Receipt,
 } from "./api";
@@ -22,7 +22,7 @@ export function financialStory(invoices: Invoice[], receipts: Receipt[]) {
   return { invoiced, received, difference };
 }
 
-export function assessment(b: Bundle) {
+export function assessment(b: AssessmentBundle) {
   const p = presentation(b);
   const delivery = b.claims.some((c) =>
     ["damage", "short_shipment"].includes(c.category),

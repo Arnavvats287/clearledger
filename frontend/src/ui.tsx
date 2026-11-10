@@ -9,12 +9,18 @@ import {
 } from "lucide-react";
 import { ApiError, human, record, text } from "./api";
 
-export function useResource<T>(load: () => Promise<T>) {
+export function useResource<T>(
+  load: () => Promise<T>,
+  {
+    initial,
+    retainOnError = false,
+  }: { initial?: T; retainOnError?: boolean } = {},
+) {
   const [state, set] = useState<{
     data?: T;
     error?: unknown;
     loading: boolean;
-  }>({ loading: true });
+  }>({ loading: initial === undefined, data: initial });
   useEffect(() => {
     let active = true;
     set((s) => ({ ...s, loading: true, error: undefined }));
@@ -23,12 +29,17 @@ export function useResource<T>(load: () => Promise<T>) {
         if (active) set({ data, loading: false });
       })
       .catch((error) => {
-        if (active) set({ error, loading: false });
+        if (active)
+          set((s) => ({
+            data: retainOnError ? s.data : undefined,
+            error,
+            loading: false,
+          }));
       });
     return () => {
       active = false;
     };
-  }, [load]);
+  }, [load, retainOnError]);
   return state;
 }
 

@@ -106,6 +106,21 @@ an opaque two-hour demo session token in tab-scoped storage so refresh works.
 Sign-out revokes that token. The seeded read API remains public, and the token
 gates sandbox actions. Invoice, receipt, remittance, and case records are read-only.
 
+The public UI loads one authenticated `GET /portfolio/bootstrap` snapshot
+for the four registers. Case links prefetch a bounded
+`GET /portfolio/cases/{id}` projection on hover or keyboard focus. Both
+projections use the existing case views in read-only transactions and return
+metadata, with original documents fetched only by explicit source actions.
+Successful public GETs are reused in memory by the active demo client.
+Document text is keyed by document ID, version, and both source hashes.
+Manual refresh replaces data on success and keeps the previous view on error.
+Sign-out clears the cache.
+
+The existing review dialogs can simulate evidence-request drafts, review notes,
+and correlation decisions in browser memory. Their results are labelled
+**Demo simulation** and clear on sign-out or full reload. Canonical review and
+financial writes remain blocked at the gateway.
+
 The upload endpoint accepts PDF, TXT, JSON, and EML up to 2 MiB after explicit
 consent. The existing isolated parser receives the bytes through a pipe and
 returns canonical text. Uploaded originals and parser results are never written

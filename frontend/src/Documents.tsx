@@ -10,6 +10,7 @@ import {
   type Span,
   date,
   money,
+  publicPortfolio,
   record,
   short,
   sliceSpan,
@@ -39,11 +40,13 @@ export function DocumentInspector({
   api,
   selection,
   caseRecord,
+  knownDocument,
   close,
 }: {
   api: Client;
   selection: Selection;
   caseRecord: Case;
+  knownDocument?: Doc;
   close: () => void;
 }) {
   const [highlight, setHighlight] = useState<Span>(),
@@ -70,14 +73,19 @@ export function DocumentInspector({
     closeTimer.current = window.setTimeout(() => latestClose.current(), 160);
   }
   const load = useCallback(async () => {
+    const document = knownDocument
+      ? Promise.resolve(knownDocument)
+      : api.request<Doc>(`/documents/${selection.document}`);
     const [doc, canonical, extractions] = await Promise.all([
-      api.request<Doc>(`/documents/${selection.document}`),
-      api.request<{
-        document_version: number;
-        raw_sha256: string;
-        canonical_sha256: string;
-        pages: string[];
-      }>(`/documents/${selection.document}/text`),
+      document,
+      publicPortfolio
+        ? document.then((doc) => api.sourceText(doc))
+        : api.request<{
+            document_version: number;
+            raw_sha256: string;
+            canonical_sha256: string;
+            pages: string[];
+          }>(`/documents/${selection.document}/text`),
       api.list<Extraction>(`/documents/${selection.document}/extractions`),
     ]);
     if (
@@ -122,7 +130,7 @@ export function DocumentInspector({
         throw new ApiError(409, "SOURCE_VERSION_CHANGED");
     }
     return { doc, canonical, extractions, source };
-  }, [api, selection, caseRecord]);
+  }, [api, selection, caseRecord, knownDocument]);
   const state = useResource(load);
   const verify = useCallback(
     async (span: Span) => {

@@ -25,6 +25,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.testclient import TestClient
+from portfolio_reads import router as portfolio_read_router
 from portfolio_sandbox import HEADERS, mount
 from portfolio_sessions import Sessions
 from portfolio_sessions import setup as setup_portfolio_sessions
@@ -68,6 +69,7 @@ READ_PATHS = tuple(
     )
 )
 VERIFY_PATH = re.compile(rf"(/documents/{UUID_PATH})/verify-span")
+PROJECTION_PATH = re.compile(rf"/portfolio/(?:bootstrap|cases/{UUID_PATH})")
 
 
 def neon_url(value):
@@ -315,6 +317,7 @@ def bootstrap(database_url, work, *, refresh_timeouts=False):
 class Loopback:
     def __init__(self, settings, password):
         self.app = create_app(settings)
+        self.app.include_router(portfolio_read_router)
         self.use_readonly = ContextVar("portfolio_readonly", default=False)
         self.app.middleware("http")(self.read_boundary)
         application_lifespan = self.app.router.lifespan_context
@@ -417,9 +420,26 @@ def make_gateway(inner, origin, sessions=None, included_key=None):
     @app.api_route("/{path:path}", methods=["GET", "POST"], include_in_schema=False)
     async def dispatch(path: str, request: Request):
         path = f"/{path}"
+        projection = request.method == "GET" and PROJECTION_PATH.fullmatch(path)
         verify = VERIFY_PATH.fullmatch(path) if request.method == "POST" else None
+        if projection:
+            auth = request.headers.get("authorization", "")
+            if sessions is None or not auth.startswith("Portfolio "):
+                return JSONResponse(
+                    {"detail": "DEMO_SESSION_REQUIRED"},
+                    status_code=401,
+                    headers={"Cache-Control": "no-store"},
+                )
+            if request.url.query:
+                return JSONResponse(
+                    {"detail": "INVALID_QUERY"},
+                    status_code=400,
+                    headers={"Cache-Control": "no-store"},
+                )
+            await asyncio.to_thread(sessions.check, auth.removeprefix("Portfolio "))
         if not verify and (
-            request.method != "GET" or not any(rule.fullmatch(path) for rule in READ_PATHS)
+            request.method != "GET"
+            or (not projection and not any(rule.fullmatch(path) for rule in READ_PATHS))
         ):
             return JSONResponse({"detail": "PORTFOLIO_READ_ONLY"}, status_code=404)
         if len(request.url.query) > 2048:

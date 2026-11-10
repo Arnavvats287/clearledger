@@ -14,14 +14,17 @@ import {
   human,
   money,
   presentation,
+  portfolioBootstrap,
   publicPortfolio,
   record,
   text,
+  type PortfolioSnapshot,
 } from "./api";
+import { PortfolioCaseLink } from "./PortfolioCaseLink";
 import { assessment, financialStory } from "./story";
 import { Badge, Empty, ErrorNotice, Loading, useResource } from "./ui";
 
-function proposedInvoices(b: Bundle, invoices: Invoice[]) {
+function proposedInvoices(b: Pick<Bundle, "tasks">, invoices: Invoice[]) {
   const ids = new Set(
     b.tasks.flatMap((t) => t.candidates.map((c) => text(record(c).invoice_id))),
   );
@@ -45,9 +48,14 @@ export function Queue({ api }: { api: Client }) {
   const page = Math.max(0, Number(params.get("page")) || 0),
     filter = params.get("filter") || filters[0],
     query = params.get("q") || "";
+  const serverPage = publicPortfolio ? 0 : page;
   const load = useCallback(async () => {
     void revision;
-    const cases = await api.list<Case>(`/cases?limit=20&offset=${page * 20}`);
+    if (publicPortfolio)
+      return api.request<PortfolioSnapshot>(portfolioBootstrap);
+    const cases = await api.list<Case>(
+      `/cases?limit=20&offset=${serverPage * 20}`,
+    );
     // Bounded groups avoid unbounded per-case request fanout.
     const bundles: Bundle[] = [];
     for (let i = 0; i < cases.length; i += 3)
@@ -79,8 +87,15 @@ export function Queue({ api }: { api: Client }) {
       ),
     ]);
     return { cases: bundles, customers, invoices, receipts };
-  }, [api, page, revision]); // revision intentionally refreshes the server snapshot
-  const state = useResource(load);
+  }, [api, serverPage, revision]);
+  const state = useResource(load, {
+    initial: api.peek<PortfolioSnapshot>(portfolioBootstrap),
+    retainOnError: publicPortfolio,
+  });
+  const refresh = () => {
+    api.invalidate(portfolioBootstrap);
+    setRevision((v) => v + 1);
+  };
   function change(k: string, v: string) {
     setParams((p) => {
       p.set(k, v);
@@ -119,12 +134,11 @@ export function Queue({ api }: { api: Client }) {
             Investigate short payments and review proposed payment associations.
           </p>
         </div>
-        <button
-          onClick={() => setRevision((v) => v + 1)}
-          disabled={state.loading}
-        >
+        <button onClick={refresh} disabled={state.loading}>
           <RefreshCw size={15} aria-hidden="true" />
-          Refresh queue
+          {publicPortfolio && state.data && state.loading
+            ? "Refreshing…"
+            : "Refresh queue"}
         </button>
       </div>
       <div className="queue-toolbar">
@@ -152,12 +166,9 @@ export function Queue({ api }: { api: Client }) {
           />
         </label>
       </div>
-      {state.loading && <Loading />}
+      {state.loading && (!publicPortfolio || !state.data) && <Loading />}
       {state.error !== undefined && (
-        <ErrorNotice
-          error={state.error}
-          retry={() => setRevision((v) => v + 1)}
-        />
+        <ErrorNotice error={state.error} retry={refresh} />
       )}
       {state.data && (
         <>
@@ -220,12 +231,17 @@ export function Queue({ api }: { api: Client }) {
                       }
                     >
                       <td>
-                        <Link className="case-link" to={`/cases/${c.id}`}>
+                        <PortfolioCaseLink
+                          api={api}
+                          caseId={c.id}
+                          className="case-link"
+                          to={`/cases/${c.id}`}
+                        >
                           {state.data!.customers.find(
                             (x) => x.id === c.customer_id,
                           )?.name || "Customer not verified"}
                           <ArrowUpRight size={15} aria-hidden="true" />
-                        </Link>
+                        </PortfolioCaseLink>
                         <small>
                           {invoices.map((i) => i.invoice_number).join(", ") ||
                             (proposedInvoices(b, state.data!.invoices)
@@ -272,13 +288,15 @@ export function Queue({ api }: { api: Client }) {
                         )}
                       </td>
                       <td>
-                        <Link
+                        <PortfolioCaseLink
+                          api={api}
+                          caseId={c.id}
                           className="action-link"
                           to={`/cases/${c.id}${a.pending ? "?tab=correlation" : ""}`}
                         >
                           {a.action}
                           <ArrowDownRight size={15} aria-hidden="true" />
-                        </Link>
+                        </PortfolioCaseLink>
                         <small>{human(c.state)}</small>
                       </td>
                     </tr>
@@ -294,23 +312,25 @@ export function Queue({ api }: { api: Client }) {
                 : "No cases yet. Import financial records or a remittance to begin."}
             </Empty>
           )}
-          <div className="paging">
-            <span>Page {page + 1} · filters apply to this loaded page</span>
-            <div>
-              <button
-                onClick={() => change("page", String(page - 1))}
-                disabled={page === 0}
-              >
-                Previous page
-              </button>
-              <button
-                onClick={() => change("page", String(page + 1))}
-                disabled={state.data.cases.length < 20}
-              >
-                Next page
-              </button>
+          {!publicPortfolio && (
+            <div className="paging">
+              <span>Page {page + 1} · filters apply to this loaded page</span>
+              <div>
+                <button
+                  onClick={() => change("page", String(page - 1))}
+                  disabled={page === 0}
+                >
+                  Previous page
+                </button>
+                <button
+                  onClick={() => change("page", String(page + 1))}
+                  disabled={state.data.cases.length < 20}
+                >
+                  Next page
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
       <div className="queue-footnote">

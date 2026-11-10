@@ -22,11 +22,12 @@ import "@fontsource/geist/500.css";
 import "@fontsource/geist/600.css";
 import "@fontsource/geist/700.css";
 import "@fontsource/geist-mono/400.css";
-import { Client, publicPortfolio, type Me } from "./api";
+import { Client, portfolioBootstrap, publicPortfolio, type Me } from "./api";
 import { CaseFile } from "./CaseFile";
 import { Intake } from "./Intake";
 import { PortfolioRecords } from "./PortfolioRecords";
 import { PortfolioSandbox } from "./PortfolioSandbox";
+import { DemoSimulationProvider } from "./DemoSimulation";
 import { Queue } from "./Queue";
 import { Badge, ErrorNotice } from "./ui";
 import "./style.css";
@@ -52,6 +53,8 @@ async function demoIdentity(api: Client, signal?: AbortSignal) {
   );
   if (me.role !== "AUDITOR" || me.financial_authority !== false)
     throw new Error("Invalid demo identity");
+  if (!signal?.aborted)
+    void api.request(portfolioBootstrap).catch(() => undefined);
   return { api, me };
 }
 
@@ -212,6 +215,7 @@ function App() {
       setError(new Error("Server session revocation unavailable"));
     } finally {
       if (publicPortfolio) {
+        session?.api.clear();
         savePortfolioSession();
         void navigate("/");
       }
@@ -377,77 +381,79 @@ function App() {
         <>
           <FocusRoute />
           <Boundary key={session.me.subject}>
-            <Routes>
-              <Route path="/" element={<Queue api={session.api} />} />
-              <Route
-                path="/cases/:id"
-                element={<CaseFile api={session.api} me={session.me} />}
-              />
-              {publicPortfolio ? (
-                <>
-                  <Route
-                    path="/invoices"
-                    element={
-                      <PortfolioRecords
-                        key="invoices"
-                        api={session.api}
-                        kind="invoices"
-                      />
-                    }
-                  />
-                  <Route
-                    path="/receipts"
-                    element={
-                      <PortfolioRecords
-                        key="receipts"
-                        api={session.api}
-                        kind="receipts"
-                      />
-                    }
-                  />
-                  <Route
-                    path="/remittances"
-                    element={
-                      <PortfolioRecords
-                        key="remittances"
-                        api={session.api}
-                        kind="remittances"
-                      />
-                    }
-                  />
+            <DemoSimulationProvider>
+              <Routes>
+                <Route path="/" element={<Queue api={session.api} />} />
+                <Route
+                  path="/cases/:id"
+                  element={<CaseFile api={session.api} me={session.me} />}
+                />
+                {publicPortfolio ? (
+                  <>
+                    <Route
+                      path="/invoices"
+                      element={
+                        <PortfolioRecords
+                          key="invoices"
+                          api={session.api}
+                          kind="invoices"
+                        />
+                      }
+                    />
+                    <Route
+                      path="/receipts"
+                      element={
+                        <PortfolioRecords
+                          key="receipts"
+                          api={session.api}
+                          kind="receipts"
+                        />
+                      }
+                    />
+                    <Route
+                      path="/remittances"
+                      element={
+                        <PortfolioRecords
+                          key="remittances"
+                          api={session.api}
+                          kind="remittances"
+                        />
+                      }
+                    />
+                    <Route
+                      path="/intake"
+                      element={
+                        <PortfolioSandbox
+                          api={session.api}
+                          includedAvailable={
+                            session.me.included_available === true
+                          }
+                        />
+                      }
+                    />
+                  </>
+                ) : (
                   <Route
                     path="/intake"
                     element={
-                      <PortfolioSandbox
+                      <Intake
                         api={session.api}
-                        includedAvailable={
-                          session.me.included_available === true
-                        }
+                        readOnly={session.me.role === "AUDITOR"}
                       />
                     }
                   />
-                </>
-              ) : (
+                )}
                 <Route
-                  path="/intake"
+                  path="*"
                   element={
-                    <Intake
-                      api={session.api}
-                      readOnly={session.me.role === "AUDITOR"}
-                    />
+                    <main id="main">
+                      <h1 tabIndex={-1}>Case route not found</h1>
+                      <Link to="/">Return to exception register</Link>
+                    </main>
                   }
                 />
-              )}
-              <Route
-                path="*"
-                element={
-                  <main id="main">
-                    <h1 tabIndex={-1}>Case route not found</h1>
-                    <Link to="/">Return to exception register</Link>
-                  </main>
-                }
-              />
-            </Routes>
+              </Routes>
+            </DemoSimulationProvider>
           </Boundary>
         </>
       )}
