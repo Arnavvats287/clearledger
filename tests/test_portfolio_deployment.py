@@ -1,11 +1,13 @@
 """Public deployment checks against disposable PostgreSQL and the actual application."""
 
 import sys
+from hashlib import sha256
 from pathlib import Path
 
 import certifi
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
 from clearledger.case_models import Case, Claim
@@ -79,6 +81,15 @@ def test_real_public_read_boundary_and_ephemeral_restart(
             snapshot = snapshot_response.json()
             assert all("pages" not in item for item in snapshot["documents"])
             assert snapshot["invoices"] and snapshot["receipts"] and snapshot["banks"]
+            assert client.get("/review/portfolio/bootstrap", headers=auth).status_code == 404
+            key = int.from_bytes(
+                sha256(settings.organization_id.bytes).digest()[:8], "big", signed=True
+            )
+            with engine.begin() as prior_read:
+                prior_read.execute(text("SELECT pg_advisory_xact_lock_shared(:key)"), {"key": key})
+                assert client.get("/portfolio/bootstrap", headers=auth).status_code == 200
+                case_id = snapshot["cases"][0]["case"]["id"]
+                assert client.get(f"/portfolio/cases/{case_id}", headers=auth).status_code == 200
             task_id = next(task["id"] for case in snapshot["cases"] for task in case["tasks"])
             assert (
                 client.post(

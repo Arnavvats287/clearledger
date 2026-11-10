@@ -111,6 +111,8 @@ for the four registers. Case links prefetch a bounded
 `GET /portfolio/cases/{id}` projection on hover or keyboard focus. Both
 projections use the existing case views in read-only transactions and return
 metadata, with original documents fetched only by explicit source actions.
+Portfolio projection admission verifies the server-owned auditor under the
+shared case lock, so an overlapping refresh does not block a new session's read.
 Successful public GETs are reused in memory by the active demo client.
 Document text is keyed by document ID, version, and both source hashes.
 Manual refresh replaces data on success and keeps the previous view on error.

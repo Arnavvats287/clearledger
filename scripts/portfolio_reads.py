@@ -1,22 +1,40 @@
 """Bounded public read projections built from the existing case views."""
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 
 from clearledger import case_api, correlation_api, evidence_api, investigation_api
 from clearledger.api import DB
-from clearledger.case_api import Scope
 from clearledger.document_api import DocumentView
 from clearledger.investigation_models import InvestigationFinding, InvestigationTrace
 from clearledger.models import BankTransaction, Customer, Document, Invoice, Receipt
+from clearledger.review_identity import Reviewer, demo_session
 from clearledger.views import CustomerView, InvoiceView, ReceiptView
 
-router = APIRouter(prefix="/portfolio", include_in_schema=False, route_class=case_api.SafeCaseRoute)
+# Only the outer portfolio gateway forwards to these loopback routes. Like the
+# other /review routes, they perform their own reviewer authentication.
+router = APIRouter(
+    prefix="/review/portfolio", include_in_schema=False, route_class=case_api.SafeCaseRoute
+)
 REGISTER_CASES = 20
 REGISTER_RECORDS = 100
 SUMMARY_NODES = ("investigator_synthesize", "human_review_or_request_evidence")
+
+
+def read_auditor(request: Request, session: DB) -> Reviewer:
+    # Authenticate the same server-owned demo user under the existing shared
+    # case read lock. Exclusive admission would block concurrent snapshots.
+    org = case_api.scoped_access(request, session)
+    user, _ = demo_session(request, session, org)
+    if user.role != "AUDITOR":
+        raise HTTPException(403, "PORTFOLIO_AUDITOR_REQUIRED")
+    return Reviewer(user.id, org, "AUDITOR", f"local-demo:{user.id}", {})
+
+
+Auditor = Annotated[Reviewer, Depends(read_auditor)]
 
 
 def records(session, org, model, ids=None):
@@ -42,13 +60,12 @@ def assessment_step(row):
     }
 
 
-def bundle(session, org, request, case, *, summary=False):
+def bundle(session, reviewer, request, case, *, summary=False):
+    org = reviewer.organization_id
     case_id = case.id
     claims = case_api.claims(case_id, session, org, request, limit=20)
     runs = investigation_api.listing(case_id, session, org, request, limit=20)
-    tasks = correlation_api.tasks(
-        case_id, session, request.state.review_reviewer, request, history=False
-    )
+    tasks = correlation_api.tasks(case_id, session, reviewer, request, history=False)
     current = next((run for run in runs if not run.is_stale), runs[0] if runs else None)
     findings, trace = [], []
     if current and summary:
@@ -93,8 +110,8 @@ def bundle(session, org, request, case, *, summary=False):
 
 
 @router.get("/bootstrap")
-def bootstrap(session: DB, org: Scope, request: Request):
-    request.state.review_reviewer.require("READ")
+def bootstrap(session: DB, reviewer: Auditor, request: Request):
+    org = reviewer.organization_id
     cases = case_api.case_list(session, org, request, limit=REGISTER_CASES)
     return {
         "customers": [CustomerView.model_validate(row) for row in records(session, org, Customer)],
@@ -110,15 +127,15 @@ def bootstrap(session: DB, org: Scope, request: Request):
             }
             for row in records(session, org, BankTransaction)
         ],
-        "cases": [bundle(session, org, request, case, summary=True) for case in cases],
+        "cases": [bundle(session, reviewer, request, case, summary=True) for case in cases],
     }
 
 
 @router.get("/cases/{case_id}")
-def case_detail(case_id: UUID, session: DB, org: Scope, request: Request):
-    request.state.review_reviewer.require("READ")
+def case_detail(case_id: UUID, session: DB, reviewer: Auditor, request: Request):
+    org = reviewer.organization_id
     case = case_api.case_get(case_id, session, org, request)
-    data = bundle(session, org, request, case)
+    data = bundle(session, reviewer, request, case)
     citations = dict.fromkeys(c.record_id for f in data["findings"] for c in f.citations)
     customer = next(iter(records(session, org, Customer, [case.customer_id])), None)
     return {

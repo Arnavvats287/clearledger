@@ -476,7 +476,9 @@ def make_gateway(inner, origin, sessions=None, included_key=None):
                         }
                     )
             else:
-                result = await inner.get(path, request.url.query)
+                result = await inner.get(
+                    f"/review{path}" if projection else path, request.url.query
+                )
             if result.status_code < 500:
                 return Response(
                     result.content,
