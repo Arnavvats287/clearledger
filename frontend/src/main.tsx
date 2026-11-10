@@ -207,18 +207,24 @@ function App() {
     }
   }
   async function logout() {
+    if (publicPortfolio) {
+      const api = session?.api;
+      api?.clear();
+      savePortfolioSession();
+      setSession(undefined);
+      void navigate("/");
+      try {
+        await api?.request("/portfolio/session", "DELETE");
+      } catch {
+        setError(new Error("Server session revocation unavailable"));
+      }
+      return;
+    }
     try {
-      if (publicPortfolio)
-        await session?.api.request("/portfolio/session", "DELETE");
-      else await session?.api.request("/review/demo/logout", "POST", {});
+      await session?.api.request("/review/demo/logout", "POST", {});
     } catch {
       setError(new Error("Server session revocation unavailable"));
     } finally {
-      if (publicPortfolio) {
-        session?.api.clear();
-        savePortfolioSession();
-        void navigate("/");
-      }
       setSession(undefined);
     }
   }

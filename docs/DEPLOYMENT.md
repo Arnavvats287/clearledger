@@ -114,7 +114,7 @@ metadata, with original documents fetched only by explicit source actions.
 Successful public GETs are reused in memory by the active demo client.
 Document text is keyed by document ID, version, and both source hashes.
 Manual refresh replaces data on success and keeps the previous view on error.
-Sign-out clears the cache.
+Sign-out cancels pending public reads before revoking the session and clears the cache.
 
 The existing review dialogs can simulate evidence-request drafts, review notes,
 and correlation decisions in browser memory. Their results are labelled

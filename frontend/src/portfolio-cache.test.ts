@@ -68,6 +68,27 @@ describe("public session read cache", () => {
     expect(client.peek(portfolioBootstrap)).toEqual({ value: 2 });
   });
 
+  it("cancels an in-flight read when its session is cleared", async () => {
+    let complete!: (response: Response) => void;
+    const fetch = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(
+      () =>
+        new Promise<Response>((resolve) => {
+          complete = resolve;
+        }),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const { Client, portfolioBootstrap } = await import("./api");
+    const client = new Client("demo-token");
+    const pending = client.request(portfolioBootstrap);
+    const signal = fetch.mock.calls[0][1].signal;
+    expect(signal?.aborted).toBe(false);
+    client.clear();
+    expect(signal?.aborted).toBe(true);
+    complete(json({ ignored: true }));
+    await pending;
+    expect(client.peek(portfolioBootstrap)).toBeUndefined();
+  });
+
   it("never caches authentication, mutations or uploads with visitor credentials", async () => {
     const fetch = vi.fn(() => Promise.resolve(json({ ok: true })));
     vi.stubGlobal("fetch", fetch);

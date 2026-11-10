@@ -87,6 +87,7 @@ export function decode(text: string): unknown {
 
 export class Client {
   private reads = new PortfolioCache();
+  private readLifetime = new AbortController();
   constructor(private token: string) {}
   peek<T>(path: string) {
     return publicPortfolio ? this.reads.peek<T>(path) : undefined;
@@ -100,6 +101,8 @@ export class Client {
     );
   }
   clear() {
+    this.readLifetime.abort();
+    this.readLifetime = new AbortController();
     this.reads.clear();
   }
   request<T>(
@@ -115,7 +118,14 @@ export class Client {
       body === undefined &&
       !signal &&
       publicReadKey(path);
-    const load = () => this.fetchRequest<T>(path, method, body, key, signal);
+    const load = () =>
+      this.fetchRequest<T>(
+        path,
+        method,
+        body,
+        key,
+        cached ? this.readLifetime.signal : signal,
+      );
     return cached ? this.reads.read(cached, load) : load();
   }
   sourceText(
@@ -126,7 +136,13 @@ export class Client {
     return this.reads.read(
       `source:${doc.id}:${doc.version}:${doc.content_sha256}:${doc.canonical_sha256}`,
       async () => {
-        const source = await this.request<SourceText>(path);
+        const source = await this.fetchRequest<SourceText>(
+          path,
+          "GET",
+          undefined,
+          undefined,
+          this.readLifetime.signal,
+        );
         if (
           source.document_version !== doc.version ||
           source.raw_sha256 !== doc.content_sha256 ||

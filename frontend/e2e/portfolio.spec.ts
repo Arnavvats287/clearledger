@@ -44,14 +44,35 @@ test("demo entry, public registers, refresh and sign-out", async ({ page }) => {
       page.getByRole("link", { name: "Open case", exact: true }).first(),
     ).toBeVisible({ timeout: 20_000 });
   }
+  // Reproduce sign-out while the new page's register snapshot is in flight.
+  let releaseSnapshot!: () => void;
+  const holdSnapshot = new Promise<void>((resolve) => {
+    releaseSnapshot = resolve;
+  });
+  await page.route("**/portfolio/bootstrap", async (route) => {
+    await holdSnapshot;
+    await route.continue().catch(() => undefined);
+  });
+  const snapshot = page.waitForRequest("**/portfolio/bootstrap");
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Remittances", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await snapshot;
+  const revoked = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/portfolio/session" &&
+      response.request().method() === "DELETE",
+  );
+  try {
+    await page.getByRole("button", { name: "Sign out" }).click();
+  } finally {
+    releaseSnapshot();
+  }
   await expect(
     page.getByRole("button", { name: "Continue as Demo Analyst" }),
   ).toBeVisible();
+  expect((await revoked).ok()).toBe(true);
   expect(await page.evaluate(() => sessionStorage.length)).toBe(0);
   expect(errors).toEqual([]);
 });
